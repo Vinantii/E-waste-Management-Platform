@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Profile</title>
+  </head>
+  <body>
+    <h1>Profile</h1>
+    <p>Name: <%= user.name %></p>
+    <p>Email: <%= user.email %></p>
+    <p>Phone: <%= user.phone %></p>
+    <p>Address: <%= user.address %></p>
+    <p>Pin Code: <%= user.pinCode %></p>
+    <div class="profile-image-section mb-4">
+      <img
+        src="<%= user.profilePic?.url || '/images/default-profile.png' %>"
+        alt="Profile Picture"
+        class="rounded-circle mb-3"
+        style="width: 150px; height: 150px; object-fit: cover"
+      />
+    </div>
+  </body>
+</html>

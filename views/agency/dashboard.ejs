@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Agency Dashboard</title>
+  </head>
+  <body>
+    <h1>Welcome to your Agency Dashboard</h1>
+
+    <div class="agency-info">
+      <h2>Agency Details</h2>
+      <p>Name: <%= agency.name %></p>
+      <p>Email: <%= agency.email %></p>
+      <!-- Add other agency details you want to display -->
+    </div>
+
+    <!-- Add more dashboard sections as needed -->
+
+    <div class="dashboard-actions">
+      <h3>Quick Actions</h3>
+      <!-- Add buttons/links for various actions -->
+      <ul>
+        <li><a href="/agency/<%= agency._id %>/edit">Edit Profile</a></li>
+        <li>
+          <a href="/agency/<%= agency._id %>/listings">Manage Listings</a>
+        </li>
+        <li><a href="/logout">Logout</a></li>
+      </ul>
+    </div>
+  </body>
+</html>

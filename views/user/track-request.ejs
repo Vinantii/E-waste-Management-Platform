@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Track Request</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        .tracking-timeline {
+            position: relative;
+            padding: 20px;
+        }
+        .tracking-step {
+            padding-left: 50px;
+            position: relative;
+            margin-bottom: 30px;
+        }
+        .step-icon {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: #f8f9fa;
+            border: 2px solid #dee2e6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .step-icon.completed {
+            background: #28a745;
+            border-color: #28a745;
+            color: white;
+        }
+        .step-content {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-4">
+        <div class="row">
+            <!-- Request Details -->
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">Request Details #<%= request._id.toString().slice(-6) %></h5>
+                    </div>
+                    <div class="card-body">
+                        <p><strong>Status:</strong> 
+                            <span class="badge <%= request.status === 'Pending' ? 'bg-warning' : request.status === 'Completed' ? 'bg-success' : 'bg-primary' %>">
+                                <%= request.status %>
+                            </span>
+                        </p>
+                        <p><strong>Waste Types:</strong> <%= request.wasteType.join(', ') %></p>
+                        <p><strong>Quantity:</strong> <%= request.quantity %></p>
+                        <p><strong>Pickup Address:</strong> <%= request.pickupAddress %></p>
+                        <p><strong>Agency:</strong> <%= request.agency.name %></p>
+                        <% if (request.volunteerName) { %>
+                            <p><strong>Assigned Volunteer:</strong> <%= request.volunteerName %></p>
+                        <% } %>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Tracking Timeline -->
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0">Tracking Timeline</h5>
+                    </div>
+                    <div class="card-body tracking-timeline">
+                        <% const milestones = [
+                            { key: 'requestReceived', label: 'Request Received' },
+                            { key: 'agencyAccepted', label: 'Agency Accepted' },
+                            { key: 'pickupScheduled', label: 'Pickup Scheduled' },
+                            { key: 'pickupCompleted', label: 'Pickup Completed' },
+                            { key: 'wasteSegregated', label: 'Waste Segregated' },
+                            { key: 'processingStarted', label: 'Processing Started' },
+                            { key: 'processingCompleted', label: 'Processing Completed' },
+                            { key: 'certificateIssued', label: 'Certificate Issued' }
+                        ]; %>
+
+                        <% milestones.forEach(milestone => { %>
+                            <div class="tracking-step">
+                                <div class="step-icon <%= request.trackingMilestones[milestone.key].completed ? 'completed' : '' %>">
+                                    <i class="bi <%= request.trackingMilestones[milestone.key].completed ? 'bi-check' : 'bi-circle' %>"></i>
+                                </div>
+                                <div class="step-content">
+                                    <h6><%= milestone.label %></h6>
+                                    <% if (request.trackingMilestones[milestone.key].completed) { %>
+                                        <small class="text-muted">
+                                            <%= new Date(request.trackingMilestones[milestone.key].timestamp).toLocaleString() %>
+                                        </small>
+                                        <% if (request.trackingMilestones[milestone.key].notes) { %>
+                                            <p class="mb-0"><%= request.trackingMilestones[milestone.key].notes %></p>
+                                        <% } %>
+                                    <% } %>
+                                </div>
+                            </div>
+                        <% }); %>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="mt-4">
+            <a href="/user/<%= currentUser._id %>/check-request" class="btn btn-secondary">Back to Requests</a>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 

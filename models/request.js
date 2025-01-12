@@ -45,8 +45,18 @@ const requestSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ["Pending", "Accepted", "In Progress", "Completed", "Cancelled"],
+      enum: [
+        "Pending",
+        "Approved",
+        "In Progress",
+        "Picked Up",
+        "Completed",
+        "Rejected",
+      ],
       default: "Pending",
+    },
+    rejectedAt: {
+      type: Date,
     },
     // New tracking milestones
     trackingMilestones: {
@@ -129,6 +139,13 @@ const requestSchema = new mongoose.Schema(
         filename: String,
       },
     ],
+    volunteerName: {
+      type: String,
+    },
+    volunteerAssigned: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Volunteer"
+    },
   },
   {
     timestamps: true, // This will automatically update the updatedAt timestamp
@@ -137,13 +154,16 @@ const requestSchema = new mongoose.Schema(
 
 // Middleware to update status based on tracking milestones
 requestSchema.pre("save", function (next) {
+  if (this.status === "Rejected") {
+    // Don't modify status if it's rejected
+    next();
+    return;
+  }
+
   if (this.trackingMilestones.certificateIssued.completed) {
     this.status = "Completed";
   } else if (this.trackingMilestones.agencyAccepted.completed) {
     this.status = "In Progress";
-  } else if (this.isModified("status") && this.status === "Cancelled") {
-    // Keep cancelled status if explicitly set
-    this.status = "Cancelled";
   }
   next();
 });

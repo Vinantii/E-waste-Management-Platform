@@ -3,98 +3,115 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Check Request Status</title>
+    <title>My Requests</title>
     <link
       href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
       rel="stylesheet"
     />
+    <style>
+        .request-card {
+            transition: all 0.3s ease;
+        }
+        .request-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .tracking-step {
+            position: relative;
+            padding-bottom: 20px;
+        }
+        .tracking-step::before {
+            content: '';
+            position: absolute;
+            left: 15px;
+            top: 28px;
+            bottom: 0;
+            width: 2px;
+            background: #dee2e6;
+        }
+        .tracking-step:last-child::before {
+            display: none;
+        }
+        .step-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: #fff;
+            border: 2px solid #dee2e6;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+        }
+        .step-icon.completed {
+            background: #28a745;
+            border-color: #28a745;
+            color: white;
+        }
+    </style>
   </head>
   <body>
-    <div class="container mt-5">
-      <h2 class="mb-4">Your Waste Collection Requests</h2>
+    <div class="container mt-4">
+      <h2 class="mb-4">My Requests</h2>
 
-      <% if (requests && requests.length > 0) { %>
-      <div class="row">
-        <% requests.forEach(request => { %>
-        <div class="col-md-6 mb-4">
-          <div class="card">
-            <div class="card-body">
-              <h5 class="card-title">
-                Request #<%= request._id.toString().slice(-6) %>
-              </h5>
+      <!-- Request Type Tabs -->
+      <ul class="nav nav-tabs mb-4" role="tablist">
+        <li class="nav-item">
+          <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#current">Current Requests</button>
+        </li>
+        <li class="nav-item">
+          <button class="nav-link" data-bs-toggle="tab" data-bs-target="#old">Old Requests</button>
+        </li>
+      </ul>
 
-              <div class="mb-3">
-                <strong>Status:</strong>
-                <span
-                  class="badge <%= request.status === 'Pending' ? 'bg-warning' : request.status === 'Approved' ? 'bg-success' : request.status === 'Rejected' ? 'bg-danger' : 'bg-secondary' %>"
-                >
-                  <%= request.status %>
-                </span>
-              </div>
-
-              <div class="mb-2">
-                <strong>Waste Types:</strong>
-                <% request.wasteType.forEach(type => { %>
-                <span class="badge bg-info me-1"><%= type %></span>
-                <% }) %>
-              </div>
-
-              <div class="mb-2">
-                <strong>Assigned Agency:</strong>
-                <%= request.agency.name %>
-              </div>
-
-              <div class="mb-2">
-                <strong>Submitted On:</strong>
-                <%= request.createdAt.toLocaleDateString() %>
-              </div>
-
-              <div class="image-gallery mt-3">
-                <strong>Uploaded Images:</strong>
-                <div class="row mt-2">
-                  <% request.wasteImages.forEach(image => { %>
-                  <div class="col-4 mb-2">
-                    <img
-                      src="<%= image.url %>"
-                      class="img-thumbnail"
-                      alt="Waste Image"
-                    />
-                  </div>
-                  <% }) %>
+      <!-- Tab Content -->
+      <div class="tab-content">
+        <!-- Current Requests Tab -->
+        <div class="tab-pane fade show active" id="current">
+          <% const currentRequests = requests.filter(req => !req.status.includes('Completed') && !req.status.includes('Rejected')); %>
+          <% currentRequests.forEach(request => { %>
+            <div class="card request-card mb-3">
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                  <h5 class="card-title">Request #<%= request._id.toString().slice(-6) %></h5>
+                  <span class="badge <%= request.status === 'Pending' ? 'bg-warning' : 'bg-primary' %>">
+                    <%= request.status %>
+                  </span>
                 </div>
+                <p class="card-text">
+                  <strong>Waste Types:</strong> <%= request.wasteType.join(', ') %><br>
+                  <strong>Quantity:</strong> <%= request.quantity %><br>
+                  <strong>Agency:</strong> <%= request.agency.name %>
+                </p>
+                <a href="/user/request/<%= request._id %>/track" class="btn btn-primary">View Details</a>
               </div>
             </div>
-          </div>
+          <% }); %>
         </div>
-        <% }) %>
-      </div>
-      <% } else { %>
-      <div class="alert alert-info">
-        <p>You haven't submitted any waste collection requests yet.</p>
-        <a
-          href="/user/<%= currentUser._id %>/apply-request"
-          class="btn btn-primary"
-        >
-          Submit New Request
-        </a>
-      </div>
-      <% } %>
 
-      <div class="mt-4">
-        <a
-          href="/user/<%= currentUser._id %>/dashboard"
-          class="btn btn-secondary"
-        >
-          Back to Dashboard
-        </a>
-        <% if (requests && requests.length > 0) { %>
-        <a
-          href="/user/<%= currentUser._id %>/apply-request"
-          class="btn btn-primary"
-        >
-          Submit Another Request
-        </a>
-        <% } %>
+        <!-- Old Requests Tab -->
+        <div class="tab-pane fade" id="old">
+          <% const oldRequests = requests.filter(req => req.status.includes('Completed') || req.status.includes('Rejected')); %>
+          <% oldRequests.forEach(request => { %>
+            <div class="card request-card mb-3">
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                  <h5 class="card-title">Request #<%= request._id.toString().slice(-6) %></h5>
+                  <span class="badge <%= request.status === 'Completed' ? 'bg-success' : 'bg-danger' %>">
+                    <%= request.status %>
+                  </span>
+                </div>
+                <p class="card-text">
+                  <strong>Waste Types:</strong> <%= request.wasteType.join(', ') %><br>
+                  <strong>Quantity:</strong> <%= request.quantity %><br>
+                  <strong>Agency:</strong> <%= request.agency.name %><br>
+                  <strong>Completed On:</strong> <%= new Date(request.updatedAt).toLocaleDateString() %>
+                </p>
+                <a href="/user/request/<%= request._id %>/track" class="btn btn-primary">View Details</a>
+              </div>
+            </div>
+          <% }); %>
+        </div>
       </div>
     </div>
 

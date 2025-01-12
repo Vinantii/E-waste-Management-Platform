@@ -12,19 +12,16 @@
       <h2>Agency Details</h2>
       <p>Name: <%= agency.name %></p>
       <p>Email: <%= agency.email %></p>
-      <!-- Add other agency details you want to display -->
     </div>
-
-    <!-- Add more dashboard sections as needed -->
 
     <div class="dashboard-actions">
       <h3>Quick Actions</h3>
-      <!-- Add buttons/links for various actions -->
+
       <ul>
-        <li><a href="/agency/<%= agency._id %>/edit">Edit Profile</a></li>
-        <li>
-          <a href="/agency/<%= agency._id %>/listings">Manage Listings</a>
-        </li>
+        <li><a href="/agency/<%= agency._id %>/profile">Profile</a></li>
+        <li><a href="/agency/<%= agency._id %>/requests">Requests</a></li>
+        <li><a href="/agency/<%= agency._id %>/volunteers">Volunteers</a></li>
+        <li><a href="/agency/<%= agency._id %>/inventory">Inventory</a></li>
         <li><a href="/logout">Logout</a></li>
       </ul>
     </div>

@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Agency Requests</title>
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+    <style>
+      .request-card {
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+      }
+      .request-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+      .nav-tabs .nav-link {
+        font-weight: 500;
+      }
+      .nav-tabs .nav-link.active {
+        border-bottom: 3px solid #0d6efd;
+      }
+      .status-badge {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container mt-4">
+      <h2 class="mb-4">Request Management</h2>
+
+      <!-- Tab Navigation -->
+      <ul class="nav nav-tabs mb-4" id="requestTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link active"
+            id="new-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#new"
+            type="button"
+          >
+            New Requests
+            <span class="badge bg-primary"
+              ><%= requests.filter(r => r.status === 'Pending').length %></span
+            >
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link"
+            id="approved-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#approved"
+            type="button"
+          >
+            Approved
+            <span class="badge bg-success"
+              ><%= requests.filter(r => r.status === 'Approved').length %></span
+            >
+          </button>
+        </li>
+        <li class="nav-item" role="presentation">
+          <button
+            class="nav-link"
+            id="inprogress-tab"
+            data-bs-toggle="tab"
+            data-bs-target="#inprogress"
+            type="button"
+          >
+            In Progress
+            <span class="badge bg-warning"
+              ><%= requests.filter(r => r.status === 'In Progress').length
+              %></span
+            >
+          </button>
+        </li>
+      </ul>
+
+      <!-- Tab Content -->
+      <div class="tab-content" id="requestTabsContent">
+        <!-- New Requests Tab -->
+        <div class="tab-pane fade show active" id="new" role="tabpanel">
+          <% const pendingRequests = requests.filter(request => request.status === 'Pending'); %>
+          <% pendingRequests.forEach(function(request) { %>
+            <div class="card request-card">
+              <div class="card-body">
+                <span class="badge bg-primary status-badge">New</span>
+                <h5 class="card-title">
+                  Request #<%= request._id.toString().slice(-6) %>
+                </h5>
+                <p class="card-text">
+                  <strong>User:</strong> <%= request.user.name %><br>
+                  <strong>Waste Types:</strong> <%= request.wasteType.join(', ') %><br>
+                  <strong>Quantity:</strong> <%= request.quantity %><br>
+                  <strong>Pickup Address:</strong> <%= request.pickupAddress %><br>
+                  <strong>Contact:</strong> <%= request.contactNumber %>
+                </p>
+                <div class="d-flex gap-2">
+                  <form
+                    action="/agency/request/<%= request._id %>/approve"
+                    method="POST"
+                    class="d-inline"
+                  >
+                    <button type="submit" class="btn btn-success">Accept</button>
+                  </form>
+                  <form
+                    action="/agency/request/<%= request._id %>/reject"
+                    method="POST"
+                    class="d-inline"
+                  >
+                    <button type="submit" class="btn btn-danger">Reject</button>
+                  </form>
+                </div>
+              </div>
+            </div>
+          <% }); %>
+        </div>
+
+        <!-- Approved Requests Tab -->
+        <div class="tab-pane fade" id="approved" role="tabpanel">
+          <% const approvedRequests = requests.filter(request => request.status === 'Approved'); %>
+          <% approvedRequests.forEach(function(request) { %>
+            <div class="card request-card">
+              <div class="card-body">
+                <span class="badge bg-success status-badge">Approved</span>
+                <h5 class="card-title">
+                  Request #<%= request._id.toString().slice(-6) %>
+                </h5>
+                <p class="card-text">
+                  <strong>User:</strong> <%= request.user.name %><br>
+                  <strong>Waste Types:</strong> <%= request.wasteType.join(', ') %><br>
+                  <strong>Quantity:</strong> <%= request.quantity %><br>
+                  <strong>Pickup Address:</strong> <%= request.pickupAddress %>
+                </p>
+                <form
+                  action="/agency/request/<%= request._id %>/assign-volunteer"
+                  method="POST"
+                  class="mt-3"
+                >
+                  <div class="input-group">
+                    <select class="form-select" name="volunteerId" required>
+                      <option value="">Select Volunteer</option>
+                      <% if (volunteers && volunteers.length > 0) { %>
+                        <% volunteers.forEach(volunteer => { %>
+                          <% if (volunteer.status === 'Active') { %>
+                            <option value="<%= volunteer._id %>"><%= volunteer.name %></option>
+                          <% } %>
+                        <% }); %>
+                      <% } %>
+                    </select>
+                    <button type="submit" class="btn btn-primary">Assign Volunteer</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          <% }); %>
+        </div>
+
+        <!-- In Progress Requests Tab -->
+        <div class="tab-pane fade" id="inprogress" role="tabpanel">
+          <% const inProgressRequests = requests.filter(request => request.status === 'In Progress'); %>
+          <% inProgressRequests.forEach(function(request) { %>
+            <div class="card request-card">
+              <div class="card-body">
+                <span class="badge bg-warning status-badge">In Progress</span>
+                <h5 class="card-title">
+                  Request #<%= request._id.toString().slice(-6) %>
+                </h5>
+                <p class="card-text">
+                  <strong>User:</strong> <%= request.user.name %><br>
+                  <strong>Waste Types:</strong> <%= request.wasteType.join(', ') %><br>
+                  <strong>Quantity:</strong> <%= request.quantity %><br>
+                  <strong>Pickup Address:</strong> <%= request.pickupAddress %><br>
+                  <strong>Volunteer:</strong> <%= request.volunteerAssigned ? request.volunteerAssigned.name : 'Not Assigned' %>
+                </p>
+                <form
+                  action="/agency/request/<%= request._id %>/update-status"
+                  method="POST"
+                >
+                  <div class="input-group">
+                    <select class="form-select" name="status" required>
+                      <option value="Picked Up">Picked Up</option>
+                      <option value="Completed">Completed</option>
+                    </select>
+                    <button type="submit" class="btn btn-primary">
+                      Update Status
+                    </button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          <% }); %>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      // Function to switch to specific tab based on URL hash
+      function switchToTab() {
+        const hash = window.location.hash;
+        if (hash) {
+          const tabId = hash.substring(1); // Remove the # from the hash
+          const tab = document.querySelector(`button[data-bs-target="#${tabId}"]`);
+          if (tab) {
+            const bsTab = new bootstrap.Tab(tab);
+            bsTab.show();
+          }
+        }
+      }
+
+      // Switch to correct tab on page load
+      document.addEventListener('DOMContentLoaded', switchToTab);
+
+      // Switch to correct tab when hash changes
+      window.addEventListener('hashchange', switchToTab);
+    </script>
+  </body>
+</html>

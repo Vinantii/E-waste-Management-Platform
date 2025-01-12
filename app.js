@@ -4,9 +4,7 @@ const express = require("express");
 const ejs = require("ejs");
 const session = require("express-session");
 const passport = require("passport");
-const localStrategy = require("passport-local");
-const passportLocalMongoose = require("passport-local-mongoose");
-const GoogleStrategy = require("passport-google-oauth20");
+const LocalStrategy = require("passport-local");
 const mongoose = require("mongoose");
 const path = require("path");
 const methodOverride = require("method-override");
@@ -24,6 +22,9 @@ const multer = require("multer");
 const cloudinary = require("./cloudConfig");
 const upload = multer({ dest: "uploads/" });
 const Request = require("./models/request"); // Adjust path as needed
+const passportLocalMongoose = require("passport-local-mongoose");
+const GoogleStrategy = require("passport-google-oauth20");
+const Volunteer = require("./models/volunteer");
 
 // Utilities
 const wrapAsync = require("./utils/wrapAsync");
@@ -84,30 +85,23 @@ passport.use(
     {
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: "http://localhost:3000/auth/google/callback",
-      scope: ["profile", "email"],
+      callbackURL: "/auth/google/callback",
     },
-    async (accessToken, refreshToken, profile, done) => {
+    async function (accessToken, refreshToken, profile, done) {
       try {
         let user = await User.findOne({ googleId: profile.id });
         if (!user) {
-          user = await User.create({
+          user = new User({
             googleId: profile.id,
             name: profile.displayName,
             email: profile.emails[0].value,
-            profilePic: {
-              url: profile.photos[0].value,
-              filename: `google_${profile.id}`,
-            },
-            eTokens: 0,
-            requestMade: [],
-            requests: [],
+            profilePicture: profile.photos[0].value,
           });
+          await user.save();
         }
         return done(null, user);
-      } catch (error) {
-        console.error("Google Strategy Error:", error);
-        return done(error, null);
+      } catch (err) {
+        return done(err);
       }
     }
   )
@@ -306,12 +300,12 @@ app.post(
 //TODO: Login Logic
 
 passport.use(
-  new localStrategy(
+  new LocalStrategy(
     {
-      usernameField: "email",
-      passwordField: "password",
+      usernameField: 'email',
+      passwordField: 'password'
     },
-    async function (email, password, done) {
+    async function(email, password, done) {
       try {
         // First check for user
         const user = await User.findOne({ email: email });
@@ -333,7 +327,7 @@ passport.use(
 
         // If neither user nor agency found
         return done(null, false, { message: "Incorrect email." });
-      } catch (err) {
+      } catch(err) {
         return done(err);
       }
     }
@@ -445,19 +439,6 @@ app.post(
   })
 );
 
-// Agency dashboard route
-app.get(
-  "/agency/:id/dashboard",
-  isAgencyLoggedIn,
-  wrapAsync(async (req, res) => {
-    const agency = await Agency.findById(req.params.id);
-    if (!agency) {
-      throw new ExpressError("Agency not found", 404);
-    }
-    res.render("agency/dashboard.ejs", { agency });
-  })
-);
-
 // TODO: User Dashboard Route
 app.get(
   "/user/:id/dashboard",
@@ -499,22 +480,6 @@ app.get(
     res.render("user/apply-request.ejs", {
       currentUser: user,
       agencies: agencies,
-    });
-  })
-);
-
-// TODO: User Check Request Route
-app.get(
-  "/user/:id/check-request",
-  isLoggedIn,
-  wrapAsync(async (req, res) => {
-    const requests = await Request.find({ user: req.params.id })
-      .populate("agency", "name")
-      .sort({ createdAt: -1 });
-
-    res.render("user/check-request.ejs", {
-      requests,
-      currentUser: req.user,
     });
   })
 );
@@ -571,6 +536,50 @@ app.post(
   })
 );
 
+// TODO: User Check Request Route
+app.get(
+  "/user/:id/check-request",
+  isLoggedIn,
+  wrapAsync(async (req, res) => {
+    const user = await User.findById(req.params.id)
+      .populate({
+        path: "requests",
+        populate: {
+          path: "agency",
+          select: "name"
+        }
+      });
+    
+    if (!user) {
+      throw new ExpressError("User not found", 404);
+    }
+
+    res.render("user/check-request", { requests: user.requests, currentUser: req.user });
+  })
+);
+
+//TODO: Track Request Route
+app.get(
+  "/user/request/:id/track",
+  isLoggedIn,
+  wrapAsync(async (req, res) => {
+    const request = await Request.findById(req.params.id)
+      .populate("agency", "name")
+      .populate("user", "name");
+    
+    if (!request) {
+      throw new ExpressError("Request not found", 404);
+    }
+
+    // Pass both request and currentUser to the view
+    res.render("user/track-request", { 
+      request,
+      currentUser: req.user 
+    });
+  })
+);
+
+
 // TODO: User Reward Route
 app.get(
   "/user/:id/reward",
@@ -580,6 +589,199 @@ app.get(
   })
 );
 
+// TODO: Agency Dashboard Route
+app.get(
+  "/agency/:id/dashboard",
+  isAgencyLoggedIn,
+  wrapAsync(async (req, res) => {
+    const agency = await Agency.findById(req.params.id);
+    res.render("agency/dashboard.ejs", { agency });
+  })
+);
+
+// TODO: Agency Profile Route
+app.get(
+  "/agency/:id/profile",
+  isAgencyLoggedIn,
+  wrapAsync(async (req, res) => {
+    const agency = await Agency.findById(req.params.id);
+    res.render("agency/profile.ejs", { agency });
+  })
+);
+
+// TODO: Agency Requests Route
+app.get(
+  "/agency/:id/requests",
+  isAgencyLoggedIn,
+  wrapAsync(async (req, res) => {
+    const requests = await Request.find({ agency: req.params.id })
+      .populate("user", "name email")
+      .populate("volunteerAssigned", "name")
+      .sort({ createdAt: -1 });
+
+    // Fetch active volunteers for the agency
+    const volunteers = await Volunteer.find({ 
+      agency: req.params.id,
+      status: "Active"
+    });
+
+    res.render("agency/requests.ejs", { requests, volunteers });
+  })
+);
+
+// Accept request
+app.post(
+  "/agency/request/:id/approve",
+  isAgencyLoggedIn,
+  wrapAsync(async (req, res) => {
+    const request = await Request.findByIdAndUpdate(
+      req.params.id,
+      { status: "Approved" },
+      { new: true }
+    );
+    // Redirect back to the agency's requests page with their ID
+    res.redirect(`/agency/${req.user._id}/requests#approved`);
+  })
+);
+
+// Reject request
+app.post(
+  "/agency/request/:id/reject",
+  isAgencyLoggedIn,
+  wrapAsync(async (req, res) => {
+    const requestId = req.params.id;
+    
+    // Find the request to get user ID before deletion
+    const request = await Request.findById(requestId);
+    if (!request) {
+      throw new ExpressError("Request not found", 404);
+    }
+
+    // Update user's requests array - remove the request ID
+    await User.findByIdAndUpdate(request.user, {
+      $pull: { requests: requestId }
+    });
+
+    // Update agency's requests array - remove the request ID
+    await Agency.findByIdAndUpdate(req.user._id, {
+      $pull: { requests: requestId }
+    });
+
+    // Update request status to Rejected (don't delete it so user can see the status)
+    await Request.findByIdAndUpdate(requestId, {
+      status: "Rejected",
+      rejectedAt: new Date()
+    });
+
+    res.redirect(`/agency/${req.user._id}/requests`);
+  })
+);
+
+// Approve Request -> Change the request status from approved to in progress
+app.post(
+  "/agency/request/:id/assign-volunteer",
+  isAgencyLoggedIn,
+  wrapAsync(async (req, res) => {
+    const volunteerId = req.body.volunteerId;
+    const requestId = req.params.id;
+
+    // Update request with volunteer
+    const request = await Request.findByIdAndUpdate(
+      requestId,
+      {
+        volunteerAssigned: volunteerId,
+        status: "In Progress",
+        "trackingMilestones.pickupScheduled.completed": true,
+        "trackingMilestones.pickupScheduled.timestamp": new Date()
+      },
+      { new: true }
+    );
+
+    // Add request to volunteer's assigned requests
+    await Volunteer.findByIdAndUpdate(volunteerId, {
+      $addToSet: { assignedRequests: requestId }
+    });
+
+    res.redirect(`/agency/${req.user._id}/requests#inprogress`);
+  })
+);
+
+// Update request status -> Picked Up or Completed on agency side after volunteer assigned
+app.post(
+  "/agency/request/:id/update-status",
+  isAgencyLoggedIn,
+  wrapAsync(async (req, res) => {
+    const request = await Request.findByIdAndUpdate(
+      req.params.id,
+      { status: req.body.status },
+      { new: true }
+    );
+    res.redirect(`/agency/${req.user._id}/requests`);
+  })
+);
+
+
+
+// TODO: volunteer routes
+// Volunteer Management Routes ->  Agency volunteer page
+app.get(
+  "/agency/:id/volunteers",
+  isAgencyLoggedIn,
+  wrapAsync(async (req, res) => {
+    const volunteers = await Volunteer.find({ agency: req.user._id })
+      .populate("assignedRequests");
+    res.render("agency/volunteers", { volunteers });
+  })
+);
+
+// Add new volunteer
+app.post(
+  "/agency/volunteers",
+  isAgencyLoggedIn,
+  upload.single("profilePic"),
+  wrapAsync(async (req, res) => {
+    const volunteer = new Volunteer({
+      ...req.body,
+      agency: req.user._id
+    });
+
+    if (req.file) {
+      const result = await cloudinary.uploader.upload(req.file.path);
+      volunteer.profilePic = {
+        url: result.secure_url,
+        filename: result.public_id
+      };
+    }
+
+    await volunteer.save();
+    res.redirect(`/agency/${req.user._id}/volunteers`);
+  })
+);
+
+// Toggle volunteer status -> Active or Inactive for Volunteer
+app.post(
+  "/agency/volunteers/:id/toggle-status",
+  isAgencyLoggedIn,
+  wrapAsync(async (req, res) => {
+    await Volunteer.findByIdAndUpdate(req.params.id, {
+      status: req.body.status
+    });
+    res.sendStatus(200);
+  })
+);
+
+// Delete volunteer -> Delete the volunteer from the database
+app.delete(
+  "/agency/volunteers/:id",
+  isAgencyLoggedIn,
+  wrapAsync(async (req, res) => {
+    await Volunteer.findByIdAndDelete(req.params.id);
+    res.sendStatus(200);
+  })
+);
+
+
+// TODO: Error Handling
 // 404 route - must come after all other routes but before error handler
 app.all("*", (req, res, next) => {
   next(new ExpressError("Page Not Found", 404));
@@ -591,6 +793,16 @@ app.use((err, req, res, next) => {
     console.error("OAuth Error:", err);
     return res.redirect("/login?error=auth");
   }
+  next(err);
+});
+
+// Add this before your other error handlers
+app.use((err, req, res, next) => {
+  console.error("Auth Error:", {
+    name: err.name,
+    message: err.message,
+    stack: err.stack,
+  });
   next(err);
 });
 
@@ -611,15 +823,9 @@ app.use((err, req, res, next) => {
   });
 });
 
-// Add this before your other error handlers
-app.use((err, req, res, next) => {
-  console.error("Auth Error:", {
-    name: err.name,
-    message: err.message,
-    stack: err.stack,
-  });
-  next(err);
-});
+
+
+
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

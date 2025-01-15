@@ -12,32 +12,88 @@
             padding: 20px;
         }
         .tracking-step {
-            padding-left: 50px;
-            position: relative;
+            display: flex;
             margin-bottom: 30px;
+            position: relative;
+            opacity: 0.5;
+            transition: all 0.3s ease;
+        }
+        .tracking-step.completed {
+            opacity: 1;
+        }
+        .tracking-step:not(:last-child)::after {
+            content: '';
+            position: absolute;
+            left: 24px;
+            top: 40px;
+            width: 2px;
+            height: calc(100% - 10px);
+            background-color: #dee2e6;
+            transition: background-color 0.3s ease;
+        }
+        .tracking-step.completed:not(:last-child)::after {
+            background-color: #28a745;
         }
         .step-icon {
-            position: absolute;
-            left: 0;
-            top: 0;
-            width: 30px;
-            height: 30px;
+            width: 50px;
+            height: 50px;
             border-radius: 50%;
             background: #f8f9fa;
             border: 2px solid #dee2e6;
             display: flex;
             align-items: center;
             justify-content: center;
+            margin-right: 20px;
+            position: relative;
+            z-index: 1;
+            color: #6c757d;
+            transition: all 0.3s ease;
         }
         .step-icon.completed {
             background: #28a745;
             border-color: #28a745;
             color: white;
+            transform: scale(1.05);
         }
         .step-content {
+            flex: 1;
             background: #f8f9fa;
             padding: 15px;
             border-radius: 8px;
+            position: relative;
+        }
+        .step-content::before {
+            content: '';
+            position: absolute;
+            left: -8px;
+            top: 20px;
+            width: 16px;
+            height: 16px;
+            background: #f8f9fa;
+            transform: rotate(45deg);
+        }
+        .step-content h6 {
+            margin: 0;
+            color: #333;
+            font-weight: 600;
+        }
+        .step-content small {
+            display: block;
+            margin-top: 5px;
+            color: #666;
+        }
+        .step-content p {
+            margin-top: 8px;
+            font-size: 0.9rem;
+        }
+        .request-details {
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .status-badge {
+            font-size: 0.9rem;
+            padding: 5px 12px;
         }
     </style>
 </head>
@@ -45,60 +101,86 @@
     <div class="container mt-4">
         <div class="row">
             <!-- Request Details -->
-            <div class="col-md-6">
-                <div class="card mb-4">
-                    <div class="card-header">
+            <div class="col-md-4">
+                <div class="request-details card mb-4">
+                    <div class="card-header bg-white">
                         <h5 class="mb-0">Request Details #<%= request._id.toString().slice(-6) %></h5>
                     </div>
                     <div class="card-body">
-                        <p><strong>Status:</strong> 
-                            <span class="badge <%= request.status === 'Pending' ? 'bg-warning' : request.status === 'Completed' ? 'bg-success' : 'bg-primary' %>">
+                        <p class="mb-3">
+                            <strong>Status:</strong> 
+                            <span class="badge status-badge <%= 
+                                request.status === 'Pending' ? 'bg-warning' : 
+                                request.status === 'Completed' ? 'bg-success' : 
+                                'bg-primary' %>">
                                 <%= request.status %>
                             </span>
                         </p>
-                        <p><strong>Waste Types:</strong> <%= request.wasteType.join(', ') %></p>
-                        <p><strong>Quantity:</strong> <%= request.quantity %></p>
-                        <p><strong>Pickup Address:</strong> <%= request.pickupAddress %></p>
-                        <p><strong>Agency:</strong> <%= request.agency.name %></p>
-                        <% if (request.volunteerName) { %>
-                            <p><strong>Assigned Volunteer:</strong> <%= request.volunteerName %></p>
+                        <p class="mb-2"><strong>Waste Types:</strong> <%= request.wasteType.join(', ') %></p>
+                        <p class="mb-2"><strong>Quantity:</strong> <%= request.quantity %></p>
+                        <p class="mb-2"><strong>Pickup Address:</strong> <%= request.pickupAddress %></p>
+                        <p class="mb-2"><strong>Agency:</strong> <%= request.agency.name %></p>
+                        <% if (request.volunteerAssigned) { %>
+                            <p class="mb-0"><strong>Assigned Volunteer:</strong> <%= request.volunteerAssigned.name %></p>
                         <% } %>
                     </div>
+                </div>
+                
+                <div class="text-center">
+                    <% if (currentUser) { %>
+                        <a href="/user/<%= currentUser._id %>/check-request" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Back to Requests
+                        </a>
+                    <% } else { %>
+                        <a href="/login" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Back to Login
+                        </a>
+                    <% } %>
                 </div>
             </div>
 
             <!-- Tracking Timeline -->
-            <div class="col-md-6">
+            <div class="col-md-8">
                 <div class="card">
-                    <div class="card-header">
+                    <div class="card-header bg-white">
                         <h5 class="mb-0">Tracking Timeline</h5>
                     </div>
                     <div class="card-body tracking-timeline">
                         <% const milestones = [
-                            { key: 'requestReceived', label: 'Request Received' },
-                            { key: 'agencyAccepted', label: 'Agency Accepted' },
-                            { key: 'pickupScheduled', label: 'Pickup Scheduled' },
-                            { key: 'pickupCompleted', label: 'Pickup Completed' },
-                            { key: 'wasteSegregated', label: 'Waste Segregated' },
-                            { key: 'processingStarted', label: 'Processing Started' },
-                            { key: 'processingCompleted', label: 'Processing Completed' },
-                            { key: 'certificateIssued', label: 'Certificate Issued' }
+                            { key: 'requestReceived', label: 'Request Received', icon: 'bi-file-earmark-check' },
+                            { key: 'agencyAccepted', label: 'Agency Accepted', icon: 'bi-building-check' },
+                            { key: 'volunteerAssigned', label: 'Volunteer Assigned', icon: 'bi-person-check' },
+                            { key: 'pickupScheduled', label: 'Pickup Scheduled', icon: 'bi-calendar-check' },
+                            { key: 'pickupStarted', label: 'Pickup Started', icon: 'bi-truck' },
+                            { key: 'pickupCompleted', label: 'Pickup Completed', icon: 'bi-box-seam' },
+                            { key: 'wasteSegregated', label: 'Waste Segregated', icon: 'bi-recycle' },
+                            { key: 'processingStarted', label: 'Processing Started', icon: 'bi-gear' },
+                            { key: 'processingCompleted', label: 'Processing Completed', icon: 'bi-check-circle' }
                         ]; %>
 
-                        <% milestones.forEach(milestone => { %>
-                            <div class="tracking-step">
-                                <div class="step-icon <%= request.trackingMilestones[milestone.key].completed ? 'completed' : '' %>">
-                                    <i class="bi <%= request.trackingMilestones[milestone.key].completed ? 'bi-check' : 'bi-circle' %>"></i>
+                        <% milestones.forEach((milestone, index) => { %>
+                            <div class="tracking-step <%= 
+                                request.trackingMilestones[milestone.key] && 
+                                request.trackingMilestones[milestone.key].completed ? 'completed' : '' %>">
+                                <div class="step-icon <%= 
+                                    request.trackingMilestones[milestone.key] && 
+                                    request.trackingMilestones[milestone.key].completed ? 'completed' : '' %>">
+                                    <i class="bi <%= milestone.icon %>"></i>
                                 </div>
                                 <div class="step-content">
                                     <h6><%= milestone.label %></h6>
-                                    <% if (request.trackingMilestones[milestone.key].completed) { %>
-                                        <small class="text-muted">
+                                    <% if (request.trackingMilestones[milestone.key] && 
+                                           request.trackingMilestones[milestone.key].completed) { %>
+                                        <small>
                                             <%= new Date(request.trackingMilestones[milestone.key].timestamp).toLocaleString() %>
                                         </small>
                                         <% if (request.trackingMilestones[milestone.key].notes) { %>
-                                            <p class="mb-0"><%= request.trackingMilestones[milestone.key].notes %></p>
+                                            <p class="text-muted mb-0">
+                                                <%= request.trackingMilestones[milestone.key].notes %>
+                                            </p>
                                         <% } %>
+                                    <% } else { %>
+                                        <small class="text-muted">Pending</small>
                                     <% } %>
                                 </div>
                             </div>
@@ -106,10 +188,6 @@
                     </div>
                 </div>
             </div>
-        </div>
-
-        <div class="mt-4">
-            <a href="/user/<%= currentUser._id %>/check-request" class="btn btn-secondary">Back to Requests</a>
         </div>
     </div>
 

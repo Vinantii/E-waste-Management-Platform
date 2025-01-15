@@ -99,6 +99,43 @@ const requestSchema = Joi.object({
   }).required(),
 }).unknown(true);
 
+// Volunteer validation schema
+const volunteerSchema = Joi.object({
+  name: Joi.string().required(),
+  email: Joi.string().email().required(),
+  password: Joi.string().min(6).required(),
+  phone: Joi.string()
+    .pattern(/^\d{10}$/)
+    .required()
+    .messages({
+      "string.pattern.base": "Phone number must be 10 digits",
+    }),
+  address: Joi.string().required(),
+  pickupArea: Joi.object({
+    city: Joi.string().required(),
+    district: Joi.string().required(),
+    pinCodes: Joi.alternatives().try(
+      Joi.array().items(
+        Joi.string()
+          .pattern(/^\d{6}$/)
+          .messages({
+            "string.pattern.base": "PIN code must be 6 digits",
+          })
+      ),
+      Joi.string().pattern(/^\d{6}(,\s*\d{6})*$/)
+    ).required(),
+    landmarks: Joi.alternatives().try(
+      Joi.array().items(Joi.string()),
+      Joi.string()
+    ).allow(''),
+    coordinates: Joi.object({
+      type: Joi.string().valid("Point").default("Point"),
+      coordinates: Joi.array().items(Joi.number()).length(2).required(),
+    }).required(),
+  }).required(),
+  status: Joi.string().valid("Active", "Inactive").default("Active"),
+}).unknown(true); // Allow file upload field
+
 // Validation middlewares
 const validateUser = (req, res, next) => {
   const { error } = userSchema.validate(req.body);
@@ -140,10 +177,21 @@ const validateRequest = (req, res, next) => {
   }
 };
 
+const validateVolunteer = (req, res, next) => {
+  const { error } = volunteerSchema.validate(req.body);
+  if (error) {
+    const msg = error.details.map((el) => el.message).join(",");
+    throw new ExpressError(msg, 400);
+  } else {
+    next();
+  }
+};
+
 module.exports = {
   validateUser,
   validateAgency,
   validateProfileCompletion,
   validateRequest,
+  validateVolunteer,
   requestSchema,
 };

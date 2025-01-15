@@ -17,6 +17,7 @@ const {
   validateAgency,
   validateProfileCompletion,
   validateRequest,
+  validateVolunteer
 } = require("./schema");
 const multer = require("multer");
 const cloudinary = require("./cloudConfig");
@@ -41,6 +42,14 @@ const isLoggedIn = (req, res, next) => {
 // Middleware to check if agency is logged in
 const isAgencyLoggedIn = (req, res, next) => {
   if (!req.isAuthenticated() || !req.user.isAgency) {
+    return res.redirect("/login");
+  }
+  next();
+};
+
+// Middleware to check if volunteer is logged in
+const isVolunteerLoggedIn = (req, res, next) => {
+  if (!req.isAuthenticated() || !req.user.isVolunteer) {
     return res.redirect("/login");
   }
   next();
@@ -108,24 +117,32 @@ passport.use(
 );
 
 // Serialize and Deserialize User
-passport.serializeUser((userOrAgency, done) => {
-  // Add a type field to distinguish between user and agency
+passport.serializeUser((userOrAgencyOrVolunteer, done) => {
+  let type = "user";
+  if (userOrAgencyOrVolunteer.isAgency) type = "agency";
+  if (userOrAgencyOrVolunteer.isVolunteer) type = "volunteer";
+  
   done(null, {
-    id: userOrAgency.id,
-    type: userOrAgency.isAgency ? "agency" : "user",
+    id: userOrAgencyOrVolunteer.id,
+    type: type
   });
 });
 
 passport.deserializeUser(async (obj, done) => {
   try {
-    let userOrAgency;
-    if (obj.type === "agency") {
-      userOrAgency = await Agency.findById(obj.id);
-    } else {
-      userOrAgency = await User.findById(obj.id);
+    let entity;
+    switch(obj.type) {
+      case "agency":
+        entity = await Agency.findById(obj.id);
+        break;
+      case "volunteer":
+        entity = await Volunteer.findById(obj.id);
+        break;
+      default:
+        entity = await User.findById(obj.id);
     }
-    done(null, userOrAgency);
-  } catch (err) {
+    done(null, entity);
+  } catch(err) {
     done(err, null);
   }
 });
@@ -325,7 +342,16 @@ passport.use(
           return done(null, agency);
         }
 
-        // If neither user nor agency found
+        // If neither user nor agency found, check for volunteer
+        const volunteer = await Volunteer.findOne({ email: email });
+        if (volunteer) {
+          if (!verifyPassword(password, volunteer.password)) {
+            return done(null, false, { message: "Incorrect password." });
+          }
+          return done(null, volunteer);
+        }
+
+        // If no match found
         return done(null, false, { message: "Incorrect email." });
       } catch(err) {
         return done(err);
@@ -349,9 +375,10 @@ app.post(
     failureMessage: true,
   }),
   (req, res) => {
-    // Check if the logged-in entity is an agency or user and redirect accordingly
     if (req.user.isAgency) {
       res.redirect(`/agency/${req.user._id}/dashboard`);
+    } else if (req.user.isVolunteer) {
+      res.redirect(`/volunteer/${req.user._id}/dashboard`);
     } else {
       res.redirect(`/user/${req.user._id}/dashboard`);
     }
@@ -564,28 +591,38 @@ app.get(
   isLoggedIn,
   wrapAsync(async (req, res) => {
     const request = await Request.findById(req.params.id)
-      .populate("agency", "name")
-      .populate("user", "name");
-    
+      .populate("agency")
+      .populate("user")
+      .populate("volunteerAssigned");
+
     if (!request) {
       throw new ExpressError("Request not found", 404);
     }
 
-    // Pass both request and currentUser to the view
-    res.render("user/track-request", { 
+    res.render("user/track-request.ejs", { 
       request,
-      currentUser: req.user 
+      currentUser: req.user
     });
   })
 );
 
-
-// TODO: User Reward Route
+// User Reward Route
 app.get(
   "/user/:id/reward",
   isLoggedIn,
   wrapAsync(async (req, res) => {
-    res.render("user/reward.ejs");
+    const user = await User.findById(req.params.id)
+      .populate('requests');
+    
+    // Calculate and update user's points
+    await user.calculatePoints();
+    
+    // Get top 5 users by points
+    const topUsers = await User.find()
+      .sort({ points: -1 })
+      .limit(5);
+    
+    res.render("user/reward.ejs", { user, topUsers });
   })
 );
 
@@ -629,20 +666,35 @@ app.get(
   })
 );
 
-// Accept request
+
+
+//Accept request
 app.post(
-  "/agency/request/:id/approve",
+  "/agency/requests/:id/approve",
   isAgencyLoggedIn,
   wrapAsync(async (req, res) => {
-    const request = await Request.findByIdAndUpdate(
-      req.params.id,
-      { status: "Approved" },
-      { new: true }
-    );
-    // Redirect back to the agency's requests page with their ID
-    res.redirect(`/agency/${req.user._id}/requests#approved`);
+    const request = await Request.findById(req.params.id);
+      
+    if (!request) {
+      throw new ExpressError("Request not found", 404);
+    }
+
+    request.status = "Accepted";
+    
+    // Important: Only update the specific milestone, not the entire trackingMilestones object
+    request.trackingMilestones.agencyAccepted = {
+      completed: true,
+      timestamp: new Date(),
+      notes: `Request accepted by ${req.user.name}`
+    };
+
+    await request.save();
+    res.redirect(`/agency/${req.user._id}/requests#Accepted`);
   })
 );
+
+
+
 
 // Reject request
 app.post(
@@ -683,44 +735,82 @@ app.post(
   isAgencyLoggedIn,
   wrapAsync(async (req, res) => {
     const volunteerId = req.body.volunteerId;
-    const requestId = req.params.id;
 
-    // Update request with volunteer
-    const request = await Request.findByIdAndUpdate(
-      requestId,
-      {
-        volunteerAssigned: volunteerId,
-        status: "In Progress",
-        "trackingMilestones.pickupScheduled.completed": true,
-        "trackingMilestones.pickupScheduled.timestamp": new Date()
-      },
-      { new: true }
-    );
+    const { id} = req.params;
+    
+    const request = await Request.findById(id);
+    const volunteer = await Volunteer.findById(volunteerId);
 
-    // Add request to volunteer's assigned requests
-    await Volunteer.findByIdAndUpdate(volunteerId, {
-      $addToSet: { assignedRequests: requestId }
-    });
 
-    res.redirect(`/agency/${req.user._id}/requests#inprogress`);
+
+    if (!request || !volunteer) {
+      throw new ExpressError("Request or Volunteer not found", 404);
+    }
+
+    request.volunteerAssigned = volunteerId;
+    request.volunteerName = volunteer.name;
+    request.status = "Assigned";
+
+    // Important: Only update the specific milestone
+    request.trackingMilestones.volunteerAssigned = {
+      completed: true,
+      timestamp: new Date(),
+      notes: `Volunteer ${volunteer.name} assigned to handle the request`
+    };
+
+    volunteer.assignedRequests.push(id);
+
+    await Promise.all([request.save(), volunteer.save()]);
+    res.redirect(`/agency/${req.user._id}/requests#Assigned`);
   })
 );
+
+
+
+
 
 // Update request status -> Picked Up or Completed on agency side after volunteer assigned
 app.post(
   "/agency/request/:id/update-status",
   isAgencyLoggedIn,
   wrapAsync(async (req, res) => {
-    const request = await Request.findByIdAndUpdate(
-      req.params.id,
-      { status: req.body.status },
-      { new: true }
-    );
-    res.redirect(`/agency/${req.user._id}/requests`);
+    const { id } = req.params;
+    const { milestone, notes } = req.body;
+
+    // Define allowed milestones for agency
+    const allowedAgencyMilestones = ['wasteSegregated', 'processingStarted', 'processingCompleted'];
+
+    if (!allowedAgencyMilestones.includes(milestone)) {
+      throw new ExpressError("Invalid milestone for agency", 400);
+    }
+
+    const request = await Request.findById(id);
+    
+    if (!request) {
+      throw new ExpressError("Request not found", 404);
+    }
+
+    // Set the milestone status
+    if (request.trackingMilestones && request.trackingMilestones[milestone]) {
+      request.trackingMilestones[milestone] = {
+        completed: true,
+        timestamp: new Date(),
+        notes: notes || ''
+      };
+      
+      if(request.trackingMilestones["processingCompleted"].completed){
+        request.status = "Completed";
+      }
+
+ 
+
+      await request.save();
+      res.redirect(`/agency/${req.user._id}/requests#Assigned`);
+    } else {
+      throw new ExpressError("Invalid milestone", 400);
+    }
   })
 );
-
-
 
 // TODO: volunteer routes
 // Volunteer Management Routes ->  Agency volunteer page
@@ -739,22 +829,46 @@ app.post(
   "/agency/volunteers",
   isAgencyLoggedIn,
   upload.single("profilePic"),
-  wrapAsync(async (req, res) => {
-    const volunteer = new Volunteer({
-      ...req.body,
-      agency: req.user._id
-    });
-
-    if (req.file) {
-      const result = await cloudinary.uploader.upload(req.file.path);
-      volunteer.profilePic = {
-        url: result.secure_url,
-        filename: result.public_id
-      };
+  (req, res, next) => {
+    // Pre-process the PIN codes before validation
+    if (req.body.pickupArea && req.body.pickupArea.pinCodes) {
+      // Convert comma-separated string to array
+      req.body.pickupArea.pinCodes = req.body.pickupArea.pinCodes
+        .split(',')
+        .map(pin => pin.trim());
     }
+    if (req.body.pickupArea && req.body.pickupArea.landmarks) {
+      // Convert comma-separated string to array if not empty
+      req.body.pickupArea.landmarks = req.body.pickupArea.landmarks
+        ? req.body.pickupArea.landmarks.split(',').map(landmark => landmark.trim())
+        : [];
+    }
+    next();
+  },
+  validateVolunteer,
+  wrapAsync(async (req, res) => {
+    try {
+      const hashedPassword = hashPassword(req.body.password);
 
-    await volunteer.save();
-    res.redirect(`/agency/${req.user._id}/volunteers`);
+      const volunteer = new Volunteer({
+        ...req.body,
+        password: hashedPassword,
+        agency: req.user._id
+      });
+
+      if (req.file) {
+        const result = await cloudinary.uploader.upload(req.file.path);
+        volunteer.profilePic = {
+          url: result.secure_url,
+          filename: result.public_id
+        };
+      }
+
+      await volunteer.save();
+      res.redirect(`/agency/${req.user._id}/volunteers`);
+    } catch (error) {
+      throw new ExpressError(error.message, 400);
+    }
   })
 );
 
@@ -779,6 +893,86 @@ app.delete(
     res.sendStatus(200);
   })
 );
+
+// Volunteer Dashboard Route
+app.get(
+  "/volunteer/:id/dashboard",
+  isVolunteerLoggedIn,
+  wrapAsync(async (req, res) => {
+    const volunteer = await Volunteer.findById(req.params.id)
+      .populate({
+        path: 'assignedRequests',
+        populate: {
+          path: 'user',
+          select: 'name email'
+        }
+      });
+    
+    if (!volunteer) {
+      throw new ExpressError("Volunteer not found", 404);
+    }
+
+    res.render("volunteer/dashboard.ejs", { volunteer });
+  })
+);
+
+// Add this route for volunteer status updates
+app.post(
+  "/volunteer/request/:id/update-status",
+  isVolunteerLoggedIn,
+  wrapAsync(async (req, res) => {
+    const { id } = req.params;
+    const { milestone, notes } = req.body;
+
+    // Define allowed milestones for volunteers
+    const allowedVolunteerMilestones = ['pickupScheduled', 'pickupStarted', 'pickupCompleted'];
+
+    // Check if milestone is allowed for volunteers
+    if (!allowedVolunteerMilestones.includes(milestone)) {
+      throw new ExpressError("Unauthorized: Volunteers can only update pickup-related statuses", 403);
+    }
+
+    const request = await Request.findById(id);
+    
+    if (!request) {
+      throw new ExpressError("Request not found", 404);
+    }
+
+    // Verify this volunteer is assigned to this request
+    if (request.volunteerAssigned.toString() !== req.user._id.toString()) {
+      throw new ExpressError("Unauthorized", 403);
+    }
+
+    // Set the milestone status
+    if (request.trackingMilestones && request.trackingMilestones[milestone]) {
+      request.trackingMilestones[milestone] = {
+        completed: true,
+        timestamp: new Date(),
+        notes: notes || ''
+      };
+
+
+      if(request.trackingMilestones["pickupCompleted"].completed){
+        request.status = "Processing";
+      }
+
+ 
+
+      try {
+        await request.save();
+        res.redirect(`/volunteer/${req.user._id}/dashboard`);
+      } catch (error) {
+        console.error('Save Error:', error);
+        throw new ExpressError("Error updating request status", 500);
+      }
+    } else {
+      throw new ExpressError("Invalid milestone", 400);
+    }
+  })
+);
+
+
+
 
 
 // TODO: Error Handling
@@ -822,10 +1016,6 @@ app.use((err, req, res, next) => {
     },
   });
 });
-
-
-
-
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

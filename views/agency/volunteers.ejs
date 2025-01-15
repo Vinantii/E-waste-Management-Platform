@@ -146,6 +146,17 @@
                                 <label class="form-label">Profile Picture</label>
                                 <input type="file" class="form-control" name="profilePic" accept="image/*">
                             </div>
+
+                            <div class="mb-3">
+                                <label class="form-label">Password</label>
+                                <input type="password" 
+                                       class="form-control" 
+                                       name="password" 
+                                       required 
+                                       minlength="6"
+                                       placeholder="Set password for volunteer login">
+                                <small class="text-muted">Minimum 6 characters</small>
+                            </div>
                         </div>
                         <div class="modal-footer">
                             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>

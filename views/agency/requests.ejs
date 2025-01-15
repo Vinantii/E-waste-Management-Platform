@@ -55,12 +55,12 @@
             class="nav-link"
             id="approved-tab"
             data-bs-toggle="tab"
-            data-bs-target="#approved"
+            data-bs-target="#Accepted"
             type="button"
           >
-            Approved
+          Accepted
             <span class="badge bg-success"
-              ><%= requests.filter(r => r.status === 'Approved').length %></span
+              ><%= requests.filter(r => r.status === 'Accepted').length %></span
             >
           </button>
         </li>
@@ -69,12 +69,12 @@
             class="nav-link"
             id="inprogress-tab"
             data-bs-toggle="tab"
-            data-bs-target="#inprogress"
+            data-bs-target="#Assigned"
             type="button"
           >
-            In Progress
+          Assigned
             <span class="badge bg-warning"
-              ><%= requests.filter(r => r.status === 'In Progress').length
+              ><%= requests.filter(r => r.status === 'Processing' || r.status === 'Assigned').length
               %></span
             >
           </button>
@@ -102,11 +102,13 @@
                 </p>
                 <div class="d-flex gap-2">
                   <form
-                    action="/agency/request/<%= request._id %>/approve"
+                    action="/agency/requests/<%= request._id %>/approve"
                     method="POST"
                     class="d-inline"
                   >
-                    <button type="submit" class="btn btn-success">Accept</button>
+                    <button type="submit" class="btn btn-success btn-sm">
+                      <i class="bi bi-check-circle"></i> Accept
+                    </button>
                   </form>
                   <form
                     action="/agency/request/<%= request._id %>/reject"
@@ -122,12 +124,12 @@
         </div>
 
         <!-- Approved Requests Tab -->
-        <div class="tab-pane fade" id="approved" role="tabpanel">
-          <% const approvedRequests = requests.filter(request => request.status === 'Approved'); %>
+        <div class="tab-pane fade" id="Accepted" role="tabpanel">
+          <% const approvedRequests = requests.filter(request => request.status === 'Accepted'); %>
           <% approvedRequests.forEach(function(request) { %>
             <div class="card request-card">
               <div class="card-body">
-                <span class="badge bg-success status-badge">Approved</span>
+                <span class="badge bg-success status-badge">Accepted</span>
                 <h5 class="card-title">
                   Request #<%= request._id.toString().slice(-6) %>
                 </h5>
@@ -162,8 +164,8 @@
         </div>
 
         <!-- In Progress Requests Tab -->
-        <div class="tab-pane fade" id="inprogress" role="tabpanel">
-          <% const inProgressRequests = requests.filter(request => request.status === 'In Progress'); %>
+        <div class="tab-pane fade" id="Assigned" role="tabpanel">
+          <% const inProgressRequests = requests.filter(request => request.status === 'Processing' || request.status === 'Assigned'); %>
           <% inProgressRequests.forEach(function(request) { %>
             <div class="card request-card">
               <div class="card-body">
@@ -181,16 +183,31 @@
                 <form
                   action="/agency/request/<%= request._id %>/update-status"
                   method="POST"
+                  class="mt-3"
                 >
-                  <div class="input-group">
-                    <select class="form-select" name="status" required>
-                      <option value="Picked Up">Picked Up</option>
-                      <option value="Completed">Completed</option>
+                  <div class="mb-3">
+                    <label class="form-label">Update Status</label>
+                    <select class="form-select" name="milestone" required>
+                      <option value="">Select milestone to update</option>
+                      <% if (request.trackingMilestones.pickupCompleted.completed && 
+                             !request.trackingMilestones.wasteSegregated.completed) { %>
+                        <option value="wasteSegregated">Mark Waste Segregated</option>
+                      <% } else if (request.trackingMilestones.wasteSegregated.completed && 
+                                    !request.trackingMilestones.processingStarted.completed) { %>
+                        <option value="processingStarted">Start Processing</option>
+                      <% } else if (request.trackingMilestones.processingStarted.completed && 
+                                    !request.trackingMilestones.processingCompleted.completed) { %>
+                        <option value="processingCompleted">Complete Processing</option>
+                      <% } %>
                     </select>
-                    <button type="submit" class="btn btn-primary">
-                      Update Status
-                    </button>
                   </div>
+                  <div class="mb-3">
+                    <label class="form-label">Notes (optional)</label>
+                    <textarea class="form-control" name="notes" rows="2" placeholder="Add any relevant notes"></textarea>
+                  </div>
+                  <button type="submit" class="btn btn-primary">
+                    Update Status
+                  </button>
                 </form>
               </div>
             </div>

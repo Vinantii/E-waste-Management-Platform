@@ -2,7 +2,7 @@
 
 A web-based platform connecting users with certified e-waste collection agencies to facilitate responsible electronic waste disposal and promote environmental sustainability.
 
-## 🕒 Latest Updates (January 12, 2025)
+## 🕒 Latest Updates (January, 2025)
 
 ### New Features Added
 
@@ -23,19 +23,51 @@ A web-based platform connecting users with certified e-waste collection agencies
   - Real-time status updates with timestamps
   - Tracking milestones for request progress
 - **Request Status Flow**
-  - Pending → Approved → In Progress → Picked Up → Completed
-  - Automatic milestone tracking
-  - Status history with timestamps
+  - New Status Flow:
+    - Pending → Accepted → Assigned → Processing → Completed
+    - Request can be Rejected at initial stage
+  - Clear role separation between Agency and Volunteer actions
+- **Milestone Tracking System**
+  - Volunteer Milestones:
+    - Schedule Pickup
+    - Start Pickup
+    - Complete Pickup
+  - Agency Milestones:
+    - Waste Segregation
+    - Start Processing
+    - Complete Processing
+  - Each milestone includes:
+    - Completion status
+    - Timestamp
+    - Optional notes
 
 #### Agency Dashboard Improvements
 - **Request Organization**
-  - Separate tabs for New, Approved, and In Progress requests
-  - Volunteer assignment interface
-  - Status update controls
-- **Volunteer Management Interface**
-  - List all agency volunteers
-  - Toggle volunteer status
-  - Track volunteer assignments
+  - New Requests (Pending)
+  - Accepted Requests (Ready for volunteer assignment)
+  - Assigned/Processing Requests (In progress with volunteer)
+- **Status Management**
+  - Accept/Reject new requests
+  - Assign volunteers to accepted requests
+  - Track processing status after pickup
+- **Milestone Updates**
+  - Agency-specific milestone controls
+  - Processing stage management
+  - Completion verification
+
+#### Volunteer Dashboard Enhancements
+- **Request Management**
+  - View assigned requests
+  - Update pickup-related milestones
+  - Add notes for each status update
+- **Status Controls**
+  - Schedule pickup dates
+  - Mark pickup started
+  - Confirm pickup completion
+- **Clear Progress Tracking**
+  - Visual status indicators
+  - Timestamp for each action
+  - Historical record of completed pickups
 
 ## 🌟 Features
 
@@ -107,32 +139,13 @@ A web-based platform connecting users with certified e-waste collection agencies
 ## 🔐 Environment Variables Required
 
 env
-MONGO_URL=your_mongodb_url
-GOOGLE_CLIENT_ID=your_google_client_id
-GOOGLE_CLIENT_SECRET=your_google_client_secret
-CLOUD_NAME=your_cloudinary_cloud_name
-CLOUD_API_KEY=your_cloudinary_api_key
-CLOUD_API_SECRET=your_cloudinary_api_secret
+1.MONGO_URL=your_mongodb_url
+2.GOOGLE_CLIENT_ID=your_google_client_id
+3.GOOGLE_CLIENT_SECRET=your_google_client_secret
+4.CLOUD_NAME=your_cloudinary_cloud_name
+5.CLOUD_API_KEY=your_cloudinary_api_key
+6.CLOUD_API_SECRET=your_cloudinary_api_secret
 
-## 📁 Project Structure
-
-├── models/
-│ ├── user.js # User model
-│ ├── agency.js # Agency model
-│ └── request.js # Request model
-├── views/
-│ ├── user/ # User-related views
-│ ├── agency/ # Agency-related views
-│ └── error.ejs # Error handling view
-├── public/
-│ └── js/
-│ └── script.js # Client-side validation
-├── utils/
-│ ├── ExpressError.js # Error utility
-│ └── wrapAsync.js # Async wrapper
-├── app.js # Main application file
-├── cloudConfig.js # Cloudinary configuration
-└── schema.js # Joi validation schemas
 
 ## 🔄 Authentication Flows
 
@@ -174,19 +187,14 @@ CLOUD_API_SECRET=your_cloudinary_api_secret
 - [ ] Analytics dashboard
 - [ ] Payment integration
 
-## 🤝 Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
-
-## 📝 License
-
-This project is licensed under the MIT License.
 
 ## 👥 Team
 
 - [Team VASK](https://github.com/akshay81k/Technothon)
 - [Akshay Kokate](https://github.com/akshay81k)
-- [Vinanti Mhatre](https://github.com/vinanti)
+- [Vinanti Mhatre](https://github.com/Vinantii)
+- [Kartikey Patil](https://github.com/kart1k3y)
+- [Soham Patil](https://github.com/soham18-20)
 
 ---
 

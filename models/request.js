@@ -47,71 +47,64 @@ const requestSchema = new mongoose.Schema(
       type: String,
       enum: [
         "Pending",
-        "Approved",
-        "In Progress",
-        "Picked Up",
-        "Completed",
+        "Accepted",
         "Rejected",
+        "Assigned",
+        "Processing",
+        "Completed",
       ],
       default: "Pending",
     },
     rejectedAt: {
       type: Date,
     },
-    // New tracking milestones
+    // Simplify the trackingMilestones structure
     trackingMilestones: {
       requestReceived: {
         completed: { type: Boolean, default: true },
         timestamp: { type: Date, default: Date.now },
-        notes: String,
+        notes: { type: String, default: 'Request received successfully' }
       },
       agencyAccepted: {
         completed: { type: Boolean, default: false },
         timestamp: Date,
-        notes: String,
+        notes: String
+      },
+      volunteerAssigned: {
+        completed: { type: Boolean, default: false },
+        timestamp: Date,
+        notes: String
       },
       pickupScheduled: {
         completed: { type: Boolean, default: false },
         timestamp: Date,
-        estimatedPickupTime: Date,
-        notes: String,
+        notes: String
+      },
+      pickupStarted: {
+        completed: { type: Boolean, default: false },
+        timestamp: Date,
+        notes: String
       },
       pickupCompleted: {
         completed: { type: Boolean, default: false },
         timestamp: Date,
-        actualPickupTime: Date,
-        collectedQuantity: Number,
-        notes: String,
+        notes: String
       },
       wasteSegregated: {
         completed: { type: Boolean, default: false },
         timestamp: Date,
-        segregationDetails: {
-          reusable: Number,
-          recyclable: Number,
-          disposable: Number,
-        },
-        notes: String,
+        notes: String
       },
       processingStarted: {
         completed: { type: Boolean, default: false },
         timestamp: Date,
-        processingMethod: String,
-        notes: String,
+        notes: String
       },
       processingCompleted: {
         completed: { type: Boolean, default: false },
         timestamp: Date,
-        disposalMethod: String,
-        recyclingPercentage: Number,
-        notes: String,
-      },
-      certificateIssued: {
-        completed: { type: Boolean, default: false },
-        timestamp: Date,
-        certificateNumber: String,
-        notes: String,
-      },
+        notes: String
+      }
     },
     contactNumber: {
       type: String,
@@ -151,60 +144,6 @@ const requestSchema = new mongoose.Schema(
     timestamps: true, // This will automatically update the updatedAt timestamp
   }
 );
-
-// Middleware to update status based on tracking milestones
-requestSchema.pre("save", function (next) {
-  if (this.status === "Rejected") {
-    // Don't modify status if it's rejected
-    next();
-    return;
-  }
-
-  if (this.trackingMilestones.certificateIssued.completed) {
-    this.status = "Completed";
-  } else if (this.trackingMilestones.agencyAccepted.completed) {
-    this.status = "In Progress";
-  }
-  next();
-});
-
-// Method to update a milestone
-requestSchema.methods.updateMilestone = async function (milestoneName, data) {
-  if (!this.trackingMilestones[milestoneName]) {
-    throw new Error("Invalid milestone name");
-  }
-
-  this.trackingMilestones[milestoneName] = {
-    ...this.trackingMilestones[milestoneName],
-    ...data,
-    completed: true,
-    timestamp: new Date(),
-  };
-
-  await this.save();
-  return this;
-};
-
-// Method to get current milestone
-requestSchema.methods.getCurrentMilestone = function () {
-  const milestones = [
-    "requestReceived",
-    "agencyAccepted",
-    "pickupScheduled",
-    "pickupCompleted",
-    "wasteSegregated",
-    "processingStarted",
-    "processingCompleted",
-    "certificateIssued",
-  ];
-
-  for (let i = milestones.length - 1; i >= 0; i--) {
-    if (this.trackingMilestones[milestones[i]].completed) {
-      return milestones[i];
-    }
-  }
-  return "requestReceived";
-};
 
 // Add middleware to update User and Agency models when a request is created
 requestSchema.post("save", async function (doc) {

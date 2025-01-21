@@ -1,31 +1,35 @@
 require("dotenv").config();
 
 const express = require("express");
-const ejs = require("ejs");
 const session = require("express-session");
 const passport = require("passport");
 const LocalStrategy = require("passport-local");
 const mongoose = require("mongoose");
 const path = require("path");
 const methodOverride = require("method-override");
+
 const User = require("./models/user");
 const Agency = require("./models/agency");
+const Request = require("./models/request"); // Adjust path as needed
+const Volunteer = require("./models/volunteer");
+const Community = require("./models/community");
+const Story = require("./models/story");
+
 const app = express();
 const crypto = require("crypto");
+
 const {
   validateUser,
   validateAgency,
   validateProfileCompletion,
   validateRequest,
-  validateVolunteer
+  validateVolunteer,
 } = require("./schema");
+
 const multer = require("multer");
 const cloudinary = require("./cloudConfig");
 const upload = multer({ dest: "uploads/" });
-const Request = require("./models/request"); // Adjust path as needed
-const passportLocalMongoose = require("passport-local-mongoose");
 const GoogleStrategy = require("passport-google-oauth20");
-const Volunteer = require("./models/volunteer");
 
 // Utilities
 const wrapAsync = require("./utils/wrapAsync");
@@ -121,17 +125,17 @@ passport.serializeUser((userOrAgencyOrVolunteer, done) => {
   let type = "user";
   if (userOrAgencyOrVolunteer.isAgency) type = "agency";
   if (userOrAgencyOrVolunteer.isVolunteer) type = "volunteer";
-  
+
   done(null, {
     id: userOrAgencyOrVolunteer.id,
-    type: type
+    type: type,
   });
 });
 
 passport.deserializeUser(async (obj, done) => {
   try {
     let entity;
-    switch(obj.type) {
+    switch (obj.type) {
       case "agency":
         entity = await Agency.findById(obj.id);
         break;
@@ -142,7 +146,7 @@ passport.deserializeUser(async (obj, done) => {
         entity = await User.findById(obj.id);
     }
     done(null, entity);
-  } catch(err) {
+  } catch (err) {
     done(err, null);
   }
 });
@@ -319,10 +323,10 @@ app.post(
 passport.use(
   new LocalStrategy(
     {
-      usernameField: 'email',
-      passwordField: 'password'
+      usernameField: "email",
+      passwordField: "password",
     },
-    async function(email, password, done) {
+    async function (email, password, done) {
       try {
         // First check for user
         const user = await User.findOne({ email: email });
@@ -353,7 +357,7 @@ passport.use(
 
         // If no match found
         return done(null, false, { message: "Incorrect email." });
-      } catch(err) {
+      } catch (err) {
         return done(err);
       }
     }
@@ -568,20 +572,22 @@ app.get(
   "/user/:id/check-request",
   isLoggedIn,
   wrapAsync(async (req, res) => {
-    const user = await User.findById(req.params.id)
-      .populate({
-        path: "requests",
-        populate: {
-          path: "agency",
-          select: "name"
-        }
-      });
-    
+    const user = await User.findById(req.params.id).populate({
+      path: "requests",
+      populate: {
+        path: "agency",
+        select: "name",
+      },
+    });
+
     if (!user) {
       throw new ExpressError("User not found", 404);
     }
 
-    res.render("user/check-request", { requests: user.requests, currentUser: req.user });
+    res.render("user/check-request", {
+      requests: user.requests,
+      currentUser: req.user,
+    });
   })
 );
 
@@ -599,32 +605,107 @@ app.get(
       throw new ExpressError("Request not found", 404);
     }
 
-    res.render("user/track-request.ejs", { 
+    res.render("user/track-request.ejs", {
       request,
-      currentUser: req.user
+      currentUser: req.user,
     });
   })
 );
 
-// User Reward Route
+// TODO:User Reward Route
 app.get(
   "/user/:id/reward",
   isLoggedIn,
   wrapAsync(async (req, res) => {
-    const user = await User.findById(req.params.id)
-      .populate('requests');
-    
+    const user = await User.findById(req.params.id).populate("requests");
+
     // Calculate and update user's points
     await user.calculatePoints();
-    
+
     // Get top 5 users by points
-    const topUsers = await User.find()
-      .sort({ points: -1 })
-      .limit(5);
-    
+    const topUsers = await User.find().sort({ points: -1 }).limit(5);
+
     res.render("user/reward.ejs", { user, topUsers });
   })
 );
+
+// TODO: User side Community Route
+app.get(
+  "/user/:id/community",
+  isLoggedIn,
+  wrapAsync(async (req, res) => {
+    const user = await User.findById(req.params.id);
+    const allCommunity = await Community.find();
+    const allStories = await Story.find();
+    res.render("user/community.ejs", { user, allCommunity, allStories });
+  })
+);
+
+// Add community event button
+app.get(
+  "/user/:id/community/add",
+  isLoggedIn,
+  wrapAsync(async (req, res) => {
+    const user = await User.findById(req.params.id);
+    res.render("user/add-community.ejs", { user });
+  })
+);
+
+app.post(
+  "/user/:id/community/add",
+  isLoggedIn,
+  wrapAsync(async (req, res) => {
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    // Create new community with nested organizer structure
+    const newCommunity = new Community({
+      ...req.body.community,
+      organizer: {
+        user: req.params.id, // Set the user ID in the nested structure
+        agency: null, // Set to null or the agency ID if available
+      },
+    });
+    // Save the new community
+    await newCommunity.save();
+    res.redirect(`/user/${user._id}/community`);
+  })
+);
+
+// Add story button
+app.get(
+  "/user/:id/story/add",
+  isLoggedIn,
+  wrapAsync(async (req, res) => {
+    const user = await User.findById(req.params.id);
+    res.render("user/add-story.ejs", { user });
+  })
+);
+
+app.post(
+  "/user/:id/story/add",
+  isLoggedIn,
+  wrapAsync(async (req, res) => {
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    
+    const newStory = new Story({
+      ...req.body.story,
+      author: {
+        user: req.params.id, // Set the user ID in the nested structure
+        agency: null, // Set to null or the agency ID if available
+      },
+    });
+    // Save the new community
+    await newStory.save();
+    res.redirect(`/user/${user._id}/community`);
+  })
+);
+
+
 
 // TODO: Agency Dashboard Route
 app.get(
@@ -657,16 +738,14 @@ app.get(
       .sort({ createdAt: -1 });
 
     // Fetch active volunteers for the agency
-    const volunteers = await Volunteer.find({ 
+    const volunteers = await Volunteer.find({
       agency: req.params.id,
-      status: "Active"
+      status: "Active",
     });
 
     res.render("agency/requests.ejs", { requests, volunteers });
   })
 );
-
-
 
 //Accept request
 app.post(
@@ -674,18 +753,18 @@ app.post(
   isAgencyLoggedIn,
   wrapAsync(async (req, res) => {
     const request = await Request.findById(req.params.id);
-      
+
     if (!request) {
       throw new ExpressError("Request not found", 404);
     }
 
     request.status = "Accepted";
-    
+
     // Important: Only update the specific milestone, not the entire trackingMilestones object
     request.trackingMilestones.agencyAccepted = {
       completed: true,
       timestamp: new Date(),
-      notes: `Request accepted by ${req.user.name}`
+      notes: `Request accepted by ${req.user.name}`,
     };
 
     await request.save();
@@ -693,16 +772,13 @@ app.post(
   })
 );
 
-
-
-
 // Reject request
 app.post(
   "/agency/request/:id/reject",
   isAgencyLoggedIn,
   wrapAsync(async (req, res) => {
     const requestId = req.params.id;
-    
+
     // Find the request to get user ID before deletion
     const request = await Request.findById(requestId);
     if (!request) {
@@ -711,37 +787,33 @@ app.post(
 
     // Update user's requests array - remove the request ID
     await User.findByIdAndUpdate(request.user, {
-      $pull: { requests: requestId }
+      $pull: { requests: requestId },
     });
 
     // Update agency's requests array - remove the request ID
     await Agency.findByIdAndUpdate(req.user._id, {
-      $pull: { requests: requestId }
+      $pull: { requests: requestId },
     });
 
     // Update request status to Rejected (don't delete it so user can see the status)
     await Request.findByIdAndUpdate(requestId, {
       status: "Rejected",
-      rejectedAt: new Date()
+      rejectedAt: new Date(),
     });
 
     res.redirect(`/agency/${req.user._id}/requests`);
   })
 );
 
-// Approve Request -> Change the request status from approved to in progress
+// Approve Request -> Change the request status from approved to in progress = Assigning Volunteer
 app.post(
   "/agency/request/:id/assign-volunteer",
   isAgencyLoggedIn,
   wrapAsync(async (req, res) => {
     const volunteerId = req.body.volunteerId;
-
-    const { id} = req.params;
-    
+    const { id } = req.params;
     const request = await Request.findById(id);
     const volunteer = await Volunteer.findById(volunteerId);
-
-
 
     if (!request || !volunteer) {
       throw new ExpressError("Request or Volunteer not found", 404);
@@ -755,7 +827,7 @@ app.post(
     request.trackingMilestones.volunteerAssigned = {
       completed: true,
       timestamp: new Date(),
-      notes: `Volunteer ${volunteer.name} assigned to handle the request`
+      notes: `Volunteer ${volunteer.name} assigned to handle the request`,
     };
 
     volunteer.assignedRequests.push(id);
@@ -764,10 +836,6 @@ app.post(
     res.redirect(`/agency/${req.user._id}/requests#Assigned`);
   })
 );
-
-
-
-
 
 // Update request status -> Picked Up or Completed on agency side after volunteer assigned
 app.post(
@@ -778,14 +846,18 @@ app.post(
     const { milestone, notes } = req.body;
 
     // Define allowed milestones for agency
-    const allowedAgencyMilestones = ['wasteSegregated', 'processingStarted', 'processingCompleted'];
+    const allowedAgencyMilestones = [
+      "wasteSegregated",
+      "processingStarted",
+      "processingCompleted",
+    ];
 
     if (!allowedAgencyMilestones.includes(milestone)) {
       throw new ExpressError("Invalid milestone for agency", 400);
     }
 
     const request = await Request.findById(id);
-    
+
     if (!request) {
       throw new ExpressError("Request not found", 404);
     }
@@ -795,14 +867,12 @@ app.post(
       request.trackingMilestones[milestone] = {
         completed: true,
         timestamp: new Date(),
-        notes: notes || ''
+        notes: notes || "",
       };
-      
-      if(request.trackingMilestones["processingCompleted"].completed){
+
+      if (request.trackingMilestones["processingCompleted"].completed) {
         request.status = "Completed";
       }
-
- 
 
       await request.save();
       res.redirect(`/agency/${req.user._id}/requests#Assigned`);
@@ -812,14 +882,94 @@ app.post(
   })
 );
 
+
+// TODO: Agency Community Page
+
+app.get(
+  "/agency/:id/community",
+  isLoggedIn,
+  wrapAsync(async (req, res) => {
+    const agency = await Agency.findById(req.params.id);
+    const allCommunity = await Community.find();
+    const allStories = await Story.find();
+    res.render("agency/community.ejs", { agency, allCommunity, allStories });
+  })
+);
+
+// Add community event button
+app.get(
+  "/agency/:id/community/add",
+  isLoggedIn,
+  wrapAsync(async (req, res) => {
+    const agency = await Agency.findById(req.params.id);
+    res.render("agency/add-community.ejs", { agency });
+  })
+);
+
+app.post(
+  "/agency/:id/community/add",
+  isLoggedIn,
+  wrapAsync(async (req, res) => {
+    const agency = await Agency.findById(req.params.id);
+    if (!agency) {
+      return res.status(404).json({ error: "Agency not found" });
+    }
+    // Create new community with nested organizer structure
+    const newCommunity = new Community({
+      ...req.body.community,
+      organizer: {
+        user: null, // Set the user ID in the nested structure
+        agency: req.params.id, // Set to null or the agency ID if available
+      },
+    });
+    // Save the new community
+    await newCommunity.save();
+    res.redirect(`/agency/${agency._id}/community`);
+  })
+);
+
+// Add story button
+app.get(
+  "/agency/:id/story/add",
+  isLoggedIn,
+  wrapAsync(async (req, res) => {
+    const agency = await Agency.findById(req.params.id);
+    res.render("agency/add-story.ejs", { agency });
+  })
+);
+
+app.post(
+  "/agency/:id/story/add",
+  isLoggedIn,
+  wrapAsync(async (req, res) => {
+    const agency = await Agency.findById(req.params.id);
+    if (!agency) {
+      return res.status(404).json({ error: "agency not found" });
+    }
+    
+    const newStory = new Story({
+      ...req.body.story,
+      author: {
+        user: null, // Set the user ID in the nested structure
+        agency: req.params.id, // Set to null or the agency ID if available
+      },
+    });
+    // Save the new community
+    await newStory.save();
+    res.redirect(`/agency/${agency._id}/community`);
+  })
+);
+
+
 // TODO: volunteer routes
 // Volunteer Management Routes ->  Agency volunteer page
 app.get(
   "/agency/:id/volunteers",
   isAgencyLoggedIn,
   wrapAsync(async (req, res) => {
-    const volunteers = await Volunteer.find({ agency: req.user._id })
-      .populate("assignedRequests");
+    const volunteers = await Volunteer.find({ agency: req.user._id }).populate(
+      "assignedRequests"
+    );
     res.render("agency/volunteers", { volunteers });
   })
 );
@@ -834,13 +984,15 @@ app.post(
     if (req.body.pickupArea && req.body.pickupArea.pinCodes) {
       // Convert comma-separated string to array
       req.body.pickupArea.pinCodes = req.body.pickupArea.pinCodes
-        .split(',')
-        .map(pin => pin.trim());
+        .split(",")
+        .map((pin) => pin.trim());
     }
     if (req.body.pickupArea && req.body.pickupArea.landmarks) {
       // Convert comma-separated string to array if not empty
       req.body.pickupArea.landmarks = req.body.pickupArea.landmarks
-        ? req.body.pickupArea.landmarks.split(',').map(landmark => landmark.trim())
+        ? req.body.pickupArea.landmarks
+            .split(",")
+            .map((landmark) => landmark.trim())
         : [];
     }
     next();
@@ -853,14 +1005,14 @@ app.post(
       const volunteer = new Volunteer({
         ...req.body,
         password: hashedPassword,
-        agency: req.user._id
+        agency: req.user._id,
       });
 
       if (req.file) {
         const result = await cloudinary.uploader.upload(req.file.path);
         volunteer.profilePic = {
           url: result.secure_url,
-          filename: result.public_id
+          filename: result.public_id,
         };
       }
 
@@ -878,7 +1030,7 @@ app.post(
   isAgencyLoggedIn,
   wrapAsync(async (req, res) => {
     await Volunteer.findByIdAndUpdate(req.params.id, {
-      status: req.body.status
+      status: req.body.status,
     });
     res.sendStatus(200);
   })
@@ -894,20 +1046,21 @@ app.delete(
   })
 );
 
+
+
 // Volunteer Dashboard Route
 app.get(
   "/volunteer/:id/dashboard",
   isVolunteerLoggedIn,
   wrapAsync(async (req, res) => {
-    const volunteer = await Volunteer.findById(req.params.id)
-      .populate({
-        path: 'assignedRequests',
-        populate: {
-          path: 'user',
-          select: 'name email'
-        }
-      });
-    
+    const volunteer = await Volunteer.findById(req.params.id).populate({
+      path: "assignedRequests",
+      populate: {
+        path: "user",
+        select: "name email",
+      },
+    });
+
     if (!volunteer) {
       throw new ExpressError("Volunteer not found", 404);
     }
@@ -925,15 +1078,22 @@ app.post(
     const { milestone, notes } = req.body;
 
     // Define allowed milestones for volunteers
-    const allowedVolunteerMilestones = ['pickupScheduled', 'pickupStarted', 'pickupCompleted'];
+    const allowedVolunteerMilestones = [
+      "pickupScheduled",
+      "pickupStarted",
+      "pickupCompleted",
+    ];
 
     // Check if milestone is allowed for volunteers
     if (!allowedVolunteerMilestones.includes(milestone)) {
-      throw new ExpressError("Unauthorized: Volunteers can only update pickup-related statuses", 403);
+      throw new ExpressError(
+        "Unauthorized: Volunteers can only update pickup-related statuses",
+        403
+      );
     }
 
     const request = await Request.findById(id);
-    
+
     if (!request) {
       throw new ExpressError("Request not found", 404);
     }
@@ -948,21 +1108,19 @@ app.post(
       request.trackingMilestones[milestone] = {
         completed: true,
         timestamp: new Date(),
-        notes: notes || ''
+        notes: notes || "",
       };
 
-
-      if(request.trackingMilestones["pickupCompleted"].completed){
+      // If pickup is completed, change the request status to processing
+      if (request.trackingMilestones["pickupCompleted"].completed) {
         request.status = "Processing";
       }
-
- 
 
       try {
         await request.save();
         res.redirect(`/volunteer/${req.user._id}/dashboard`);
       } catch (error) {
-        console.error('Save Error:', error);
+        console.error("Save Error:", error);
         throw new ExpressError("Error updating request status", 500);
       }
     } else {
@@ -970,10 +1128,6 @@ app.post(
     }
   })
 );
-
-
-
-
 
 // TODO: Error Handling
 // 404 route - must come after all other routes but before error handler
@@ -991,14 +1145,14 @@ app.use((err, req, res, next) => {
 });
 
 // Add this before your other error handlers
-app.use((err, req, res, next) => {
-  console.error("Auth Error:", {
-    name: err.name,
-    message: err.message,
-    stack: err.stack,
-  });
-  next(err);
-});
+// app.use((err, req, res, next) => {
+//   console.error("Auth Error:", {
+//     name: err.name,
+//     message: err.message,
+//     stack: err.stack,
+//   });
+//   next(err);
+// });
 
 // Error handler - must be last middleware before app.listen()
 app.use((err, req, res, next) => {

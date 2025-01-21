@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Add Community Event</title>
+    <!-- Bootstrap CSS -->
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+    />
+  </head>
+  <body>
+    <div class="container mt-5">
+      <h2 class="mb-4">Create New Community Event</h2>
+      <form
+        action="/user/<%=user._id%>/community/add"
+        method="POST"
+        class="needs-validation"
+        novalidate
+      >
+        <div class="mb-3">
+          <label for="title" class="form-label">Event Title*</label>
+          <input
+            type="text"
+            class="form-control"
+            id="title"
+            name="community[title]"
+            required
+            minlength="3"
+            maxlength="100"
+          />
+          <div class="invalid-feedback">
+            Please provide an event title (3-100 characters).
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="description" class="form-label">Description*</label>
+          <textarea
+            class="form-control"
+            id="description"
+            name="community[description]"
+            rows="3"
+            required
+            minlength="10"
+            maxlength="500"
+          ></textarea>
+          <div class="invalid-feedback">
+            Please provide a description (10-500 characters).
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <label for="eventType" class="form-label">Event Type*</label>
+          <select
+            class="form-select"
+            id="eventType"
+            name="community[eventType]"
+            required
+          >
+            <option value="">Select event type</option>
+            <option value="Event">Event</option>
+            <option value="Drive">Drive</option>
+            <option value="Online Webinar">Online Webinar</option>
+            <option value="Workshop">Workshop</option>
+          </select>
+          <div class="invalid-feedback">Please select an event type.</div>
+        </div>
+
+        <div class="row">
+          <div class="col-md-4 mb-3">
+            <label for="startDate" class="form-label">Start Date*</label>
+            <input
+              type="date"
+              class="form-control"
+              id="startDate"
+              name="community[startDate]"
+              required
+            />
+            <div class="invalid-feedback">Please select a start date.</div>
+          </div>
+          <div class="col-md-4 mb-3">
+            <label for="endDate" class="form-label">End Date*</label>
+            <input
+              type="date"
+              class="form-control"
+              id="endDate"
+              name="community[endDate]"
+              required
+            />
+            <div class="invalid-feedback">Please select an end date.</div>
+          </div>
+          <div class="col-md-4 mb-3">
+            <label for="time" class="form-label">Time*</label>
+            <input
+              type="time"
+              class="form-control"
+              id="time"
+              name="community[time]"
+              required
+            />
+            <div class="invalid-feedback">Please select a time.</div>
+          </div>
+        </div>
+
+        <div class="mb-3" id="locationDiv">
+          <label for="location" class="form-label">Location*</label>
+          <input
+            type="text"
+            class="form-control"
+            id="location"
+            name="community[location]"
+          />
+          <div class="invalid-feedback">Please provide an event location.</div>
+        </div>
+
+        <div class="mb-3">
+          <label for="registrationLink" class="form-label"
+            >Registration Link*</label
+          >
+          <input
+            type="url"
+            class="form-control"
+            id="registrationLink"
+            name="community[registrationLink]"
+            required
+            pattern="https?://.+"
+          />
+          <div class="invalid-feedback">
+            Please provide a valid URL (starting with http:// or https://).
+          </div>
+        </div>
+
+        <div class="row" hidden>
+          <div class="col-md-6 mb-3">
+            <label for="name" class="form-label">Name*</label>
+            <input
+              type="text"
+              class="form-control"
+              id="name"
+              name="community[contactInfo][name]"
+              value="<%= user.name%>"
+              required
+            />
+          </div>
+
+          <div class="col-md-6 mb-3">
+            <label for="email" class="form-label">Contact Email*</label>
+            <input
+              type="email"
+              class="form-control"
+              id="email"
+              name="community[contactInfo][email]"
+              value="<%= user.email%>"
+              required
+            />
+          </div>
+          <div class="col-md-6 mb-3">
+            <label for="phone" class="form-label">Contact Phone*</label>
+            <input
+              type="tel"
+              class="form-control"
+              id="phone"
+              name="community[contactInfo][phone]"
+              value="<%=user.phone %>"
+              required
+            />
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Create Event</button>
+      </form>
+    </div>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- Custom JavaScript for form validation -->
+    <script>
+      // Form validation
+      (() => {
+        "use strict";
+
+        const forms = document.querySelectorAll(".needs-validation");
+
+        Array.from(forms).forEach((form) => {
+          form.addEventListener("submit", (event) => {
+            if (!form.checkValidity()) {
+              event.preventDefault();
+              event.stopPropagation();
+            }
+            form.classList.add("was-validated");
+          });
+        });
+
+        // Event type change handler
+        document
+          .getElementById("eventType")
+          .addEventListener("change", function () {
+            const locationDiv = document.getElementById("locationDiv");
+            const locationInput = document.getElementById("location");
+
+            if (this.value === "Online Webinar") {
+              locationDiv.style.display = "none";
+              locationInput.required = false;
+              locationInput.value = "";
+            } else {
+              locationDiv.style.display = "block";
+              locationInput.required = true;
+            }
+          });
+
+        // Date validation
+        const startDate = document.getElementById("startDate");
+        const endDate = document.getElementById("endDate");
+
+        startDate.addEventListener("change", function () {
+          endDate.min = this.value;
+          if (endDate.value && endDate.value < this.value) {
+            endDate.value = this.value;
+          }
+        });
+
+        // Set minimum start date to today
+        const today = new Date().toISOString().split("T")[0];
+        startDate.min = today;
+        endDate.min = today;
+      })();
+    </script>
+  </body>
+</html>

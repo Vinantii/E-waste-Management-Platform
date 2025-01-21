@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Community Hub</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-4">
+        <!-- Header Section -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>Community Hub</h1>
+            <div>
+                <a href="/user/<%= user._id %>/community/add" class="btn btn-primary me-2">
+                    Add Event
+                </a>
+                <a href="/user/<%= user._id %>/story/add" class="btn btn-primary">
+                    Add Story
+                </a>
+            </div>
+        </div>
+
+        <!-- Community Events Section -->
+        <section class="mb-5">
+            <h2 class="mb-4">Community Events</h2>
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                <% if (allCommunity && allCommunity.length > 0) { %>
+                    <% allCommunity.forEach(event => { %>
+                        <div class="col">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <h5 class="card-title"><%= event.title %></h5>
+                                        <span class="badge bg-primary"><%= event.eventType %></span>
+                                    </div>
+                                    
+                                    <p class="card-text"><%= event.description %></p>
+                                    
+                                    <div class="mb-2">
+                                        <strong>Date:</strong>
+                                        <% const startDate = new Date(event.startDate).toLocaleDateString() %>
+                                        <% const endDate = new Date(event.endDate).toLocaleDateString() %>
+                                        <% if (startDate === endDate) { %>
+                                            <%= startDate %>
+                                        <% } else { %>
+                                            <%= startDate %> - <%= endDate %>
+                                        <% } %>
+                                    </div>
+
+                                    <div class="mb-2">
+                                        <strong>Time:</strong> <%= event.time %>
+                                    </div>
+
+                                    <% if (event.eventType !== 'Online Webinar') { %>
+                                        <div class="mb-2">
+                                            <strong>Location:</strong> <%= event.location %>
+                                        </div>
+                                    <% } %>
+
+                                    <div class="mb-2">
+                                        <strong>Contact:</strong><br>
+                                        Name: <%= event.contactInfo.name %><br>
+                                        Email: <%= event.contactInfo.email %><br>
+                                        Phone: <%= event.contactInfo.phone %>
+                                    </div>
+                                </div>
+                                <div class="card-footer">
+                                    <a href="<%= event.registrationLink %>" class="btn btn-primary w-100" target="_blank">
+                                        Register Now
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    <% }) %>
+                <% } else { %>
+                    <div class="col-12">
+                        <div class="alert alert-info" role="alert">
+                            No community events found. Be the first to create one!
+                        </div>
+                    </div>
+                <% } %>
+            </div>
+        </section>
+
+       <!-- Stories Section -->
+        <section>
+            <h2 class="mb-4">Community Stories</h2>
+            <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
+                <% if (allStories && allStories.length > 0) { %>
+                    <% allStories.forEach(story => { %>
+                        <div class="col">
+                            <div class="card h-100">
+                                <div class="card-body">
+                                    <h5 class="card-title mb-3"><%= story.title %></h5>
+                                    <p class="card-text"><%= story.content.substring(0, 200) %>...</p>
+                                    <div class="text-muted mb-3">
+                                        <small>Published: <%= new Date(story.publishedAt).toLocaleDateString() %></small>
+                                    </div>
+                                    <div class="mb-2">
+                                        <strong>Author:</strong><br>
+                                        <%= story.contactInfo.name %><br>
+                                        <small class="text-muted"><%= story.contactInfo.email %></small>
+                                    </div>
+                                </div>
+                                <div class="card-footer">
+                                    <button class="btn btn-outline-primary w-100 read-more-btn" 
+                                            data-title="<%= story.title %>" 
+                                            data-content="<%= story.content %>">
+                                        Read More
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    <% }) %>
+                <% } else { %>
+                    <div class="col-12">
+                        <div class="alert alert-info" role="alert">
+                            No stories found. Share your story with the community!
+                        </div>
+                    </div>
+                <% } %>
+            </div>
+        </section>
+
+        <!-- Modal for Reading More -->
+        <div class="modal fade" id="readMoreModal" tabindex="-1" aria-labelledby="readMoreModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="readMoreModalLabel"></h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body" id="readMoreModalContent"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap Bundle with Popper -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    
+    <!-- Custom JavaScript -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const readMoreButtons = document.querySelectorAll('.read-more-btn');
+            const modalTitle = document.getElementById('readMoreModalLabel');
+            const modalContent = document.getElementById('readMoreModalContent');
+            
+            readMoreButtons.forEach(button => {
+                button.addEventListener('click', () => {
+                    const title = button.getAttribute('data-title');
+                    const content = button.getAttribute('data-content');
+                    
+                    modalTitle.textContent = title;
+                    modalContent.textContent = content;
+                    
+                    const readMoreModal = new bootstrap.Modal(document.getElementById('readMoreModal'));
+                    readMoreModal.show();
+                });
+            });
+        });
+    </script>
+</body>
+</html>

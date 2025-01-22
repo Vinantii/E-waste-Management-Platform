@@ -618,6 +618,7 @@ app.get(
   isLoggedIn,
   wrapAsync(async (req, res) => {
     const user = await User.findById(req.params.id).populate("requests");
+    
 
     // Calculate and update user's points
     await user.calculatePoints();
@@ -669,9 +670,14 @@ app.post(
     });
     // Save the new community
     await newCommunity.save();
+
+    // Add 20 points to user for creating a community event
+    await user.addCommunityPoints(20);
+    
     res.redirect(`/user/${user._id}/community`);
   })
 );
+
 
 // Add story button
 app.get(
@@ -704,8 +710,6 @@ app.post(
     res.redirect(`/user/${user._id}/community`);
   })
 );
-
-
 
 // TODO: Agency Dashboard Route
 app.get(

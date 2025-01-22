@@ -6,6 +6,32 @@ A web-based platform connecting users with certified e-waste collection agencies
 
 ### New Features Added
 
+### Community Features
+- **Community Events**
+      -Event Creation
+      -Users and agencies can create events such as:
+        -Drives
+        -Webinars
+        -Workshops
+      -Event details include:
+          -Event title
+          -Description
+          -Date and time
+          -Location 
+          -Host information
+         
+- **Experience Sharing**
+      -Users and Agencies can share their stories or experiences related to e-waste incidents
+      Includes:
+          -Story title
+          -Detailed description
+          -Publish and share with the community
+
+- **Updated Reward System**  
+      -Users can now earn points for:       
+        -Responsible e-waste disposal
+        -Adding new community events
+
 #### Volunteer Management System
 - **Volunteer Profiles**
   - Detailed volunteer registration with required fields:

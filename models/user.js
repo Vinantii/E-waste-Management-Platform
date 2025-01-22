@@ -65,11 +65,17 @@ const userSchema = new mongoose.Schema({
     type: Number,
     default: 0
   },
+  communityPoints: {
+    type: Number,
+    default: 0
+  },
   completedRequests: {
     type: Number,
     default: 0
   }
 });
+
+
 
 // Add a method to calculate and update points
 userSchema.methods.calculatePoints = async function() {
@@ -77,9 +83,10 @@ userSchema.methods.calculatePoints = async function() {
     user: this._id,
     status: 'Completed'
   });
+  let communityPoints = this.communityPoints;
   
   // Basic points: 100 points per completed request
-  let points = completedRequests * 100;
+  let requestPoints = completedRequests * 100;
   
   // Get user's rank
   const rank = await User.countDocuments({ points: { $gt: this.points } }) + 1;
@@ -93,14 +100,22 @@ userSchema.methods.calculatePoints = async function() {
       4: 250,   // 4th place bonus
       5: 100    // 5th place bonus
     };
-    points += rankBonus[rank] || 0;
+    requestPoints += rankBonus[rank] || 0;
   }
-  
+  requestPoints = requestPoints+communityPoints;
   this.completedRequests = completedRequests;
-  this.points = points;
+  this.points = requestPoints;
   await this.save();
   
-  return { points, rank };
+  return { requestPoints, rank };
+};
+
+
+// Add a method to add community points
+userSchema.methods.addCommunityPoints = async function (points) {
+  this.communityPoints += points;
+  await this.save();
+  return this.points;
 };
 
 const User = mongoose.model("User", userSchema);

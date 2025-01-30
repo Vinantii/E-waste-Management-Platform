@@ -106,7 +106,7 @@
                     method="POST"
                     class="d-inline"
                   >
-                    <button type="submit" class="btn btn-success btn-sm">
+                    <button type="submit" class="btn btn-success">
                       <i class="bi bi-check-circle"></i> Accept
                     </button>
                   </form>
@@ -189,14 +189,11 @@
                     <label class="form-label">Update Status</label>
                     <select class="form-select" name="milestone" required>
                       <option value="">Select milestone to update</option>
-                      <% if (request.trackingMilestones.pickupCompleted.completed && 
-                             !request.trackingMilestones.wasteSegregated.completed) { %>
+                      <% if (request.trackingMilestones.pickupCompleted.completed && !request.trackingMilestones.wasteSegregated.completed) { %>
                         <option value="wasteSegregated">Mark Waste Segregated</option>
-                      <% } else if (request.trackingMilestones.wasteSegregated.completed && 
-                                    !request.trackingMilestones.processingStarted.completed) { %>
+                      <% } else if (request.trackingMilestones.wasteSegregated.completed && !request.trackingMilestones.processingStarted.completed) { %>
                         <option value="processingStarted">Start Processing</option>
-                      <% } else if (request.trackingMilestones.processingStarted.completed && 
-                                    !request.trackingMilestones.processingCompleted.completed) { %>
+                      <% } else if (request.trackingMilestones.processingStarted.completed && !request.trackingMilestones.processingCompleted.completed) { %>
                         <option value="processingCompleted">Complete Processing</option>
                       <% } %>
                     </select>

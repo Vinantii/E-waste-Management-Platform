@@ -169,8 +169,7 @@
                                 </div>
                                 <div class="step-content">
                                     <h6><%= milestone.label %></h6>
-                                    <% if (request.trackingMilestones[milestone.key] && 
-                                           request.trackingMilestones[milestone.key].completed) { %>
+                                    <% if (request.trackingMilestones[milestone.key] && request.trackingMilestones[milestone.key].completed) { %>
                                         <small>
                                             <%= new Date(request.trackingMilestones[milestone.key].timestamp).toLocaleString() %>
                                         </small>

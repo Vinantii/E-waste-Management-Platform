@@ -206,25 +206,6 @@
               <div class="invalid-feedback">Please provide working hours.</div>
             </div>
 
-            <!-- Certification Status -->
-            <div class="col-md-6">
-              <label for="certificationStatus" class="form-label"
-                >Certification Status:</label
-              >
-              <select
-                class="form-select"
-                id="certificationStatus"
-                name="agency[certificationStatus]"
-                required
-              >
-                <option value="Certified">Certified</option>
-                <option value="Uncertified">Uncertified</option>
-              </select>
-              <div class="invalid-feedback">
-                Please select certification status.
-              </div>
-            </div>
-
             <!-- Waste Types Handled -->
             <div class="col-12">
               <label for="wasteTypesHandled" class="form-label"
@@ -248,6 +229,34 @@
               </div>
             </div>
 
+            <!-- Trade License (PDF) -->
+            <div class="mb-3">
+              <label for="tradeLicense" class="form-label">Trade License (PDF)</label>
+              <input
+                type="file"
+                class="form-control"
+                id="tradeLicense"
+                name="tradeLicense"
+                accept="application/pdf"
+                required
+              />
+              <div class="invalid-feedback">Please upload the trade license PDF.</div>
+            </div>
+
+            <!-- PCB Authorization (PDF) -->
+            <div class="mb-3">
+              <label for="pcbAuth" class="form-label">PCB Authorization (PDF)</label>
+              <input
+                type="file"
+                class="form-control"
+                id="pcbAuth"
+                name="pcbAuth"
+                accept="application/pdf"
+                required
+              />
+              <div class="invalid-feedback">Please upload the PCB authorization PDF.</div>
+            </div>
+
             <!-- Submit Button -->
             <div class="col-12 mt-4">
               <button type="submit" class="btn btn-primary w-100">
@@ -265,33 +274,6 @@
 
     <!-- Custom validation script -->
     <script src="/js/script.js"></script>
-
-    <!-- Add Bootstrap validation script at the end of the file -->
-    <script>
-      // Example starter JavaScript for disabling form submissions if there are invalid fields
-      (function () {
-        "use strict";
-
-        // Fetch all the forms we want to apply custom Bootstrap validation styles to
-        const forms = document.querySelectorAll(".needs-validation");
-
-        // Loop over them and prevent submission
-        Array.from(forms).forEach((form) => {
-          form.addEventListener(
-            "submit",
-            (event) => {
-              if (!form.checkValidity()) {
-                event.preventDefault();
-                event.stopPropagation();
-              }
-
-              form.classList.add("was-validated");
-            },
-            false
-          );
-        });
-      })();
-    </script>
 
     <script>
       document.querySelector("form").addEventListener("submit", function (e) {

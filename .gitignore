@@ -1,11 +1,13 @@
 # Dependencies
 node_modules/
-package-lock.json
 
 # Environment variables
 .env
 
-# Upload directory
+# Google Drive API Credentials
+apikey.json
+
+# Upload directory (Local File Uploads)
 uploads/
 
 # OS files
@@ -17,12 +19,12 @@ Thumbs.db
 .idea/
 
 # Logs
-logs
+logs/
 *.log
 npm-debug.log*
 
 # Runtime data
-pids
+pids/
 *.pid
 *.seed
 *.pid.lock
@@ -38,6 +40,3 @@ pids
 
 # Output of 'npm pack'
 *.tgz
-
-# Cloudinary uploads
-/uploads

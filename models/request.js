@@ -24,6 +24,10 @@ const requestSchema = new mongoose.Schema(
       required: true,
       min: 1,
     },
+    weight: {
+      type: Number,
+      required:true,
+    },
     pickupAddress: {
       type: String,
       required: true,

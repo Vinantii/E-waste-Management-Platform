@@ -5,6 +5,38 @@ A web-based platform connecting users with certified e-waste collection agencies
 ## 🕒 Latest Updates (January, 2025)
 
 ### New Features Added
+- **New Features added:**
+  - Inventory & Admin Authorization
+  - Inventory Management System
+  - Agencies can now manage inventory for collected e-waste
+
+- **Inventory tracking includes:**
+  - Waste type (Mobile, Laptop, Batteries, etc.)
+  - Quantity in stock
+  - Segregation status
+  - Processing status
+
+- **Real-time updates for:**
+  - New waste additions
+  - Items sent for recycling
+  - Processed inventory statistics
+  - Dashboard for agencies to monitor inventory levels
+  - Admin Authorization for New Agencies
+
+- **Enhanced Agency Registration Process:**
+  - Agencies must now undergo an authorization process before activation
+
+- **Required Documents:**
+  - PCB Authorization Certificate (Pollution Control Board)
+  - Trade License
+    - Documents are uploaded and securely stored in Google Drive
+    - Admin reviews and verifies documents before approval
+
+- **Admin Dashboard for Authorizations:**
+  - Pending agency requests
+  - Approve/Reject agency applications
+  - Document verification
+  - Track agency certification status
 
 ### Community Features
 - **Community Events**

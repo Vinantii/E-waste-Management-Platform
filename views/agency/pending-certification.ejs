@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pending Certification</title>
+  <!-- Bootstrap CSS -->
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  >
+  <style>
+    body {
+      background-color: #f8f9fa;
+    }
+    .pending-card {
+      max-width: 500px;
+      margin: 50px auto;
+      border-radius: 10px;
+      box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+    }
+    .card-header {
+      background-color: #ffc107;
+      color: #fff;
+      font-weight: bold;
+      text-align: center;
+      border-radius: 10px 10px 0 0;
+    }
+    .card-body {
+      text-align: center;
+      padding: 30px;
+    }
+    .btn-home {
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      padding: 10px 20px;
+      text-decoration: none;
+      font-size: 1rem;
+      transition: background-color 0.3s ease;
+    }
+    .btn-home:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card pending-card">
+      <div class="card-header">
+        <h3>Certification Pending</h3>
+      </div>
+      <div class="card-body">
+        <p class="mb-4">
+          Thank you for registering your agency! Your account is currently awaiting certification by the admin.
+        </p>
+        <p class="text-muted">
+          Please check back later or contact the admin for updates.
+        </p>
+        <a href="/" class="btn-home mt-3">Go to Home</a>
+      </div>
+    </div>
+  </div>
+  <!-- Bootstrap JS -->
+  <script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"
+  ></script>
+</body>
+</html>

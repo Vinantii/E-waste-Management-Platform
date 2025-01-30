@@ -22,7 +22,7 @@ const agencySchema = Joi.object({
       .items(
         Joi.string().valid("Recycler", "Collector", "Disposal", "Aggregator")
       )
-      .min(1)
+      //.min(1)
       .required()
       .messages({
         "array.min": "At least one agency type must be selected",
@@ -41,9 +41,6 @@ const agencySchema = Joi.object({
       coordinates: Joi.array().items(Joi.number()).length(2).required(),
     }),
     workingHours: Joi.string().required(),
-    certificationStatus: Joi.string()
-      .valid("Certified", "Uncertified")
-      .required(),
     wasteTypesHandled: Joi.array()
       .items(
         Joi.string().valid(
@@ -86,6 +83,7 @@ const requestSchema = Joi.object({
   request: Joi.object({
     wasteType: Joi.array().items(Joi.string()).min(1).required(),
     quantity: Joi.number().min(1).required(),
+    weight: Joi.number().required(),
     pickupAddress: Joi.string().required(),
     contactNumber: Joi.string()
       .pattern(/^\d{10}$/)
@@ -114,20 +112,21 @@ const volunteerSchema = Joi.object({
   pickupArea: Joi.object({
     city: Joi.string().required(),
     district: Joi.string().required(),
-    pinCodes: Joi.alternatives().try(
-      Joi.array().items(
-        Joi.string()
-          .pattern(/^\d{6}$/)
-          .messages({
-            "string.pattern.base": "PIN code must be 6 digits",
-          })
-      ),
-      Joi.string().pattern(/^\d{6}(,\s*\d{6})*$/)
-    ).required(),
-    landmarks: Joi.alternatives().try(
-      Joi.array().items(Joi.string()),
-      Joi.string()
-    ).allow(''),
+    pinCodes: Joi.alternatives()
+      .try(
+        Joi.array().items(
+          Joi.string()
+            .pattern(/^\d{6}$/)
+            .messages({
+              "string.pattern.base": "PIN code must be 6 digits",
+            })
+        ),
+        Joi.string().pattern(/^\d{6}(,\s*\d{6})*$/)
+      )
+      .required(),
+    landmarks: Joi.alternatives()
+      .try(Joi.array().items(Joi.string()), Joi.string())
+      .allow(""),
     coordinates: Joi.object({
       type: Joi.string().valid("Point").default("Point"),
       coordinates: Joi.array().items(Joi.number()).length(2).required(),

@@ -7,13 +7,22 @@ const LocalStrategy = require("passport-local");
 const mongoose = require("mongoose");
 const path = require("path");
 const methodOverride = require("method-override");
+const multer = require("multer");
+const cloudinary = require("./cloudConfig");
+const upload = multer({ dest: "uploads/" });
+const GoogleStrategy = require("passport-google-oauth20");
+const { google } = require("googleapis");
+const stream = require('stream');
+const uploadDrive = multer({ storage: multer.memoryStorage() });
 
 const User = require("./models/user");
 const Agency = require("./models/agency");
-const Request = require("./models/request"); // Adjust path as needed
+const Request = require("./models/request");
 const Volunteer = require("./models/volunteer");
 const Community = require("./models/community");
 const Story = require("./models/story");
+const Inventory = require("./models/inventory");
+const Admin = require("./models/admin");
 
 const app = express();
 const crypto = require("crypto");
@@ -26,16 +35,14 @@ const {
   validateVolunteer,
 } = require("./schema");
 
-const multer = require("multer");
-const cloudinary = require("./cloudConfig");
-const upload = multer({ dest: "uploads/" });
-const GoogleStrategy = require("passport-google-oauth20");
+
 
 // Utilities
 const wrapAsync = require("./utils/wrapAsync");
 const ExpressError = require("./utils/ExpressError");
 
 // MIDDLEWARE: to protect routes
+// Middleware to check if user is logged in
 const isLoggedIn = (req, res, next) => {
   if (!req.isAuthenticated()) {
     return res.redirect("/login");
@@ -58,6 +65,39 @@ const isVolunteerLoggedIn = (req, res, next) => {
   }
   next();
 };
+
+// Middleware to check if admin is logged in
+const isAdminLoggedIn = async (req, res, next) => {
+  try {
+    // Check if the user is logged in
+    if (!req.isAuthenticated() || !req.user) {
+      throw new ExpressError("You must be logged in to access this page.", 401);
+    }
+
+    // Check if the user is an admin
+    if (!req.user.isAdmin) {
+      throw new ExpressError("Access denied. Admin privileges are required.", 403);
+    }
+
+    if (req.user._id.toString() !== req.params.id) {
+      throw new ExpressError('Unauthorized access to this dashboard.', 403);
+    }
+    // If the user is logged in and is an admin, proceed
+    next();
+  } catch (error) {
+    next(error); // Pass error to the error handler
+  }
+};
+
+
+const checkCertificationStatus = async (req, res, next) => {
+  const agency = await Agency.findById(req.user._id);
+  if (!agency || agency.certificationStatus == "Uncertified") {
+    return res.render("agency/pending-certification.ejs"); // Redirect if not certified
+  }
+  next();
+};
+
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
@@ -121,13 +161,14 @@ passport.use(
 );
 
 // Serialize and Deserialize User
-passport.serializeUser((userOrAgencyOrVolunteer, done) => {
+passport.serializeUser((userOrAgencyOrVolunteerOrAdmin, done) => {
   let type = "user";
-  if (userOrAgencyOrVolunteer.isAgency) type = "agency";
-  if (userOrAgencyOrVolunteer.isVolunteer) type = "volunteer";
+  if (userOrAgencyOrVolunteerOrAdmin.isAgency) type = "agency";
+  if (userOrAgencyOrVolunteerOrAdmin.isVolunteer) type = "volunteer";
+  if (userOrAgencyOrVolunteerOrAdmin.isAdmin) type = "admin";
 
   done(null, {
-    id: userOrAgencyOrVolunteer.id,
+    id: userOrAgencyOrVolunteerOrAdmin.id,
     type: type,
   });
 });
@@ -141,6 +182,9 @@ passport.deserializeUser(async (obj, done) => {
         break;
       case "volunteer":
         entity = await Volunteer.findById(obj.id);
+        break;
+      case "admin":
+        entity = await Admin.findById(obj.id);
         break;
       default:
         entity = await User.findById(obj.id);
@@ -168,6 +212,75 @@ function verifyPassword(password, storedPassword) {
   return hash === hashedBuffer;
 }
 
+// Google Drive setup
+const KEYFILEPATH = path.join(__dirname, "apikey.json");
+const SCOPES = ["https://www.googleapis.com/auth/drive"];
+const auth = new google.auth.GoogleAuth({
+  keyFile: KEYFILEPATH,
+  scopes: SCOPES,
+});
+const drive = google.drive({ version: "v3", auth });
+
+// Helper function to upload files to Google Drive
+const uploadFile = async (file) => {
+  const bufferStream = new stream.PassThrough();
+  bufferStream.end(file.buffer);
+  // console.log(file);
+  const { data } = await drive.files.create({
+    media: {
+      mimeType: file.mimetype,
+      body: bufferStream,
+    },
+    requestBody: {
+      name: file.originalname,
+      parents: ["1Tsonq-vphIw-A6PFq_QVV_uAZ0h811jF"], // Use verified folder ID
+    },
+    fields: "id, name",
+  });
+
+  return {
+    url: `https://drive.google.com/file/d/${data.id}/view`,
+    filename: data.name,
+  };
+};
+
+// upload logo
+const uploadLogo = async (file) => {
+  const bufferStream = new stream.PassThrough();
+  bufferStream.end(file.buffer);
+
+  // Upload file to Google Drive
+  const { data } = await drive.files.create({
+    media: {
+      mimeType: file.mimetype,
+      body: bufferStream,
+    },
+    requestBody: {
+      name: file.originalname,
+      parents: ["1Tsonq-vphIw-A6PFq_QVV_uAZ0h811jF"], // Verified folder ID
+    },
+    fields: "id, name, webContentLink, webViewLink",
+  });
+
+  const fileId = data.id;
+
+  // **Make the file publicly viewable**
+  await drive.permissions.create({
+    fileId,
+    requestBody: {
+      role: "reader",
+      type: "anyone",
+    },
+  });
+
+  return {
+    url: data.webContentLink || `https://drive.google.com/uc?export=view&id=${fileId}`, // Fallback
+    filename: data.name,
+  };
+};
+
+
+
 //TODO Root  route
 app.get(
   "/",
@@ -175,6 +288,42 @@ app.get(
     res.render("index.ejs");
   })
 );
+
+
+
+// TODO: Register Admin
+app.post('/register/admin', wrapAsync(async(req,res)=>{
+  let admin = {
+    name:"Admin",
+    email:"admin123@gmail.com",
+    password: hashPassword("admin1234")
+  };
+  const newAdmin = new Admin(admin);
+  await newAdmin.save();
+  console.log("Admin created")
+  res.send("Admin saved");
+}));
+
+
+//TODO: Admin dashboard
+app.get('/admin/:id/dashboard',isAdminLoggedIn, wrapAsync(async(req,res)=>{
+  const certifiedAgencies = await Agency.find({ certificationStatus: "Certified" });
+  const uncertifiedAgencies = await Agency.find({ certificationStatus: "Uncertified" });
+  let {id} = req.params;
+  res.render('admin/dashboard.ejs', { certifiedAgencies, uncertifiedAgencies, id });
+}));
+
+app.post('/agency/:id/approve/:agencyId',wrapAsync(async(req,res)=>{
+  const {id,agencyId}=req.params;
+  console.log(id);
+  console.log(agencyId);
+  await Agency.findByIdAndUpdate(
+    agencyId,
+    { $set: { certificationStatus: "Certified" } },
+    { new: true, runValidators: true }
+  );
+  res.redirect(`/admin/${id}/dashboard`);
+}));
 
 //TODO: Register user Route
 app.get(
@@ -346,13 +495,22 @@ passport.use(
           return done(null, agency);
         }
 
-        // If neither user nor agency found, check for volunteer
+        // If no agency or user then check for volunteer
         const volunteer = await Volunteer.findOne({ email: email });
         if (volunteer) {
           if (!verifyPassword(password, volunteer.password)) {
             return done(null, false, { message: "Incorrect password." });
           }
           return done(null, volunteer);
+        }
+
+        // If neither is fount then check for admin
+        const admin = await Admin.findOne({ email: email });
+        if (admin) {
+          if (!verifyPassword(password, admin.password)) {
+            return done(null, false, { message: "Incorrect password." });
+          }
+          return done(null, admin);
         }
 
         // If no match found
@@ -383,7 +541,9 @@ app.post(
       res.redirect(`/agency/${req.user._id}/dashboard`);
     } else if (req.user.isVolunteer) {
       res.redirect(`/volunteer/${req.user._id}/dashboard`);
-    } else {
+    } if (req.user.isAdmin) {
+      res.redirect(`/admin/${req.user._id}/dashboard`);
+    }else {
       res.redirect(`/user/${req.user._id}/dashboard`);
     }
   }
@@ -402,7 +562,8 @@ app.get(
   })
 );
 
-//TODO:agency side auth
+
+//TODO:agency registration
 
 app.get(
   "/register/agency",
@@ -411,22 +572,35 @@ app.get(
   })
 );
 
+
+
 app.post(
   "/register/agency",
-  upload.single("agencyLogo"),
+  uploadDrive.fields([
+    { name: "agencyLogo", maxCount: 1 },
+    { name: "tradeLicense", maxCount: 1 },
+    { name: "pcbAuth", maxCount: 1 },
+  ]),
   validateAgency,
   wrapAsync(async (req, res) => {
     try {
-      if (!req.file) {
+      console.log("inside try");
+      // Ensure agency logo is uploaded
+      if (!req.files["agencyLogo"]) {
         throw new ExpressError("Agency logo is required", 400);
       }
+      console.log("before cloudinary")
+      // Upload agency logo to Cloudinary
+      // const logoResult = await cloudinary.uploader.upload(req.files["agencyLogo"][0].path, {
+      //   folder: "Technothon",
+      //   resource_type: "auto",
+      // });
 
-      // Upload logo to Cloudinary
-      const result = await cloudinary.uploader.upload(req.file.path, {
-        folder: "Technothon",
-        resource_type: "auto",
-      });
-
+      let logoData = { url: "", filename: "" };
+      if (req.files["agencyLogo"]) {
+        logoData = await uploadLogo(req.files["agencyLogo"][0]);
+      }
+      console.log("after cloudinga")
       if (!req.body.agency || !req.body.agency.password) {
         throw new ExpressError("Invalid registration data", 400);
       }
@@ -441,32 +615,75 @@ app.post(
       const formattedCoordinates = coordinates.map((coord) => Number(coord));
 
       const hashedPassword = hashPassword(req.body.agency.password);
+
+      // Upload trade license & PCB authorization PDFs to Google Drive
+      let tradeLicenseData = { url: "", filename: "" };
+      let pcbAuthData = { url: "", filename: "" };
+      console.log("Before drive")
+      if (req.files["tradeLicense"]) {
+        tradeLicenseData = await uploadFile(req.files["tradeLicense"][0]);
+      }
+      if (req.files["pcbAuth"]) {
+        pcbAuthData = await uploadFile(req.files["pcbAuth"][0]);
+      }
+      console.log("after drive ");
+      // Create agency object with uploaded file URLs and filenames
       const agencyData = {
         ...req.body.agency,
         password: hashedPassword,
         isAgency: true,
-        logo: {
-          url: result.secure_url,
-          filename: result.public_id,
-        },
+        logo: logoData,
         location: {
           type: "Point",
           coordinates: formattedCoordinates,
         },
+        documents: {
+          tradeLicense: tradeLicenseData, 
+          pcbAuth: pcbAuthData, 
+        },
       };
 
+      // Save agency to the database
       const newAgency = new Agency(agencyData);
       await newAgency.save();
+      console.log("Agency Created");
 
+      // Log in the agency after registration
       req.login(newAgency, (err) => {
         if (err) {
           throw new ExpressError("Error during login after registration", 500);
         }
-        res.redirect(`/agency/${newAgency._id}/dashboard`);
+        res.redirect(`/agency/${newAgency._id}/setup-inventory`);
       });
     } catch (error) {
       throw new ExpressError(error.message, 400);
     }
+  })
+);
+
+
+
+app.get("/agency/:id/setup-inventory", isLoggedIn, checkCertificationStatus, wrapAsync(async (req, res) => {
+  let newAgency = await Agency.findById(req.params.id);
+
+  res.render("agency/setup-inventory.ejs",{newAgency});
+}));
+
+// setup inventory route
+app.post(
+  "/agency/:id/setup-inventory",
+  isLoggedIn,
+  wrapAsync(async (req, res) => {
+    let { id } = req.params;
+    let agency = await Agency.findById(id);
+    let inventory = new Inventory({
+      ...req.body.inventory,
+      agencyId: agency._id,
+    });
+    await Agency.findByIdAndUpdate(id,{ isInventorySetup: true });
+    await inventory.save();
+    console.log("Inventory created");
+    res.redirect(`/agency/${agency._id}/dashboard`);
   })
 );
 
@@ -539,7 +756,7 @@ app.post(
         );
 
         const uploadResults = await Promise.all(uploadPromises);
-
+        console.log("Upload complete");
         // Verify the selected agency exists
         const agency = await Agency.findById(req.body.request.agency);
         if (!agency) {
@@ -618,7 +835,6 @@ app.get(
   isLoggedIn,
   wrapAsync(async (req, res) => {
     const user = await User.findById(req.params.id).populate("requests");
-    
 
     // Calculate and update user's points
     await user.calculatePoints();
@@ -664,8 +880,8 @@ app.post(
     const newCommunity = new Community({
       ...req.body.community,
       organizer: {
-        user: req.params.id, // Set the user ID in the nested structure
-        agency: null, // Set to null or the agency ID if available
+        user: req.params.id,
+        agency: null,
       },
     });
     // Save the new community
@@ -673,11 +889,10 @@ app.post(
 
     // Add 20 points to user for creating a community event
     await user.addCommunityPoints(20);
-    
+
     res.redirect(`/user/${user._id}/community`);
   })
 );
-
 
 // Add story button
 app.get(
@@ -697,7 +912,7 @@ app.post(
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
-    
+
     const newStory = new Story({
       ...req.body.story,
       author: {
@@ -715,6 +930,7 @@ app.post(
 app.get(
   "/agency/:id/dashboard",
   isAgencyLoggedIn,
+  checkCertificationStatus,
   wrapAsync(async (req, res) => {
     const agency = await Agency.findById(req.params.id);
     res.render("agency/dashboard.ejs", { agency });
@@ -861,6 +1077,7 @@ app.post(
     }
 
     const request = await Request.findById(id);
+    const inventory = await Inventory.findOne({ agencyId: request.agency });
 
     if (!request) {
       throw new ExpressError("Request not found", 404);
@@ -876,16 +1093,21 @@ app.post(
 
       if (request.trackingMilestones["processingCompleted"].completed) {
         request.status = "Completed";
+        inventory.currentCapacity = Math.max(
+          0,
+          inventory.currentCapacity - request.weight
+        );
+        await inventory.save();
       }
 
       await request.save();
+
       res.redirect(`/agency/${req.user._id}/requests#Assigned`);
     } else {
       throw new ExpressError("Invalid milestone", 400);
     }
   })
 );
-
 
 // TODO: Agency Community Page
 
@@ -950,7 +1172,7 @@ app.post(
     if (!agency) {
       return res.status(404).json({ error: "agency not found" });
     }
-    
+
     const newStory = new Story({
       ...req.body.story,
       author: {
@@ -964,6 +1186,29 @@ app.post(
   })
 );
 
+//TODO: Agency Inventory Route
+
+//TASK: Show inventory page
+app.get(
+  "/agency/:id/inventory",
+  isLoggedIn,
+  wrapAsync(async (req, res) => {
+    let { id } = req.params;
+    console.log("id:",id);
+    const agency = await Agency.findById(id);
+    console.log(agency);
+    const inventory = await Inventory.findOne({ agencyId: id });
+
+    if(agency.isInventorySetup){
+      const usagePercentage =
+      (inventory.currentCapacity / inventory.totalCapacity) * 100;
+    res.render("agency/inventory.ejs", { inventory, usagePercentage, agency, id});  
+    }else{
+      res.render("agency/inventory.ejs",{agency,id});
+    }
+    
+  })
+);
 
 // TODO: volunteer routes
 // Volunteer Management Routes ->  Agency volunteer page
@@ -1050,8 +1295,6 @@ app.delete(
   })
 );
 
-
-
 // Volunteer Dashboard Route
 app.get(
   "/volunteer/:id/dashboard",
@@ -1097,6 +1340,7 @@ app.post(
     }
 
     const request = await Request.findById(id);
+    const inventory = await Inventory.findOne({ agencyId: request.agency });
 
     if (!request) {
       throw new ExpressError("Request not found", 404);
@@ -1117,11 +1361,17 @@ app.post(
 
       // If pickup is completed, change the request status to processing
       if (request.trackingMilestones["pickupCompleted"].completed) {
+        inventory.currentCapacity += request.weight;
+        if (inventory.currentCapacity > inventory.totalCapacity) {
+          // Send alert: capacity exceeded
+        }
         request.status = "Processing";
+        console.log("Current capacity updated");
       }
 
       try {
         await request.save();
+        await inventory.save();
         res.redirect(`/volunteer/${req.user._id}/dashboard`);
       } catch (error) {
         console.error("Save Error:", error);
@@ -1149,14 +1399,14 @@ app.use((err, req, res, next) => {
 });
 
 // Add this before your other error handlers
-// app.use((err, req, res, next) => {
-//   console.error("Auth Error:", {
-//     name: err.name,
-//     message: err.message,
-//     stack: err.stack,
-//   });
-//   next(err);
-// });
+app.use((err, req, res, next) => {
+  console.error("Auth Error:", {
+    name: err.name,
+    message: err.message,
+    stack: err.stack,
+  });
+  next(err);
+});
 
 // Error handler - must be last middleware before app.listen()
 app.use((err, req, res, next) => {

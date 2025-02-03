@@ -274,7 +274,7 @@ const uploadLogo = async (file) => {
   });
 
   return {
-    url: data.webContentLink || `https://drive.google.com/uc?export=view&id=${fileId}`, // Fallback
+    url: `https://drive.google.com/thumbnail?id=${fileId}&sz=w1000`, // Fallback
     filename: data.name,
   };
 };

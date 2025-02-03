@@ -92,6 +92,7 @@ const isAdminLoggedIn = async (req, res, next) => {
 
 const checkCertificationStatus = async (req, res, next) => {
   const agency = await Agency.findById(req.user._id);
+  console.log(agency);
   if (!agency || agency.certificationStatus == "Uncertified") {
     return res.render("agency/pending-certification.ejs"); // Redirect if not certified
   }
@@ -756,19 +757,21 @@ app.post(
         );
 
         const uploadResults = await Promise.all(uploadPromises);
-        console.log("Upload complete");
+        
         // Verify the selected agency exists
         const agency = await Agency.findById(req.body.request.agency);
         if (!agency) {
           throw new ExpressError("Selected agency not found", 400);
         }
 
-        // Create and save the request
+        // Create and save the request with multiple waste types and quantities
         const newRequest = new Request({
           ...req.body.request,
           user: id,
           agency: agency._id,
           status: "Pending",
+          wasteType: req.body.request.wasteType,
+          quantities: req.body.request.quantities,
           wasteImages: uploadResults.map((result) => ({
             url: result.secure_url,
             filename: result.public_id,

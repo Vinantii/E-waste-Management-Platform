@@ -82,7 +82,7 @@ const profileCompletionSchema = Joi.object({
 const requestSchema = Joi.object({
   request: Joi.object({
     wasteType: Joi.array().items(Joi.string()).min(1).required(),
-    quantity: Joi.number().min(1).required(),
+    quantities: Joi.array().items(Joi.number().min(1)).required(),
     weight: Joi.number().required(),
     pickupAddress: Joi.string().required(),
     contactNumber: Joi.string()

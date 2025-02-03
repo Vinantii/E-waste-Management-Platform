@@ -20,6 +20,26 @@
         border-radius: 10px;
         box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
       }
+      .waste-item {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 1rem;
+      }
+      .waste-item select,
+      .waste-item input {
+        flex: 1;
+      }
+      button[type="button"] {
+        background: #6c757d;
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 0.25rem;
+        cursor: pointer;
+      }
+      button[type="button"]:hover {
+        background: #5a6268;
+      }
     </style>
   </head>
   <body>
@@ -38,44 +58,27 @@
           <!-- Waste Type Selection -->
           <div class="mb-3">
             <label for="wasteType" class="form-label">Waste Type</label>
-            <select
-              class="form-select"
-              id="wasteType"
-              name="request[wasteType][]"
-              multiple
-              required
-            >
-              <option value="mobile">Mobile Phones</option>
-              <option value="laptop">Laptops</option>
-              <option value="computers">Computers</option>
-              <option value="Batteries">Batteries</option>
-              <option value="phones">Other Phones</option>
-            </select>
+            <div class="waste-items">
+              <div class="waste-item">
+                <select name="request[wasteType][]" required>
+                  <option value="">Select Waste Type</option>
+                  <option value="mobile">Mobile</option>
+                  <option value="phones">Phones</option>
+                  <option value="computers">Computers</option>
+                  <option value="laptop">Laptop</option>
+                  <option value="Batteries">Batteries</option>
+                </select>
+                <input type="number" name="request[quantities][]" min="1" required placeholder="Quantity">
+              </div>
+              <!-- Add button to dynamically add more waste items -->
+              <button type="button" onclick="addWasteItem()">Add Another Item</button>
+            </div>
             <div class="invalid-feedback">
               Please select at least one waste type.
             </div>
           </div>
 
-          <!-- Quantity -->
-          <div class="mb-3">
-            <label for="quantity" class="form-label"
-              >Quantity (number of items)</label
-            >
-            <input
-              type="number"
-              class="form-control"
-              id="quantity"
-              name="request[quantity]"
-              min="1"
-              required
-            />
-            <div class="invalid-feedback">
-              Please enter a valid quantity (minimum 1).
-            </div>
-          </div>
-
           <!-- Weight -->
-
           <div class="mb-3">
             <label for="weight" class="form-label">Weight (in kilos)</label>
             <input
@@ -189,7 +192,6 @@
               id="agency"
               name="request[agency]"
               required
-              disabled
             >
               <option value="">Choose an agency...</option>
             </select>
@@ -241,6 +243,66 @@
 
     <!-- Custom validation script -->
     <script src="/js/script.js"></script>
+    <script>
+      // Get reference to the agency select element
+      const agencySelect = document.getElementById("agency");
+      
+      // Get agencies data from form's data attribute
+      const agencies = JSON.parse(document.querySelector("form").dataset.agencies);
+
+      // Function to update available agencies based on selected waste types
+      function updateAgencyOptions() {
+        // Get all waste type selects
+        const wasteTypeSelects = document.querySelectorAll('select[name="request[wasteType][]"]');
+        
+        // Get all selected waste types
+        const selectedWasteTypes = Array.from(wasteTypeSelects)
+          .map(select => select.value)
+          .filter(value => value); // Remove empty values
+
+        // Enable/disable agency select based on selections
+        agencySelect.disabled = selectedWasteTypes.length === 0;
+
+        // Filter agencies that handle ANY of the selected waste types
+        const matchingAgencies = agencies.filter(agency =>
+          selectedWasteTypes.some(wasteType =>
+            agency.wasteTypesHandled.includes(wasteType)
+          )
+        );
+
+        // Clear existing options
+        agencySelect.innerHTML = '<option value="">Choose an agency...</option>';
+
+        // Add matching agencies to select
+        matchingAgencies.forEach(agency => {
+          const option = document.createElement("option");
+          option.value = agency._id;
+          // Show which waste types this agency handles from the selected types
+          const handledTypes = selectedWasteTypes
+            .filter(type => agency.wasteTypesHandled.includes(type))
+            .join(", ");
+          option.textContent = `${agency.name} (${agency.region}) - Handles: ${handledTypes}`;
+          agencySelect.appendChild(option);
+        });
+      }
+
+      // Add event listener to the waste-items container for delegation
+      document.querySelector('.waste-items').addEventListener('change', function(e) {
+        if (e.target.matches('select[name="request[wasteType][]"]')) {
+          updateAgencyOptions();
+        }
+      });
+
+      // Function to add new waste item
+      function addWasteItem() {
+        const container = document.querySelector('.waste-items');
+        const newItem = document.querySelector('.waste-item').cloneNode(true);
+        // Clear the values
+        newItem.querySelector('select').value = '';
+        newItem.querySelector('input').value = '';
+        container.insertBefore(newItem, container.lastElementChild);
+      }
+    </script>
 
     <!-- Optional: Add geolocation script -->
     <script>
@@ -257,51 +319,6 @@
       const pickupDateInput = document.getElementById("pickupDate");
       const today = new Date().toISOString().split("T")[0];
       pickupDateInput.setAttribute("min", today);
-    </script>
-
-    <!-- Add this script before the closing body tag -->
-    <script>
-      // Get references to the select elements
-      const wasteTypeSelect = document.getElementById("wasteType");
-      const agencySelect = document.getElementById("agency");
-
-      // Get agencies data from form's data attribute
-      const agencies = JSON.parse(
-        document.querySelector("form").dataset.agencies
-      );
-
-      wasteTypeSelect.addEventListener("change", function () {
-        // Get selected waste types
-        const selectedWasteTypes = Array.from(this.selectedOptions).map(
-          (option) => option.value
-        );
-
-        // Filter agencies that handle ANY of the selected waste types
-        const matchingAgencies = agencies.filter((agency) =>
-          selectedWasteTypes.some((wasteType) =>
-            agency.wasteTypesHandled.includes(wasteType)
-          )
-        );
-
-        // Enable/disable agency select based on matches
-        agencySelect.disabled = selectedWasteTypes.length === 0;
-
-        // Clear existing options
-        agencySelect.innerHTML =
-          '<option value="">Choose an agency...</option>';
-
-        // Add matching agencies to select
-        matchingAgencies.forEach((agency) => {
-          const option = document.createElement("option");
-          option.value = agency._id;
-          // Show which waste types this agency handles from the selected types
-          const handledTypes = selectedWasteTypes
-            .filter((type) => agency.wasteTypesHandled.includes(type))
-            .join(", ");
-          option.textContent = `${agency.name} (${agency.region}) - Handles: ${handledTypes}`;
-          agencySelect.appendChild(option);
-        });
-      });
     </script>
   </body>
 </html>

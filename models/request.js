@@ -19,10 +19,16 @@ const requestSchema = new mongoose.Schema(
       enum: ["mobile", "phones", "computers", "laptop", "Batteries"],
       required: true,
     },
-    quantity: {
-      type: Number,
-      required: true,
-      min: 1,
+    quantities: {
+      type: [Number],
+      validate: {
+        validator: function(quantities) {
+          return quantities.length === this.wasteType.length && 
+                 quantities.every(q => q > 0);
+        },
+        message: 'Must provide a valid quantity for each waste type'
+      },
+      required: true
     },
     weight: {
       type: Number,
@@ -161,6 +167,11 @@ requestSchema.post("save", async function (doc) {
   await Agency.findByIdAndUpdate(doc.agency, {
     $addToSet: { requests: doc._id },
   });
+
+  if (doc.status === 'Completed') {
+    const user = await User.findById(doc.user);
+    await user.calculatePoints();
+  }
 });
 
 const Request = mongoose.model("Request", requestSchema);

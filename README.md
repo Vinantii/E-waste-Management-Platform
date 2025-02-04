@@ -9,7 +9,7 @@ A web-based platform connecting users with certified e-waste collection agencies
   - Inventory & Admin Authorization
   - Inventory Management System
   - Agencies can now manage inventory for collected e-waste
-
+  - User gets reward based on the items te give for recycling and Quantity of those items.
 - **Inventory tracking includes:**
   - Waste type (Mobile, Laptop, Batteries, etc.)
   - Quantity in stock

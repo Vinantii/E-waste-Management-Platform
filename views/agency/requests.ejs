@@ -202,7 +202,9 @@
                     <label class="form-label">Notes (optional)</label>
                     <textarea class="form-control" name="notes" rows="2" placeholder="Add any relevant notes"></textarea>
                   </div>
-                  <button type="submit" class="btn btn-primary">
+                  <input type="hidden" name="latitude" id="latitude-<%= request._id %>">
+                  <input type="hidden" name="longitude" id="longitude-<%= request._id %>">
+                  <button type="submit" class="btn btn-primary" onclick="return getLocation('<%= request._id %>')">
                     Update Status
                   </button>
                 </form>
@@ -233,6 +235,27 @@
 
       // Switch to correct tab when hash changes
       window.addEventListener('hashchange', switchToTab);
+
+      // Location tracking function
+      function getLocation(requestId) {
+          if (!navigator.geolocation) {
+              alert('Geolocation is not supported by your browser');
+              return false;
+          }
+
+          navigator.geolocation.getCurrentPosition(
+              (position) => {
+                  document.getElementById(`latitude-${requestId}`).value = position.coords.latitude;
+                  document.getElementById(`longitude-${requestId}`).value = position.coords.longitude;
+                  document.querySelector(`form[action="/agency/request/${requestId}/update-status"]`).submit();
+              },
+              (error) => {
+                  alert('Unable to get location. Please enable location services.');
+                  return false;
+              }
+          );
+          return false;
+      }
     </script>
   </body>
 </html>

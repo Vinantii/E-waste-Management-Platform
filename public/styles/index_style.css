@@ -1,0 +1,415 @@
+* {
+  margin: 0;
+  padding: 0;
+  overflow-x: hidden;
+}
+
+.landing {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  height: 100vh;
+  width: 100vw;
+  background: linear-gradient(rgba(0, 0, 0, 0.28), rgba(0, 0, 0, 0.28)),
+    url("/images/bg.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  position: relative;
+}
+
+.landing::after{
+    content: "";
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 35%; /* Adjust height of gradient */
+    background: linear-gradient(to top, rgb(208, 224, 152), transparent);
+}
+
+
+.navbar {
+  width: 75%;
+  margin-top: 3%;
+  background-color: rgba(208, 224, 152, 0.52);
+  padding: 15px 30px;
+  border-radius: 25px;
+}
+
+.navbar-brand{
+    color: white;
+    font-size: 20px;
+    font-family: 'Abril Fatface';
+}
+
+.d-flex{
+    margin-right: 5px;
+    display: flex;
+    align-items: center;
+}
+
+.d-flex a{
+    font-family: 'Michroma'; 
+    color: white;
+    font-size: 15px;
+    margin-left: 30px;
+    text-decoration: none;
+}
+
+.butn {
+    padding-bottom: 5px;
+    text-decoration: none !important; /* Removes default underline */
+    text-underline-offset: 5px;
+    transition: all 0.5s ease !important;
+}
+
+.butn:hover {
+    text-decoration: underline !important; /* Reapply underline */
+    text-decoration-thickness: 2px !important;
+    text-decoration-color: #102D16 !important; /* Change underline color */
+    text-underline-offset: 7px; /* Increase spacing on hover */
+}
+
+.login{
+    background-color: #102D16;
+    padding: 10px 15px;
+    border-radius: 10px;
+    transition: 0.3s all ease;
+}
+
+.login:hover{
+    background-color: white;
+    color: #102D16;
+}
+
+.headline{
+    margin: auto;
+    margin-top: 8%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+.headline h2{
+    font-family: 'Anek Latin';
+    color: #D0E098;
+    margin-bottom: 6%;
+}
+
+.headline h2 span{
+    color: white;
+    font-family: 'Afacad';
+    font-style: italic;
+    font-size: 80px;
+}
+
+.headline a{
+    color: white;
+    background-color: #102D16;
+    padding: 10px 15px;
+    border-radius: 10px;
+    text-decoration: none;
+    font-family: 'Michroma';
+    font-size: 22px
+}
+
+.services{
+    height: 100vh;
+    width: 100vw;
+    background-color: #D0E098;
+    margin-top: -1.2%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.services h2{
+    margin-top: 2%;
+    font-family: 'Michroma';
+    padding: 10px 25px;
+    border-bottom: 3px solid #102D16;
+    overflow: hidden;
+}
+
+.service-container{
+    width: 80%;
+    height: 75%;
+    margin: 2% auto auto;
+    background-color: rgba(16, 45, 22, 0.3);
+    border-radius: 25px;
+    display: flex;
+    justify-content: center;
+    flex-wrap: wrap;
+    overflow: hidden;
+}
+
+.service-card{
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    height: 225px;
+    width: 300px;
+    margin: 20px;
+    border-radius: 25px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+#card-1{
+    background: linear-gradient(rgba(0, 0, 0, 0.28), rgba(0, 0, 0, 0.28)),
+    url("/images/service-card1.png");
+}
+#card-2{
+    background: linear-gradient(rgba(0, 0, 0, 0.28), rgba(0, 0, 0, 0.28)),
+    url("/images/service-card2.png");
+    background-position: center;
+}
+#card-3{
+    background: linear-gradient(rgba(0, 0, 0, 0.28), rgba(0, 0, 0, 0.28)),
+    url("/images/service-card3.png");
+}
+#card-4{
+    background: linear-gradient(rgba(0, 0, 0, 0.28), rgba(0, 0, 0, 0.28)),
+    url("/images/service-card4.png");
+}
+#card-5{
+    background: linear-gradient(rgba(0, 0, 0, 0.28), rgba(0, 0, 0, 0.28)),
+    url("/images/service-card5.png");
+}
+
+.service-card h4{
+    overflow: hidden;
+    background-color: #D0E098;
+    width: 90%;
+    border-radius: 15px;
+    font-size: 14px;
+    text-align: center;
+    padding: 10px 5px;
+    margin-top: 3%;
+    color: #213812;
+    font-weight: bold;
+    font-family: 'Roboto';
+}
+
+.service-card p{
+    font-family: 'Manrope';
+    color: #D0E098;
+    width: 100%;
+    margin-top: 5%;
+    font-size: 20px;
+    margin-left: 4%;
+    overflow: hidden;
+}
+
+.facts,.feedbacks {
+    height: auto;
+    width: 100vw;
+    background-color: #D0E098;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.feedbacks h2,.facts h2{
+    margin-top: 5%;
+    font-family: 'Michroma';
+    padding: 10px 25px;
+    border-bottom: 3px solid #102D16;
+    overflow: hidden;
+}
+
+.carousel{
+    display: grid;
+    place-items: center;
+    grid-auto-flow: column;
+    grid-auto-columns: calc((100% / 3));
+    gap: 30px;
+    overflow-x: hidden;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    scrollbar-width: 0;
+}
+
+.fb-carousel {
+    display: flex;
+    gap: 20px;
+    overflow-x: hidden;
+    scroll-snap-type: x mandatory;
+    scroll-behavior: smooth;
+    scrollbar-width: 0;
+    padding: 20px;
+}
+
+.fb-container,.facts-container{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100vw;
+    min-height: 80vh;
+    margin-top: -4%;
+}
+.fb-wrapper,.wrapper{
+    width: 90%;
+    height: 70vh;
+    position: relative;
+    align-content: center;
+}
+
+.right,.left{
+    height: 50px;
+    width: 50px;
+    background-color: #102D16;
+    color: white;
+    border-radius: 50%;
+    text-align: center;
+    line-height: 50px;
+    border-radius: 50%;
+    cursor: pointer;
+    position: absolute;
+    bottom: 0%;
+    transform: translateY(-50%);
+    font-size: 1.25rem;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.23);
+}
+
+.right:first-child,.left:first-child{
+    left: 45%;
+}
+
+.right:last-child,.left:last-child{
+    right: 45%;
+}
+
+.carousel::-webkit-scrollbar{
+    display: none;
+}
+
+.carousel.no-transition{
+    scroll-behavior: auto;
+}
+
+
+.fcard{
+    scroll-snap-align: start;
+    list-style: none;
+    background: #102D16 !important;
+    border-radius: 15px !important;
+    padding: 20px !important;
+    min-width: 400px;
+    height: 150px !important;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: white;
+}
+
+.fcard span{
+    color: white;
+    font-size: 1.1rem;
+
+}
+
+.fbcard{
+    height: 300px;
+    width: 250px;
+    background-color: white;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    border-radius: 25px;
+    padding: 10px 20px;
+}
+
+.head{
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.review{
+    display: flex;
+    flex-direction: column;
+}
+
+.review h6{
+    font-family: 'Roboto';
+    font-size: 16px;
+}
+
+.head img{
+    border-radius: 50%;
+    width: 50px;
+}
+
+.star-container{
+    display: flex;
+}
+
+.star{
+    color: yellow;
+}
+
+.fbcard span{
+    color: rgba(0, 0, 0, 0.39);
+    font-size: 0.8rem;
+}
+
+.fb-wrapper {
+    max-width: 90%;
+    position: relative;
+    margin: 0 auto;
+}
+
+.fb-wrapper .fbcard {
+    scroll-snap-align: start;
+    flex: 0 0 auto;
+}
+
+.fb-carousel::-webkit-scrollbar {
+    display: none;
+}
+
+.fb-carousel.dragging {
+    scroll-behavior: auto;
+    scroll-snap-type: none;
+}
+
+.footer{
+    height: auto;
+    width: 100vw;
+    background-color: #102D16;
+    color: white;
+    display: flex;
+    flex-direction: column;
+}
+
+.about{
+    display: flex;
+}
+
+.footer-logo{
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 0.8%;
+    align-items: center;
+}
+
+.footer-logo h1{
+    font-family: 'Afacad';
+    font-size: 10rem;
+    background: linear-gradient(to bottom, 
+    #A4AF76 0%,  /* Light green at the top */
+    #A4AF76 30%,  /* Light green at the top */
+    #102D16 100% /* Fades to dark at the bottom */
+  );
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    overflow: hidden;
+}

@@ -280,7 +280,19 @@ const uploadLogo = async (file) => {
   };
 };
 
-
+// Add this helper function at the top with other utilities
+const getLocationAddress = async (coordinates) => {
+  try {
+    const response = await fetch(
+      `https://api.opencagedata.com/geocode/v1/json?q=${coordinates[1]}+${coordinates[0]}&key=${process.env.OPENCAGE_API_KEY}`
+    );
+    const data = await response.json();
+    return data.results[0]?.formatted || 'Location unavailable';
+  } catch (error) {
+    console.error('Error getting address:', error);
+    return 'Location unavailable';
+  }
+};
 
 //TODO Root  route
 app.get(
@@ -1066,7 +1078,7 @@ app.post(
   isAgencyLoggedIn,
   wrapAsync(async (req, res) => {
     const { id } = req.params;
-    const { milestone, notes } = req.body;
+    const { milestone, notes, latitude, longitude } = req.body;
 
     // Define allowed milestones for agency
     const allowedAgencyMilestones = [
@@ -1086,12 +1098,20 @@ app.post(
       throw new ExpressError("Request not found", 404);
     }
 
-    // Set the milestone status
+    // Set the milestone status with location
     if (request.trackingMilestones && request.trackingMilestones[milestone]) {
+      const coordinates = [parseFloat(longitude), parseFloat(latitude)];
+      const address = await getLocationAddress(coordinates);
+      
       request.trackingMilestones[milestone] = {
         completed: true,
         timestamp: new Date(),
         notes: notes || "",
+        location: {
+          type: 'Point',
+          coordinates: coordinates,
+          address: address
+        }
       };
 
       if (request.trackingMilestones["processingCompleted"].completed) {
@@ -1325,7 +1345,7 @@ app.post(
   isVolunteerLoggedIn,
   wrapAsync(async (req, res) => {
     const { id } = req.params;
-    const { milestone, notes } = req.body;
+    const { milestone, notes, latitude, longitude } = req.body;
 
     // Define allowed milestones for volunteers
     const allowedVolunteerMilestones = [
@@ -1354,12 +1374,20 @@ app.post(
       throw new ExpressError("Unauthorized", 403);
     }
 
-    // Set the milestone status
+    // Set the milestone status with location
     if (request.trackingMilestones && request.trackingMilestones[milestone]) {
+      const coordinates = [parseFloat(longitude), parseFloat(latitude)];
+      const address = await getLocationAddress(coordinates);
+      
       request.trackingMilestones[milestone] = {
         completed: true,
         timestamp: new Date(),
         notes: notes || "",
+        location: {
+          type: 'Point',
+          coordinates: coordinates,
+          address: address
+        }
       };
 
       // If pickup is completed, change the request status to processing

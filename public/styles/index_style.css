@@ -31,13 +31,85 @@
 
 .landing img{
     position: absolute;
+    z-index: 0;
 }
 
-#leaf{
+@keyframes float {
+    0% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-20px);
+    }
+    100% {
+        transform: translateY(0px);
+    }
+}
+
+@keyframes floatReverse {
+    0% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(8px);
+    }
+    100% {
+        transform: translateY(0px);
+    }
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.98);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+@keyframes fadeOut {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+}
+
+@keyframes initialFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(30px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+#leaf {
     left: 0;
     top: 40%;
+    animation: float 5s ease-in-out infinite;
+    opacity: 0;
+    animation-delay: 1s;
+    animation: initialFadeIn 1s ease-out 1s forwards,
+              float 5s ease-in-out infinite 1s;
 }
 
+#light {
+    right: 0;
+    top: 55%;
+    animation: floatReverse 3s ease-in-out infinite;
+    opacity: 0;
+    animation-delay: 1.2s;
+    animation: initialFadeIn 1s ease-out 1.2s forwards,
+              floatReverse 3s ease-in-out infinite 1.2s;
+}
 
 .navbar {
   width: 75%;
@@ -141,6 +213,15 @@
     padding: 10px 25px;
     border-bottom: 3px solid #102D16;
     overflow: hidden;
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+    transition: opacity 1s cubic-bezier(0.4, 0, 0.2, 1),
+                transform 1s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.services h2.visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
 }
 
 .service-container{
@@ -155,7 +236,7 @@
     overflow: hidden;
 }
 
-.service-card{
+.service-card {
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
@@ -166,6 +247,21 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    opacity: 0;
+    transform: translateY(30px) scale(0.95);
+    transition: opacity 1s cubic-bezier(0.4, 0, 0.2, 1),
+                transform 1s cubic-bezier(0.4, 0, 0.2, 1),
+                box-shadow 0.3s ease;
+}
+
+.service-card.visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+.service-card:hover {
+    transform: translateY(-5px) scale(1.02);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
 }
 
 #card-1{
@@ -484,4 +580,206 @@
     margin-bottom: 2%;
     font-family: 'Poppins';
     overflow: hidden;
+}
+
+/* Media Queries */
+@media screen and (max-width: 1200px) {
+    .navbar {
+        width: 85%;
+    }
+
+    .service-container {
+        width: 90%;
+    }
+
+    .footer-logo h1 {
+        font-size: 8rem;
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .navbar {
+        width: 90%;
+        padding: 10px 20px;
+    }
+
+    .navbar-brand {
+        font-size: 18px;
+    }
+
+    .d-flex a {
+        font-size: 13px;
+        margin-left: 15px;
+    }
+
+    .headline h2 {
+        text-align: center;
+    }
+
+    .headline h2 span {
+        font-size: 60px;
+    }
+
+    .headline a {
+        font-size: 18px;
+    }
+
+    .service-card {
+        height: 200px;
+        width: 250px;
+    }
+
+    .service-card h4 {
+        font-size: 12px;
+    }
+
+    .service-card p {
+        font-size: 16px;
+    }
+
+    .footer-logo h1 {
+        font-size: 6rem;
+    }
+
+    .about {
+        flex-direction: column;
+        align-items: center;
+        gap: 30px;
+    }
+
+    .about-us, .links {
+        width: 90%;
+    }
+
+    #feedback {
+        width: 100%;
+        max-width: 400px;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .navbar {
+        width: 95%;
+        padding: 8px 15px;
+    }
+
+    .navbar-brand {
+        font-size: 16px;
+    }
+
+    .d-flex {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+    .d-flex a {
+        margin-left: 0;
+    }
+
+    .headline h2 span {
+        font-size: 40px;
+    }
+
+    .headline a {
+        font-size: 16px;
+    }
+
+    .service-card {
+        height: 180px;
+        width: 220px;
+        margin: 10px;
+    }
+
+    .service-card p {
+        font-size: 14px;
+    }
+
+    .fcard {
+        min-width: 300px;
+    }
+
+    .fbcard {
+        width: 220px;
+    }
+
+    .footer-logo h1 {
+        font-size: 4rem;
+    }
+
+    .footer-logo p {
+        font-size: 1rem;
+        text-align: center;
+    }
+
+    #leaf, #light {
+        width: 100px; /* Adjust size of floating images for mobile */
+    }
+}
+
+/* Fix carousel responsiveness */
+@media screen and (max-width: 1200px) {
+    .carousel {
+        grid-auto-columns: calc((100% / 2));
+    }
+}
+
+@media screen and (max-width: 768px) {
+    .carousel {
+        grid-auto-columns: 100%;
+    }
+}
+
+/* Fix heights for smaller screens */
+@media screen and (max-height: 700px) {
+    .services, .facts, .feedbacks {
+        height: auto;
+        min-height: 100vh;
+        padding: 40px 0;
+    }
+}
+
+/* Ensure proper spacing on very small devices */
+@media screen and (max-width: 320px) {
+    .service-card {
+        width: 90%;
+        margin: 10px auto;
+    }
+
+    .navbar {
+        margin-top: 5%;
+    }
+
+    .headline {
+        margin-top: 15%;
+    }
+}
+
+/* Update the utility classes */
+.fade-in {
+    opacity: 0;
+    transform: translateY(30px) scale(0.98);
+    transition: opacity 1s cubic-bezier(0.4, 0, 0.2, 1),
+                transform 1s cubic-bezier(0.4, 0, 0.2, 1);
+    will-change: opacity, transform;
+}
+
+.fade-in.visible {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+.fade-in.hidden {
+    opacity: 0;
+    transform: translateY(-20px) scale(0.98);
+}
+
+/* Add initial load animations for landing section */
+.landing .navbar {
+    animation: initialFadeIn 1.2s cubic-bezier(0.4, 0, 0.2, 1) 0.2s forwards;
+    opacity: 0;
+}
+
+.landing .headline {
+    animation: initialFadeIn 1.2s cubic-bezier(0.4, 0, 0.2, 1) 0.6s forwards;
+    opacity: 0;
 }

@@ -90,6 +90,7 @@ A web-based platform connecting users with certified e-waste collection agencies
     - Schedule Pickup
     - Start Pickup
     - Complete Pickup
+    - Each milestone captures exact location
   - Agency Milestones:
     - Waste Segregation
     - Start Processing
@@ -98,6 +99,8 @@ A web-based platform connecting users with certified e-waste collection agencies
     - Completion status
     - Timestamp
     - Optional notes
+    - Location coordinates and address
+    - Visual representation on map
 
 #### Agency Dashboard Improvements
 - **Request Organization**
@@ -170,6 +173,7 @@ A web-based platform connecting users with certified e-waste collection agencies
 - JavaScript
 - Bootstrap 5.3
 - EJS (Embedded JavaScript templates)
+- Leaflet.js (Interactive Maps)
 
 ### Backend
 
@@ -180,6 +184,7 @@ A web-based platform connecting users with certified e-waste collection agencies
 - Passport.js (Authentication)
 - Multer (File upload)
 - Cloudinary (Image storage)
+- OpenCage Geocoding API (Address lookup)
 
 ### Security
 
@@ -203,6 +208,7 @@ env
 4.CLOUD_NAME=your_cloudinary_cloud_name
 5.CLOUD_API_KEY=your_cloudinary_api_key
 6.CLOUD_API_SECRET=your_cloudinary_api_secret
+7.OPENCAGE_API_KEY=your_opencage_api_key
 
 
 ## 🔄 Authentication Flows
@@ -238,7 +244,7 @@ env
 
 ## 🔜 Planned Features
 
-- [ ] Real-time tracking updates
+- [x] Real-time location tracking with interactive map
 - [ ] In-app notifications
 - [ ] Mobile responsive design
 - [ ] Chat system between users and agencies

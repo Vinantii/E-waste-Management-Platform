@@ -73,47 +73,155 @@ const requestSchema = new mongoose.Schema(
       requestReceived: {
         completed: { type: Boolean, default: true },
         timestamp: { type: Date, default: Date.now },
-        notes: { type: String, default: 'Request received successfully' }
+        notes: { type: String, default: 'Request received successfully' },
+        location: {
+          type: {
+            type: String,
+            enum: ['Point'],
+            default: 'Point'
+          },
+          coordinates: {
+            type: [Number],  // [longitude, latitude]
+            default: undefined
+          },
+          address: String
+        }
       },
       agencyAccepted: {
         completed: { type: Boolean, default: false },
         timestamp: Date,
-        notes: String
+        notes: String,
+        location: {
+          type: {
+            type: String,
+            enum: ['Point'],
+            default: 'Point'
+          },
+          coordinates: {
+            type: [Number],
+            default: undefined
+          },
+          address: String
+        }
       },
       volunteerAssigned: {
         completed: { type: Boolean, default: false },
         timestamp: Date,
-        notes: String
+        notes: String,
+        location: {
+          type: {
+            type: String,
+            enum: ['Point'],
+            default: 'Point'
+          },
+          coordinates: {
+            type: [Number],
+            default: undefined
+          },
+          address: String
+        }
       },
       pickupScheduled: {
         completed: { type: Boolean, default: false },
         timestamp: Date,
-        notes: String
+        notes: String,
+        location: {
+          type: {
+            type: String,
+            enum: ['Point'],
+            default: 'Point'
+          },
+          coordinates: {
+            type: [Number],
+            default: undefined
+          },
+          address: String
+        }
       },
       pickupStarted: {
         completed: { type: Boolean, default: false },
         timestamp: Date,
-        notes: String
+        notes: String,
+        location: {
+          type: {
+            type: String,
+            enum: ['Point'],
+            default: 'Point'
+          },
+          coordinates: {
+            type: [Number],
+            default: undefined
+          },
+          address: String
+        }
       },
       pickupCompleted: {
         completed: { type: Boolean, default: false },
         timestamp: Date,
-        notes: String
+        notes: String,
+        location: {
+          type: {
+            type: String,
+            enum: ['Point'],
+            default: 'Point'
+          },
+          coordinates: {
+            type: [Number],
+            default: undefined
+          },
+          address: String
+        }
       },
       wasteSegregated: {
         completed: { type: Boolean, default: false },
         timestamp: Date,
-        notes: String
+        notes: String,
+        location: {
+          type: {
+            type: String,
+            enum: ['Point'],
+            default: 'Point'
+          },
+          coordinates: {
+            type: [Number],
+            default: undefined
+          },
+          address: String
+        }
       },
       processingStarted: {
         completed: { type: Boolean, default: false },
         timestamp: Date,
-        notes: String
+        notes: String,
+        location: {
+          type: {
+            type: String,
+            enum: ['Point'],
+            default: 'Point'
+          },
+          coordinates: {
+            type: [Number],
+            default: undefined
+          },
+          address: String
+        }
       },
       processingCompleted: {
         completed: { type: Boolean, default: false },
         timestamp: Date,
-        notes: String
+        notes: String,
+        location: {
+          type: {
+            type: String,
+            enum: ['Point'],
+            default: 'Point'
+          },
+          coordinates: {
+            type: [Number],
+            default: undefined
+          },
+          address: String
+        }
       }
     },
     contactNumber: {

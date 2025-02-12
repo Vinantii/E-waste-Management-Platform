@@ -2,10 +2,17 @@
 
 A web-based platform connecting users with certified e-waste collection agencies to facilitate responsible electronic waste disposal and promote environmental sustainability.
 
-## 🕒 Latest Updates (January, 2025)
+## 🕒 Latest Updates (February, 2025)
 
 ### New Features Added
-- **New Features added:**
+ 
+**New Features added:**
+  - **8/2/2025**
+  - Story Feature Update - Added image upload option for community stories
+  - Inventory Feature Update - Added waste breakdown options in inventory management
+  - Inventory Storage Exhaustion Alert - Email notification when inventory reaches 90% capacity
+  
+  - **7/2/2025**
   - Inventory & Admin Authorization
   - Inventory Management System
   - Agencies can now manage inventory for collected e-waste
@@ -185,6 +192,7 @@ A web-based platform connecting users with certified e-waste collection agencies
 - Multer (File upload)
 - Cloudinary (Image storage)
 - OpenCage Geocoding API (Address lookup)
+- NodeMailer (Email )
 
 ### Security
 
@@ -209,7 +217,8 @@ env
 5.CLOUD_API_KEY=your_cloudinary_api_key
 6.CLOUD_API_SECRET=your_cloudinary_api_secret
 7.OPENCAGE_API_KEY=your_opencage_api_key
-
+8.APP_PASSWORD=your_gmail_app_password
+9.APP_EMAIL=your_gmail
 
 ## 🔄 Authentication Flows
 

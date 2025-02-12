@@ -40,6 +40,7 @@ const {
 // Utilities
 const wrapAsync = require("./utils/wrapAsync");
 const ExpressError = require("./utils/ExpressError");
+const sendInventoryAlert = require("./utils/emailService");
 
 // MIDDLEWARE: to protect routes
 // Middleware to check if user is logged in
@@ -909,7 +910,7 @@ app.post(
   })
 );
 
-// Add story button
+// TODO: Add story button
 app.get(
   "/user/:id/story/add",
   isLoggedIn,
@@ -922,17 +923,31 @@ app.get(
 app.post(
   "/user/:id/story/add",
   isLoggedIn,
+  upload.single("media"),
   wrapAsync(async (req, res) => {
     const user = await User.findById(req.params.id);
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
+    console.log(req.file);
+    if (!req.file) {
+      throw new ExpressError("Media picture is required", 400);
+    }
+
+    const result = await cloudinary.uploader.upload(req.file.path, {
+      folder: "Technothon",
+      resource_type: "auto",
+    });
 
     const newStory = new Story({
       ...req.body.story,
       author: {
         user: req.params.id, // Set the user ID in the nested structure
         agency: null, // Set to null or the agency ID if available
+      },
+      media: {
+        url: result.secure_url,
+        filename: result.public_id,
       },
     });
     // Save the new community
@@ -988,11 +1003,16 @@ app.post(
   isAgencyLoggedIn,
   wrapAsync(async (req, res) => {
     const request = await Request.findById(req.params.id);
+    const inventory = await Inventory.findOne({ agencyId: request.agency });
 
-    if (!request) {
-      throw new ExpressError("Request not found", 404);
+    if (!request) throw new ExpressError("Request not found", 404);
+    if (!inventory) throw new ExpressError("Inventory not found", 404);
+    
+    // **Check if inventory has enough space**
+    if (inventory.currentCapacity + request.weight > inventory.totalCapacity) {
+      throw new ExpressError("Insufficient inventory capacity!", 400);
     }
-
+    
     request.status = "Accepted";
 
     // Important: Only update the specific milestone, not the entire trackingMilestones object
@@ -1072,7 +1092,7 @@ app.post(
   })
 );
 
-// Update request status -> Picked Up or Completed on agency side after volunteer assigned
+
 app.post(
   "/agency/request/:id/update-status",
   isAgencyLoggedIn,
@@ -1092,34 +1112,53 @@ app.post(
     }
 
     const request = await Request.findById(id);
-    const inventory = await Inventory.findOne({ agencyId: request.agency });
 
     if (!request) {
       throw new ExpressError("Request not found", 404);
     }
 
+    const inventory = await Inventory.findOne({ agencyId: request.agency });
+    if (!inventory) {
+      throw new ExpressError("Inventory not found", 404);
+    }
+
+    const agency = await Agency.findOne({ _id: request.agency });
+    if (!agency) {
+      throw new ExpressError("Agency not found", 404);
+    }
     // Set the milestone status with location
-    if (request.trackingMilestones && request.trackingMilestones[milestone]) {
+    if (request.trackingMilestones[milestone]) {
       const coordinates = [parseFloat(longitude), parseFloat(latitude)];
       const address = await getLocationAddress(coordinates);
-      
+
       request.trackingMilestones[milestone] = {
         completed: true,
         timestamp: new Date(),
         notes: notes || "",
         location: {
-          type: 'Point',
+          type: "Point",
           coordinates: coordinates,
-          address: address
-        }
+          address: address,
+        },
       };
 
-      if (request.trackingMilestones["processingCompleted"].completed) {
+      if (milestone === "wasteSegregated") {
+        inventory.currentCapacity += request.weight;
+        request.wasteType.forEach((type, index) => {
+          if (inventory.wasteBreakdown[type] !== undefined) {
+            inventory.wasteBreakdown[type] += request.quantities[index];
+          }
+        });
+        await inventory.save();
+        const occupancyPercentage = (inventory.currentCapacity / inventory.totalCapacity) * 100;
+        if (occupancyPercentage >= 90) {
+          await sendInventoryAlert(agency.email, agency.name, inventory.currentCapacity, inventory.totalCapacity);
+        }
+      }
+
+      if (milestone === "processingCompleted") {
         request.status = "Completed";
-        inventory.currentCapacity = Math.max(
-          0,
-          inventory.currentCapacity - request.weight
-        );
+        inventory.currentCapacity = Math.max(0, inventory.currentCapacity - request.weight);
         await inventory.save();
       }
 
@@ -1134,8 +1173,7 @@ app.post(
 
 // TODO: Agency Community Page
 
-app.get(
-  "/agency/:id/community",
+app.get( "/agency/:id/community",
   isLoggedIn,
   wrapAsync(async (req, res) => {
     const agency = await Agency.findById(req.params.id);
@@ -1363,7 +1401,6 @@ app.post(
     }
 
     const request = await Request.findById(id);
-    const inventory = await Inventory.findOne({ agencyId: request.agency });
 
     if (!request) {
       throw new ExpressError("Request not found", 404);
@@ -1390,19 +1427,8 @@ app.post(
         }
       };
 
-      // If pickup is completed, change the request status to processing
-      if (request.trackingMilestones["pickupCompleted"].completed) {
-        inventory.currentCapacity += request.weight;
-        if (inventory.currentCapacity > inventory.totalCapacity) {
-          // Send alert: capacity exceeded
-        }
-        request.status = "Processing";
-        console.log("Current capacity updated");
-      }
-
       try {
         await request.save();
-        await inventory.save();
         res.redirect(`/volunteer/${req.user._id}/dashboard`);
       } catch (error) {
         console.error("Save Error:", error);

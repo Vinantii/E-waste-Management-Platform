@@ -80,6 +80,10 @@ const userSchema = new mongoose.Schema({
   completedRequests: {
     type: Number,
     default: 0
+  },
+  redeemedPoints: { 
+    type: Number, 
+    default: 0
   }
 });
 
@@ -199,7 +203,7 @@ userSchema.methods.calculatePoints = async function() {
       rank 
     };
   } catch (error) {
-    console.error('Error calculating points:', error);
+   // console.error('Error calculating points:', error);
     throw error;
   }
 };

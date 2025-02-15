@@ -23,6 +23,8 @@ const Community = require("./models/community");
 const Story = require("./models/story");
 const Inventory = require("./models/inventory");
 const Admin = require("./models/admin");
+const Product = require("./models/product");
+const Order = require("./models/order");
 
 const app = express();
 const crypto = require("crypto");
@@ -93,7 +95,7 @@ const isAdminLoggedIn = async (req, res, next) => {
 
 const checkCertificationStatus = async (req, res, next) => {
   const agency = await Agency.findById(req.user._id);
-  console.log(agency);
+  // console.log(agency);
   if (!agency || agency.certificationStatus == "Uncertified") {
     return res.render("agency/pending-certification.ejs"); // Redirect if not certified
   }
@@ -314,7 +316,6 @@ app.post('/register/admin', wrapAsync(async(req,res)=>{
   };
   const newAdmin = new Admin(admin);
   await newAdmin.save();
-  console.log("Admin created")
   res.send("Admin saved");
 }));
 
@@ -329,8 +330,6 @@ app.get('/admin/:id/dashboard',isAdminLoggedIn, wrapAsync(async(req,res)=>{
 
 app.post('/agency/:id/approve/:agencyId',wrapAsync(async(req,res)=>{
   const {id,agencyId}=req.params;
-  console.log(id);
-  console.log(agencyId);
   await Agency.findByIdAndUpdate(
     agencyId,
     { $set: { certificationStatus: "Certified" } },
@@ -598,12 +597,10 @@ app.post(
   validateAgency,
   wrapAsync(async (req, res) => {
     try {
-      console.log("inside try");
       // Ensure agency logo is uploaded
       if (!req.files["agencyLogo"]) {
         throw new ExpressError("Agency logo is required", 400);
       }
-      console.log("before cloudinary")
       // Upload agency logo to Cloudinary
       // const logoResult = await cloudinary.uploader.upload(req.files["agencyLogo"][0].path, {
       //   folder: "Technothon",
@@ -614,7 +611,6 @@ app.post(
       if (req.files["agencyLogo"]) {
         logoData = await uploadLogo(req.files["agencyLogo"][0]);
       }
-      console.log("after cloudinga")
       if (!req.body.agency || !req.body.agency.password) {
         throw new ExpressError("Invalid registration data", 400);
       }
@@ -633,14 +629,13 @@ app.post(
       // Upload trade license & PCB authorization PDFs to Google Drive
       let tradeLicenseData = { url: "", filename: "" };
       let pcbAuthData = { url: "", filename: "" };
-      console.log("Before drive")
       if (req.files["tradeLicense"]) {
         tradeLicenseData = await uploadFile(req.files["tradeLicense"][0]);
       }
       if (req.files["pcbAuth"]) {
         pcbAuthData = await uploadFile(req.files["pcbAuth"][0]);
       }
-      console.log("after drive ");
+;
       // Create agency object with uploaded file URLs and filenames
       const agencyData = {
         ...req.body.agency,
@@ -660,7 +655,6 @@ app.post(
       // Save agency to the database
       const newAgency = new Agency(agencyData);
       await newAgency.save();
-      console.log("Agency Created");
 
       // Log in the agency after registration
       req.login(newAgency, (err) => {
@@ -696,7 +690,6 @@ app.post(
     });
     await Agency.findByIdAndUpdate(id,{ isInventorySetup: true });
     await inventory.save();
-    console.log("Inventory created");
     res.redirect(`/agency/${agency._id}/dashboard`);
   })
 );
@@ -929,7 +922,7 @@ app.post(
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
-    console.log(req.file);
+    // console.log(req.file);
     if (!req.file) {
       throw new ExpressError("Media picture is required", 400);
     }
@@ -1247,7 +1240,8 @@ app.post(
   })
 );
 
-//TODO: Agency Inventory Route
+
+// TODO: Agency Inventory Route
 
 //TASK: Show inventory page
 app.get(
@@ -1255,9 +1249,9 @@ app.get(
   isLoggedIn,
   wrapAsync(async (req, res) => {
     let { id } = req.params;
-    console.log("id:",id);
+    // console.log("id:",id);
     const agency = await Agency.findById(id);
-    console.log(agency);
+    // console.log(agency);
     const inventory = await Inventory.findOne({ agencyId: id });
 
     if(agency.isInventorySetup){
@@ -1439,6 +1433,98 @@ app.post(
     }
   })
 );
+
+
+//TODO: Redemption Route
+
+//TASK: Show Agency order page 
+app.get('/agency/:id/orders',isAgencyLoggedIn, wrapAsync(async(req,res)=>{
+  const agency = await Agency.findById(req.params.id);
+  const allOrders = await Order.find({ agency: req.params.id }).populate("user product");
+  res.render('agency/order.ejs',{agency, allOrders});
+}));
+
+//TASK: Add product to database
+app.post('/agency/:id/add-product',isAgencyLoggedIn, upload.single("image"), wrapAsync(async(req,res)=>{
+  const {id} = req.params;
+
+  if (!req.file) {
+    throw new ExpressError("Product picture is required", 400);
+  }
+
+  const result = await cloudinary.uploader.upload(req.file.path, {
+    folder: "Technothon",
+    resource_type: "auto",
+  });
+
+  const product= new Product({
+    ...req.body.product,
+    image: {
+      url: result.secure_url,
+      filename: result.public_id,
+    },
+    agency:id,
+  });
+
+  await product.save();
+  res.redirect(`/agency/${id}/orders`);
+}));
+
+//TASK: Show store page
+app.get("/user/:id/store", isLoggedIn, wrapAsync(async(req,res)=>{
+  const allProducts=await Product.find();
+  res.render("user/store.ejs",{allProducts});
+}));
+
+
+//TASK: Product redemption process
+app.post("/user/redeem/:id", isLoggedIn, wrapAsync(async(req,res)=>{
+  const user = await User.findById(req.user._id);
+  const product = await Product.findById(req.params.id);
+
+  if (!product || product.stock <= 0) {
+    throw new ExpressError("Product not available", 400);
+  }
+
+  if (user.points < product.pointsRequired) {
+    throw new ExpressError("Not enough points", 400);
+  }
+
+  // Deduct points
+  user.points -= product.pointsRequired;
+  user.redeemedPoints += product.pointsRequired;
+  await user.save();
+
+  // Reduce stock
+  product.stock -= 1;
+  await product.save();
+
+  // Create order
+  const newOrder = new Order({
+    user: user._id,
+    product: product._id,
+    agency: product.agency,
+    status: "Pending",
+  });
+
+  await newOrder.save();
+  res.redirect(`/user/${user._id}/order`);
+}));
+
+// TASK: Show User order page
+app.get("/user/:id/order",isLoggedIn, wrapAsync(async(req,res)=>{
+  const allOrders = await Order.find({ user: req.params.id }).populate("agency product");
+  res.render('user/order.ejs', { allOrders });
+}));
+
+// TASK: Update order status
+app.post("/agency/order/:id/update-status", isAgencyLoggedIn, async (req, res) => {
+  const { status } = req.body;
+  await Order.findByIdAndUpdate(req.params.id, { status });
+  res.redirect(`/agency/${req.user._id}/orders`);
+});
+
+
 
 // TODO: Error Handling
 // 404 route - must come after all other routes but before error handler

@@ -25,6 +25,9 @@ const Inventory = require("./models/inventory");
 const Admin = require("./models/admin");
 const Product = require("./models/product");
 const Order = require("./models/order");
+const cors=require('cors');
+const OpenAI = require("openai");
+
 
 const app = express();
 const crypto = require("crypto");
@@ -109,6 +112,7 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(methodOverride("_method"));
 app.use(express.static(path.join(__dirname, "/public")));
+app.use(cors());
 
 // Connecting to Database
 main()
@@ -1240,6 +1244,155 @@ app.post(
   })
 );
 
+// TODO: Agency Statistics Route
+
+// app.get("/agency/:id/stats", async (req, res) => {
+
+//   const agencyId = new mongoose.Types.ObjectId(req.params.id);
+
+//   // Volunteers statistics
+//   const totalVolunteers = await Volunteer.countDocuments({ agency: agencyId });
+//   const assignedVolunteers = await Volunteer.countDocuments({ agency: agencyId, assignedRequests: { $exists: true, $not: { $size: 0 } } });
+//   const freeVolunteers = await Volunteer.countDocuments({ agency: agencyId, assignedRequests: { $size: 0 } });
+
+//   // Monthly E-Waste Processed - Last 6 months
+//   const sixMonthsAgo = new Date();
+//   sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
+//   sixMonthsAgo.setDate(1);
+//   sixMonthsAgo.setHours(0, 0, 0, 0);
+
+//   const monthlyEwasteData = await Request.aggregate([
+//       { 
+//           $match: { 
+//               agency: agencyId, 
+//               status: "Completed",
+//               pickupDate: { $gte: sixMonthsAgo }
+//           } 
+//       },
+//       {
+//           $group: {
+//               _id: {
+//                   year: { $year: "$pickupDate" },
+//                   month: { $month: "$pickupDate" }
+//               },
+//               totalWeight: { $sum: "$weight" }
+//           }
+//       },
+//       { $sort: { "_id.year": 1, "_id.month": 1 } }
+//   ]);
+
+//   // Format the monthly data
+//   const monthlyEwaste = monthlyEwasteData.length > 0 ? monthlyEwasteData[0].totalWeight : 0;
+
+//   // E-Waste Categorization
+//   const ewasteCategories = await Request.aggregate([
+//       { $match: { agency: agencyId } },
+//       { $unwind: "$wasteType" }, // Ensuring wasteType is an array
+//       { 
+//           $group: { 
+//               _id: "$wasteType", 
+//               totalQuantity: { $sum: { $ifNull: [{ $sum: "$quantities" }, 0] } } 
+//           } 
+//       },
+//       { $sort: { totalQuantity: -1 } }
+//   ]);
+
+//   res.render("agency/statistics.ejs", {
+//     totalVolunteers,
+//     assignedVolunteers,
+//     freeVolunteers,
+//     monthlyEwaste,
+//     monthlyEwasteData,
+//     ewasteCategories
+//   });
+// });
+
+app.get("/agency/:id/stats", async (req, res) => {
+
+  const agencyId = new mongoose.Types.ObjectId(req.params.id);
+
+  // Volunteers statistics
+  const totalVolunteers = await Volunteer.countDocuments({ agency: agencyId });
+  const assignedVolunteers = await Volunteer.countDocuments({ agency: agencyId, assignedRequests: { $exists: true, $not: { $size: 0 } } });
+  const freeVolunteers = await Volunteer.countDocuments({ agency: agencyId, assignedRequests: { $size: 0 } });
+
+  // Monthly E-Waste Processed - Last 6 months
+  const sixMonthsAgo = new Date();
+  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
+  sixMonthsAgo.setDate(1);
+  sixMonthsAgo.setHours(0, 0, 0, 0);
+
+  // Generate array of last 6 months
+  const monthsArray = Array.from({length: 6}, (_, i) => {
+    const date = new Date();
+    date.setMonth(date.getMonth() - i);
+    return {
+      year: date.getFullYear(),
+      month: date.getMonth() + 1
+    };
+  }).reverse();
+
+  const monthlyEwasteData = await Request.aggregate([
+      { 
+          $match: { 
+              agency: agencyId, 
+              status: "Completed",
+              pickupDate: { $gte: sixMonthsAgo }
+          } 
+      },
+      {
+          $group: {
+              _id: {
+                  year: { $year: "$pickupDate" },
+                  month: { $month: "$pickupDate" }
+              },
+              totalWeight: { $sum: "$weight" }
+          }
+      },
+      { $sort: { "_id.year": 1, "_id.month": 1 } }
+  ]);
+
+  // Fill in missing months with zero values
+  const filledMonthlyData = monthsArray.map(monthYear => {
+      const existingData = monthlyEwasteData.find(d => 
+          d._id.year === monthYear.year && 
+          d._id.month === monthYear.month
+      );
+      return {
+          _id: {
+              year: monthYear.year,
+              month: monthYear.month
+          },
+          totalWeight: existingData ? existingData.totalWeight : 0
+      };
+  });
+
+  // Format the monthly data
+  const monthlyEwaste = monthlyEwasteData.length > 0 ? monthlyEwasteData[0].totalWeight : 0;
+
+  // E-Waste Categorization
+  const ewasteCategories = await Request.aggregate([
+      { $match: { agency: agencyId } },
+      { $unwind: "$wasteType" }, // Ensuring wasteType is an array
+      { 
+          $group: { 
+              _id: "$wasteType", 
+              totalQuantity: { $sum: { $ifNull: [{ $sum: "$quantities" }, 0] } } 
+          } 
+      },
+      { $sort: { totalQuantity: -1 } }
+  ]);
+
+  res.render("agency/statistics.ejs", {
+    totalVolunteers,
+    assignedVolunteers,
+    freeVolunteers,
+    monthlyEwaste,
+    monthlyEwasteData: filledMonthlyData,  // Use the filled data
+    ewasteCategories
+  });
+});
+
 
 // TODO: Agency Inventory Route
 
@@ -1524,6 +1677,21 @@ app.post("/agency/order/:id/update-status", isAgencyLoggedIn, async (req, res) =
   res.redirect(`/agency/${req.user._id}/orders`);
 });
 
+
+//TODO: Chat Bot
+
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY, // Ensure your .env file contains this key
+});
+
+app.post("/chat", wrapAsync(async (req, res) => {
+  const userMessage = req.body.message;
+  const completion = await openai.chat.completions.create({
+    model: "gpt-4o-mini", // "gpt-4o-mini" might not be available, try "gpt-4o"
+    messages: [{ role: "user", content: userMessage }],
+  });
+  res.json({ reply: completion.choices[0].message.content });
+}));
 
 
 // TODO: Error Handling

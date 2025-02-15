@@ -5,8 +5,38 @@ A web-based platform connecting users with certified e-waste collection agencies
 ## 🕒 Latest Updates (February, 2025)
 
 ### New Features Added
- 
-**New Features added:**
+
+  - **15/2/2025**
+  - **Redemption System**
+      - Merchandise Store for Users
+          - Agencies can list their merchandise products on the platform
+          - Users can purchase these products using earned e-points
+          - Agencies handle product shipping through third-party logistics services (e.g., BlueDart)
+      - Redemption flow:
+          - Users browse available merchandise
+          - Select item and redeem using e-points
+          - Agency receives request and confirms shipping
+
+  - **Chatbot Integration**
+      - AI-powered Chatbot Assistance
+          - Helps users navigate platform features
+          - Provides instant responses for:
+            - Waste disposal guidelines
+            - Reward system queries
+            - Live chat support with FAQs
+            
+  - **Agency Statistics**
+      - Performance Metrics
+        - Track number of volunteers
+        - Total assigned vs free volunteers
+        - Monthly e-waste processed (last 6 months)
+        - Waste categorization breakdown
+      - Monthly E-Waste Processing Data
+        - Agency can view last six months' waste collected
+        - Data includes weight, categories, and processing rates
+      - Real-Time Statistics Dashboard
+        - Overview of processed weight            
+
   - **8/2/2025**
   - Story Feature Update - Added image upload option for community stories
   - Inventory Feature Update - Added waste breakdown options in inventory management
@@ -193,6 +223,7 @@ A web-based platform connecting users with certified e-waste collection agencies
 - Cloudinary (Image storage)
 - OpenCage Geocoding API (Address lookup)
 - NodeMailer (Email )
+- OpenAI 
 
 ### Security
 
@@ -219,6 +250,7 @@ env
 7.OPENCAGE_API_KEY=your_opencage_api_key
 8.APP_PASSWORD=your_gmail_app_password
 9.APP_EMAIL=your_gmail
+10.OPENAI_API_KEY=your_openapikey
 
 ## 🔄 Authentication Flows
 
@@ -257,7 +289,7 @@ env
 - [ ] In-app notifications
 - [ ] Mobile responsive design
 - [ ] Chat system between users and agencies
-- [ ] Analytics dashboard
+- [x] Analytics dashboard
 - [ ] Payment integration
 
 

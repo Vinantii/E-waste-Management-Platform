@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agency Statistics</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <!-- Data Storage -->
+    <div id="statisticsData" 
+        data-volunteer-total="<%= totalVolunteers %>"
+        data-volunteer-assigned="<%= assignedVolunteers %>"
+        data-volunteer-free="<%= freeVolunteers %>"
+        data-monthly-ewaste='<%= JSON.stringify(monthlyEwasteData) %>'
+        data-categories='<%= JSON.stringify(ewasteCategories) %>'
+        style="display: none;">
+    </div>
+
+    <div class="container mt-5">
+        <h2 class="text-center mb-4">Agency Statistics Dashboard</h2>
+
+        <!-- Volunteer Section -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3>Volunteer Statistics</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-7">
+                        <canvas id="volunteerChart"></canvas>
+                    </div>
+                    <div class="col-md-5">
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <div class="card text-white bg-primary">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Total Volunteers</h5>
+                                        <p class="card-text display-6"><%= totalVolunteers %></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card text-white bg-success">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Assigned</h5>
+                                        <p class="card-text h3"><%= assignedVolunteers %></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card text-white bg-warning">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Free</h5>
+                                        <p class="card-text h3"><%= freeVolunteers %></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Monthly E-Waste Section -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3>Monthly E-Waste Processing</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <canvas id="monthlyEwasteChart"></canvas>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="alert alert-info h4 text-center">
+                            <div class="mb-2">Current Month</div>
+                            <strong><%= monthlyEwaste %> kg</strong>
+                            <div class="mt-2">processed</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- E-Waste Categories Section -->
+        <div class="card">
+            <div class="card-header">
+                <h3>E-Waste Categories</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-7">
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                    <div class="col-md-5">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Waste Type</th>
+                                        <th>Total Quantity</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% if (ewasteCategories.length > 0) { %>
+                                        <% ewasteCategories.forEach(category => { %>
+                                            <tr>
+                                                <td><%= category._id %></td>
+                                                <td><%= category.totalQuantity %></td>
+                                            </tr>
+                                        <% }) %>
+                                    <% } else { %>
+                                        <tr>
+                                            <td colspan="2" class="text-center">No e-waste data available</td>
+                                        </tr>
+                                    <% } %>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Get the data element
+        const dataElement = document.getElementById('statisticsData');
+        
+        // Parse the data from data attributes
+        const volunteerData = {
+            total: parseInt(dataElement.dataset.volunteerTotal),
+            assigned: parseInt(dataElement.dataset.volunteerAssigned),
+            free: parseInt(dataElement.dataset.volunteerFree)
+        };
+
+        const monthlyData = JSON.parse(dataElement.dataset.monthlyEwaste);
+        const categories = JSON.parse(dataElement.dataset.categories);
+
+        // Volunteer Chart
+        new Chart(document.getElementById('volunteerChart'), {
+            type: 'pie',
+            data: {
+                labels: ['Total Volunteers', 'Assigned Volunteers', 'Free Volunteers'],
+                datasets: [{
+                    data: [volunteerData.total, volunteerData.assigned, volunteerData.free],
+                    backgroundColor: ['#0d6efd', '#198754', '#ffc107']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Volunteer Distribution'
+                    },
+                    legend: {
+                        display: true,
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+
+        // Monthly E-Waste Chart
+        new Chart(document.getElementById('monthlyEwasteChart'), {
+            type: 'bar',
+            data: {
+                labels: monthlyData.map(d => {
+                    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                                      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                    return `${monthNames[d._id.month - 1]} ${d._id.year}`;
+                }),
+                datasets: [{
+                    label: 'E-Waste Processed (kg)',
+                    data: monthlyData.map(d => d.totalWeight),
+                    backgroundColor: '#0dcaf0'
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Weight (kg)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+
+        // E-Waste Categories Chart
+        new Chart(document.getElementById('categoryChart'), {
+            type: 'doughnut',
+            data: {
+                labels: categories.map(c => c._id),
+                datasets: [{
+                    data: categories.map(c => c.totalQuantity),
+                    backgroundColor: [
+                        '#FF6384',
+                        '#36A2EB',
+                        '#FFCE56',
+                        '#4BC0C0',
+                        '#9966FF',
+                        '#FF9F40'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'E-Waste Categories Distribution'
+                    },
+                    legend: {
+                        display: true,
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

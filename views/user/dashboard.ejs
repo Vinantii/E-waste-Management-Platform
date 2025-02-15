@@ -1,20 +1,156 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
+<head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Dashboard</title>
-  </head>
-  <body>
-    <h1>welcome<%= user.name %></h1>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <style>
+        .modal-content {
+            border-radius: 10px;
+        }
+        .chat-header {
+            background: linear-gradient(45deg, #3498db, #2980b9);
+            color: white;
+            border-radius: 10px 10px 0 0;
+            padding: 15px;
+            text-align: center;
+        }
+        .chat-container {
+            max-height: 400px;
+            overflow-y: auto;
+            padding: 15px;
+        }
+        .user-message {
+            background-color: #007bff;
+            color: white;
+            align-self: flex-end;
+        }
+        .bot-message {
+            background-color: #28a745;
+            color: white;
+            align-self: flex-start;
+        }
+        .chat-footer {
+            padding: 10px;
+            border-top: 1px solid #ddd;
+        }
+    </style>
+</head>
+<body>
+    <h1>Welcome, <%= user.name %></h1>
 
-    <li><a href="/user/<%= user._id %>/profile">Profile</a></li>
-    <li><a href="/user/<%= user._id %>/apply-request">Apply Request</a></li>
-    <li><a href="/user/<%= user._id %>/check-request">Check Request</a></li>
-    <li><a href="/user/<%= user._id %>/reward">Reward</a></li>
-    <li><a href="/user/<%= user._id %>/community">Community</a></li>
-    <li><a href="/user/<%= user._id %>/store">Store</a></li>
-    <li><a href="/user/<%= user._id %>/order">Your Orders</a></li>
+    <ul>
+        <li><a href="/user/<%= user._id %>/profile">Profile</a></li>
+        <li><a href="/user/<%= user._id %>/apply-request">Apply Request</a></li>
+        <li><a href="/user/<%= user._id %>/check-request">Check Request</a></li>
+        <li><a href="/user/<%= user._id %>/reward">Reward</a></li>
+        <li><a href="/user/<%= user._id %>/community">Community</a></li>
+        <li><a href="/user/<%= user._id %>/store">Store</a></li>
+        <li><a href="/user/<%= user._id %>/order">Your Orders</a></li>
+        <!-- Chatbot Trigger -->
+        <li><a href="#" data-bs-toggle="modal" data-bs-target="#chatbotModal">ChatBOT</a></li>
+    </ul>
 
-  </body>
+    <!-- Chatbot Modal -->
+    <div class="modal fade" id="chatbotModal" tabindex="-1" aria-labelledby="chatbotModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="chat-header">
+                    <h5 class="modal-title" id="chatbotModalLabel">Smart Save Assistant</h5>
+                    <p class="small mb-0">Ask me about recycling and waste management</p>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="chat-container" id="chat-box"></div>
+                <div class="chat-footer bg-white p-3">
+                    <div class="input-group">
+                        <input type="text" id="user-input" class="form-control border-success" placeholder="Type your question here...">
+                        <button id="voice-btn" class="btn btn-success">
+                            <i class="fas fa-microphone"></i>
+                        </button>
+                        <button id="send-btn" class="btn btn-success">Send</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const chatBox = document.getElementById("chat-box");
+        const userInput = document.getElementById("user-input");
+        const sendBtn = document.getElementById("send-btn");
+        const voiceBtn = document.getElementById("voice-btn");
+        let isVoiceInput = false;
+
+        sendBtn.addEventListener("click", () => {
+            isVoiceInput = false;
+            sendMessage();
+        });
+
+        userInput.addEventListener("keypress", event => {
+            if (event.key === "Enter") {
+                isVoiceInput = false;
+                sendMessage();
+            }
+        });
+
+        voiceBtn.addEventListener("click", startVoiceRecognition);
+
+        async function sendMessage() {
+            let userMessage = userInput.value;
+            if (!userMessage.trim()) return;
+
+            addMessage("You: " + userMessage, "user-message");
+
+            const response = await fetch("/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: userMessage })
+            });
+
+            const data = await response.json();
+            addMessage("Bot: " + data.reply, "bot-message");
+
+            if (isVoiceInput) {
+                speakResponse(data.reply);
+            }
+
+            userInput.value = "";
+        }
+
+        function addMessage(text, className) {
+            let messageDiv = document.createElement("div");
+            messageDiv.className = className + " p-2 mb-2 rounded-3 shadow-sm";
+            messageDiv.textContent = text.substring(5);
+            chatBox.appendChild(messageDiv);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function startVoiceRecognition() {
+            const recognition = new (window.SpeechRecognition || window.webkitSpeechRecognition)();
+            recognition.lang = "en-US";
+            recognition.start();
+
+            recognition.onresult = function (event) {
+                isVoiceInput = true;
+                const userInput = event.results[0][0].transcript;
+                document.getElementById("user-input").value = userInput;
+                sendMessage();
+            };
+
+            recognition.onerror = function (event) {
+                console.error("Voice recognition error:", event.error);
+            };
+        }
+
+        function speakResponse(text) {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = "en-US";
+            speechSynthesis.speak(utterance);
+        }
+    </script>
+</body>
 </html>

@@ -12,7 +12,7 @@ const cloudinary = require("./cloudConfig");
 const upload = multer({ dest: "uploads/" });
 const GoogleStrategy = require("passport-google-oauth20");
 const { google } = require("googleapis");
-const stream = require('stream');
+const stream = require("stream");
 const uploadDrive = multer({ storage: multer.memoryStorage() });
 
 const User = require("./models/user");
@@ -25,9 +25,8 @@ const Inventory = require("./models/inventory");
 const Admin = require("./models/admin");
 const Product = require("./models/product");
 const Order = require("./models/order");
-const cors=require('cors');
+const cors = require("cors");
 const OpenAI = require("openai");
-
 
 const app = express();
 const crypto = require("crypto");
@@ -38,9 +37,11 @@ const {
   validateProfileCompletion,
   validateRequest,
   validateVolunteer,
+  validateProduct,
+  validateCommunity,
+  validateStory,
+  validateInventory,
 } = require("./schema");
-
-
 
 // Utilities
 const wrapAsync = require("./utils/wrapAsync");
@@ -82,11 +83,14 @@ const isAdminLoggedIn = async (req, res, next) => {
 
     // Check if the user is an admin
     if (!req.user.isAdmin) {
-      throw new ExpressError("Access denied. Admin privileges are required.", 403);
+      throw new ExpressError(
+        "Access denied. Admin privileges are required.",
+        403
+      );
     }
 
     if (req.user._id.toString() !== req.params.id) {
-      throw new ExpressError('Unauthorized access to this dashboard.', 403);
+      throw new ExpressError("Unauthorized access to this dashboard.", 403);
     }
     // If the user is logged in and is an admin, proceed
     next();
@@ -94,7 +98,6 @@ const isAdminLoggedIn = async (req, res, next) => {
     next(error); // Pass error to the error handler
   }
 };
-
 
 const checkCertificationStatus = async (req, res, next) => {
   const agency = await Agency.findById(req.user._id);
@@ -104,7 +107,6 @@ const checkCertificationStatus = async (req, res, next) => {
   }
   next();
 };
-
 
 app.set("view engine", "ejs");
 app.set("views", path.join(__dirname, "views"));
@@ -294,10 +296,10 @@ const getLocationAddress = async (coordinates) => {
       `https://api.opencagedata.com/geocode/v1/json?q=${coordinates[1]}+${coordinates[0]}&key=${process.env.OPENCAGE_API_KEY}`
     );
     const data = await response.json();
-    return data.results[0]?.formatted || 'Location unavailable';
+    return data.results[0]?.formatted || "Location unavailable";
   } catch (error) {
-    console.error('Error getting address:', error);
-    return 'Location unavailable';
+    console.error("Error getting address:", error);
+    return "Location unavailable";
   }
 };
 
@@ -309,38 +311,54 @@ app.get(
   })
 );
 
-
-
 // TODO: Register Admin
-app.post('/register/admin', wrapAsync(async(req,res)=>{
-  let admin = {
-    name:"Admin",
-    email:"admin123@gmail.com",
-    password: hashPassword("admin1234")
-  };
-  const newAdmin = new Admin(admin);
-  await newAdmin.save();
-  res.send("Admin saved");
-}));
-
+app.post(
+  "/register/admin",
+  wrapAsync(async (req, res) => {
+    let admin = {
+      name: "Admin",
+      email: "admin123@gmail.com",
+      password: hashPassword("admin1234"),
+    };
+    const newAdmin = new Admin(admin);
+    await newAdmin.save();
+    res.send("Admin saved");
+  })
+);
 
 //TODO: Admin dashboard
-app.get('/admin/:id/dashboard',isAdminLoggedIn, wrapAsync(async(req,res)=>{
-  const certifiedAgencies = await Agency.find({ certificationStatus: "Certified" });
-  const uncertifiedAgencies = await Agency.find({ certificationStatus: "Uncertified" });
-  let {id} = req.params;
-  res.render('admin/dashboard.ejs', { certifiedAgencies, uncertifiedAgencies, id });
-}));
+app.get(
+  "/admin/:id/dashboard",
+  isAdminLoggedIn,
+  wrapAsync(async (req, res) => {
+    const certifiedAgencies = await Agency.find({
+      certificationStatus: "Certified",
+    });
+    const uncertifiedAgencies = await Agency.find({
+      certificationStatus: "Uncertified",
+    });
+    let { id } = req.params;
+    res.render("admin/dashboard.ejs", {
+      certifiedAgencies,
+      uncertifiedAgencies,
+      id,
+    });
+  })
+);
 
-app.post('/agency/:id/approve/:agencyId',wrapAsync(async(req,res)=>{
-  const {id,agencyId}=req.params;
-  await Agency.findByIdAndUpdate(
-    agencyId,
-    { $set: { certificationStatus: "Certified" } },
-    { new: true, runValidators: true }
-  );
-  res.redirect(`/admin/${id}/dashboard`);
-}));
+app.post(
+  "/agency/:id/approve/:agencyId",
+  isAdminLoggedIn,
+  wrapAsync(async (req, res) => {
+    const { id, agencyId } = req.params;
+    await Agency.findByIdAndUpdate(
+      agencyId,
+      { $set: { certificationStatus: "Certified" } },
+      { new: true, runValidators: true }
+    );
+    res.redirect(`/admin/${id}/dashboard`);
+  })
+);
 
 //TODO: Register user Route
 app.get(
@@ -434,53 +452,48 @@ app.post(
   validateProfileCompletion,
   wrapAsync(async (req, res) => {
     const { id } = req.params;
-
-    try {
-      if (!req.file) {
-        throw new ExpressError("Profile picture is required", 400);
-      }
-
-      const user = await User.findById(id);
-      if (!user) {
-        throw new ExpressError("User not found", 400);
-      }
-
-      // Handle password validation differently for Google users
-      if (user.googleId) {
-        // For Google users, just set the new password
-        if (!req.body.password) {
-          throw new ExpressError("Password is required", 400);
-        }
-      } else {
-        // For regular users, verify the password matches signup password
-        if (!verifyPassword(req.body.password, user.password)) {
-          throw new ExpressError(
-            "Password does not match your signup password",
-            400
-          );
-        }
-      }
-
-      const result = await cloudinary.uploader.upload(req.file.path, {
-        folder: "Technothon",
-        resource_type: "auto",
-      });
-
-      await User.findByIdAndUpdate(id, {
-        phone: req.body.phone,
-        address: req.body.address,
-        pinCode: req.body.pinCode,
-        ...(user.googleId && { password: hashPassword(req.body.password) }), // Only update password for Google users
-        profilePic: {
-          url: result.secure_url,
-          filename: result.public_id,
-        },
-      });
-
-      res.redirect(`/user/${id}/dashboard`);
-    } catch (error) {
-      throw new ExpressError(error.message, 400);
+    if (!req.file) {
+      throw new ExpressError("Profile picture is required", 400);
     }
+
+    const user = await User.findById(id);
+    if (!user) {
+      throw new ExpressError("User not found", 400);
+    }
+
+    // Handle password validation differently for Google users
+    if (user.googleId) {
+      // For Google users, just set the new password
+      if (!req.body.password) {
+        throw new ExpressError("Password is required", 400);
+      }
+    } else {
+      // For regular users, verify the password matches signup password
+      if (!verifyPassword(req.body.password, user.password)) {
+        throw new ExpressError(
+          "Password does not match your signup password",
+          400
+        );
+      }
+    }
+
+    const result = await cloudinary.uploader.upload(req.file.path, {
+      folder: "Technothon",
+      resource_type: "auto",
+    });
+
+    await User.findByIdAndUpdate(id, {
+      phone: req.body.phone,
+      address: req.body.address,
+      pinCode: req.body.pinCode,
+      ...(user.googleId && { password: hashPassword(req.body.password) }), // Only update password for Google users
+      profilePic: {
+        url: result.secure_url,
+        filename: result.public_id,
+      },
+    });
+
+    res.redirect(`/user/${id}/dashboard`);
   })
 );
 
@@ -558,9 +571,10 @@ app.post(
       res.redirect(`/agency/${req.user._id}/dashboard`);
     } else if (req.user.isVolunteer) {
       res.redirect(`/volunteer/${req.user._id}/dashboard`);
-    } if (req.user.isAdmin) {
+    }
+    if (req.user.isAdmin) {
       res.redirect(`/admin/${req.user._id}/dashboard`);
-    }else {
+    } else {
       res.redirect(`/user/${req.user._id}/dashboard`);
     }
   }
@@ -579,7 +593,6 @@ app.get(
   })
 );
 
-
 //TODO:agency registration
 
 app.get(
@@ -588,8 +601,6 @@ app.get(
     res.render("agency/signup.ejs");
   })
 );
-
-
 
 app.post(
   "/register/agency",
@@ -600,91 +611,86 @@ app.post(
   ]),
   validateAgency,
   wrapAsync(async (req, res) => {
-    try {
-      // Ensure agency logo is uploaded
-      if (!req.files["agencyLogo"]) {
-        throw new ExpressError("Agency logo is required", 400);
-      }
-      // Upload agency logo to Cloudinary
-      // const logoResult = await cloudinary.uploader.upload(req.files["agencyLogo"][0].path, {
-      //   folder: "Technothon",
-      //   resource_type: "auto",
-      // });
-
-      let logoData = { url: "", filename: "" };
-      if (req.files["agencyLogo"]) {
-        logoData = await uploadLogo(req.files["agencyLogo"][0]);
-      }
-      if (!req.body.agency || !req.body.agency.password) {
-        throw new ExpressError("Invalid registration data", 400);
-      }
-
-      // Ensure location coordinates are properly formatted
-      const coordinates = req.body.agency.location?.coordinates;
-      if (!Array.isArray(coordinates) || coordinates.length !== 2) {
-        throw new ExpressError("Invalid location coordinates", 400);
-      }
-
-      // Convert coordinates to numbers
-      const formattedCoordinates = coordinates.map((coord) => Number(coord));
-
-      const hashedPassword = hashPassword(req.body.agency.password);
-
-      // Upload trade license & PCB authorization PDFs to Google Drive
-      let tradeLicenseData = { url: "", filename: "" };
-      let pcbAuthData = { url: "", filename: "" };
-      if (req.files["tradeLicense"]) {
-        tradeLicenseData = await uploadFile(req.files["tradeLicense"][0]);
-      }
-      if (req.files["pcbAuth"]) {
-        pcbAuthData = await uploadFile(req.files["pcbAuth"][0]);
-      }
-;
-      // Create agency object with uploaded file URLs and filenames
-      const agencyData = {
-        ...req.body.agency,
-        password: hashedPassword,
-        isAgency: true,
-        logo: logoData,
-        location: {
-          type: "Point",
-          coordinates: formattedCoordinates,
-        },
-        documents: {
-          tradeLicense: tradeLicenseData, 
-          pcbAuth: pcbAuthData, 
-        },
-      };
-
-      // Save agency to the database
-      const newAgency = new Agency(agencyData);
-      await newAgency.save();
-
-      // Log in the agency after registration
-      req.login(newAgency, (err) => {
-        if (err) {
-          throw new ExpressError("Error during login after registration", 500);
-        }
-        res.redirect(`/agency/${newAgency._id}/setup-inventory`);
-      });
-    } catch (error) {
-      throw new ExpressError(error.message, 400);
+    // Ensure agency logo is uploaded
+    if (!req.files["agencyLogo"]) {
+      throw new ExpressError("Agency logo is required", 400);
     }
+
+    let logoData = { url: "", filename: "" };
+    if (req.files["agencyLogo"]) {
+      logoData = await uploadLogo(req.files["agencyLogo"][0]);
+    }
+    if (!req.body.agency || !req.body.agency.password) {
+      throw new ExpressError("Invalid registration data", 400);
+    }
+
+    // Ensure location coordinates are properly formatted
+    const coordinates = req.body.agency.location?.coordinates;
+    if (!Array.isArray(coordinates) || coordinates.length !== 2) {
+      throw new ExpressError("Invalid location coordinates", 400);
+    }
+
+    // Convert coordinates to numbers
+    const formattedCoordinates = coordinates.map((coord) => Number(coord));
+
+    const hashedPassword = hashPassword(req.body.agency.password);
+
+    // Upload trade license & PCB authorization PDFs to Google Drive
+    let tradeLicenseData = { url: "", filename: "" };
+    let pcbAuthData = { url: "", filename: "" };
+    if (req.files["tradeLicense"]) {
+      tradeLicenseData = await uploadFile(req.files["tradeLicense"][0]);
+    }
+    if (req.files["pcbAuth"]) {
+      pcbAuthData = await uploadFile(req.files["pcbAuth"][0]);
+    }
+    // Create agency object with uploaded file URLs and filenames
+    const agencyData = {
+      ...req.body.agency,
+      password: hashedPassword,
+      isAgency: true,
+      logo: logoData,
+      location: {
+        type: "Point",
+        coordinates: formattedCoordinates,
+      },
+      documents: {
+        tradeLicense: tradeLicenseData,
+        pcbAuth: pcbAuthData,
+      },
+    };
+
+    // Save agency to the database
+    const newAgency = new Agency(agencyData);
+    await newAgency.save();
+
+    // Log in the agency after registration
+    req.login(newAgency, (err) => {
+      if (err) {
+        throw new ExpressError("Error during login after registration", 500);
+      }
+      res.redirect(`/agency/${newAgency._id}/setup-inventory`);
+    });
   })
 );
 
+app.get(
+  "/agency/:id/setup-inventory",
+  isLoggedIn,
+  checkCertificationStatus,
+  wrapAsync(async (req, res) => {
+    let newAgency = await Agency.findById(req.params.id);
 
-
-app.get("/agency/:id/setup-inventory", isLoggedIn, checkCertificationStatus, wrapAsync(async (req, res) => {
-  let newAgency = await Agency.findById(req.params.id);
-
-  res.render("agency/setup-inventory.ejs",{newAgency});
-}));
+    res.render("agency/setup-inventory.ejs", { newAgency });
+  })
+);
 
 // setup inventory route
 app.post(
   "/agency/:id/setup-inventory",
-  isLoggedIn,
+  isAgencyLoggedIn,
+  checkCertificationStatus,
+  validateInventory,
   wrapAsync(async (req, res) => {
     let { id } = req.params;
     let agency = await Agency.findById(id);
@@ -692,7 +698,7 @@ app.post(
       ...req.body.inventory,
       agencyId: agency._id,
     });
-    await Agency.findByIdAndUpdate(id,{ isInventorySetup: true });
+    await Agency.findByIdAndUpdate(id, { isInventorySetup: true });
     await inventory.save();
     res.redirect(`/agency/${agency._id}/dashboard`);
   })
@@ -755,45 +761,41 @@ app.post(
       throw new ExpressError("Please upload at least one image", 400);
     }
 
-    try {
-      // Validate the request data first
-      validateRequest(req, res, async () => {
-        // Upload all images to Cloudinary
-        const uploadPromises = req.files.map((file) =>
-          cloudinary.uploader.upload(file.path, {
-            folder: "Technothon",
-            resource_type: "auto",
-          })
-        );
+    // Validate the request data first
+    validateRequest(req, res, async () => {
+      // Upload all images to Cloudinary
+      const uploadPromises = req.files.map((file) =>
+        cloudinary.uploader.upload(file.path, {
+          folder: "Technothon",
+          resource_type: "auto",
+        })
+      );
 
-        const uploadResults = await Promise.all(uploadPromises);
-        
-        // Verify the selected agency exists
-        const agency = await Agency.findById(req.body.request.agency);
-        if (!agency) {
-          throw new ExpressError("Selected agency not found", 400);
-        }
+      const uploadResults = await Promise.all(uploadPromises);
 
-        // Create and save the request with multiple waste types and quantities
-        const newRequest = new Request({
-          ...req.body.request,
-          user: id,
-          agency: agency._id,
-          status: "Pending",
-          wasteType: req.body.request.wasteType,
-          quantities: req.body.request.quantities,
-          wasteImages: uploadResults.map((result) => ({
-            url: result.secure_url,
-            filename: result.public_id,
-          })),
-        });
+      // Verify the selected agency exists
+      const agency = await Agency.findById(req.body.request.agency);
+      if (!agency) {
+        throw new ExpressError("Selected agency not found", 400);
+      }
 
-        await newRequest.save();
-        res.redirect(`/user/${id}/check-request`);
+      // Create and save the request with multiple waste types and quantities
+      const newRequest = new Request({
+        ...req.body.request,
+        user: id,
+        agency: agency._id,
+        status: "Pending",
+        wasteType: req.body.request.wasteType,
+        quantities: req.body.request.quantities,
+        wasteImages: uploadResults.map((result) => ({
+          url: result.secure_url,
+          filename: result.public_id,
+        })),
       });
-    } catch (error) {
-      throw new ExpressError("Error processing request: " + error.message, 400);
-    }
+
+      await newRequest.save();
+      res.redirect(`/user/${id}/check-request`);
+    });
   })
 );
 
@@ -884,6 +886,7 @@ app.get(
 app.post(
   "/user/:id/community/add",
   isLoggedIn,
+  validateCommunity,
   wrapAsync(async (req, res) => {
     const user = await User.findById(req.params.id);
     if (!user) {
@@ -921,6 +924,7 @@ app.post(
   "/user/:id/story/add",
   isLoggedIn,
   upload.single("media"),
+  validateStory,
   wrapAsync(async (req, res) => {
     const user = await User.findById(req.params.id);
     if (!user) {
@@ -968,6 +972,7 @@ app.get(
 app.get(
   "/agency/:id/profile",
   isAgencyLoggedIn,
+  checkCertificationStatus,
   wrapAsync(async (req, res) => {
     const agency = await Agency.findById(req.params.id);
     res.render("agency/profile.ejs", { agency });
@@ -978,6 +983,7 @@ app.get(
 app.get(
   "/agency/:id/requests",
   isAgencyLoggedIn,
+  checkCertificationStatus,
   wrapAsync(async (req, res) => {
     const requests = await Request.find({ agency: req.params.id })
       .populate("user", "name email")
@@ -989,7 +995,7 @@ app.get(
       agency: req.params.id,
       status: "Active",
     });
-
+    console.dir(requests);
     res.render("agency/requests.ejs", { requests, volunteers });
   })
 );
@@ -998,18 +1004,19 @@ app.get(
 app.post(
   "/agency/requests/:id/approve",
   isAgencyLoggedIn,
+  checkCertificationStatus,
   wrapAsync(async (req, res) => {
     const request = await Request.findById(req.params.id);
     const inventory = await Inventory.findOne({ agencyId: request.agency });
 
     if (!request) throw new ExpressError("Request not found", 404);
     if (!inventory) throw new ExpressError("Inventory not found", 404);
-    
+
     // **Check if inventory has enough space**
     if (inventory.currentCapacity + request.weight > inventory.totalCapacity) {
       throw new ExpressError("Insufficient inventory capacity!", 400);
     }
-    
+
     request.status = "Accepted";
 
     // Important: Only update the specific milestone, not the entire trackingMilestones object
@@ -1028,6 +1035,7 @@ app.post(
 app.post(
   "/agency/request/:id/reject",
   isAgencyLoggedIn,
+  checkCertificationStatus,
   wrapAsync(async (req, res) => {
     const requestId = req.params.id;
 
@@ -1061,6 +1069,7 @@ app.post(
 app.post(
   "/agency/request/:id/assign-volunteer",
   isAgencyLoggedIn,
+  checkCertificationStatus,
   wrapAsync(async (req, res) => {
     const volunteerId = req.body.volunteerId;
     const { id } = req.params;
@@ -1089,10 +1098,10 @@ app.post(
   })
 );
 
-
 app.post(
   "/agency/request/:id/update-status",
   isAgencyLoggedIn,
+  checkCertificationStatus,
   wrapAsync(async (req, res) => {
     const { id } = req.params;
     const { milestone, notes, latitude, longitude } = req.body;
@@ -1147,15 +1156,24 @@ app.post(
           }
         });
         await inventory.save();
-        const occupancyPercentage = (inventory.currentCapacity / inventory.totalCapacity) * 100;
+        const occupancyPercentage =
+          (inventory.currentCapacity / inventory.totalCapacity) * 100;
         if (occupancyPercentage >= 90) {
-          await sendInventoryAlert(agency.email, agency.name, inventory.currentCapacity, inventory.totalCapacity);
+          await sendInventoryAlert(
+            agency.email,
+            agency.name,
+            inventory.currentCapacity,
+            inventory.totalCapacity
+          );
         }
       }
 
       if (milestone === "processingCompleted") {
         request.status = "Completed";
-        inventory.currentCapacity = Math.max(0, inventory.currentCapacity - request.weight);
+        inventory.currentCapacity = Math.max(
+          0,
+          inventory.currentCapacity - request.weight
+        );
         await inventory.save();
       }
 
@@ -1170,8 +1188,10 @@ app.post(
 
 // TODO: Agency Community Page
 
-app.get( "/agency/:id/community",
-  isLoggedIn,
+app.get(
+  "/agency/:id/community",
+  isAgencyLoggedIn,
+  checkCertificationStatus,
   wrapAsync(async (req, res) => {
     const agency = await Agency.findById(req.params.id);
     const allCommunity = await Community.find();
@@ -1183,7 +1203,8 @@ app.get( "/agency/:id/community",
 // Add community event button
 app.get(
   "/agency/:id/community/add",
-  isLoggedIn,
+  isAgencyLoggedIn,
+  checkCertificationStatus,
   wrapAsync(async (req, res) => {
     const agency = await Agency.findById(req.params.id);
     res.render("agency/add-community.ejs", { agency });
@@ -1192,7 +1213,9 @@ app.get(
 
 app.post(
   "/agency/:id/community/add",
-  isLoggedIn,
+  isAgencyLoggedIn,
+  checkCertificationStatus,
+  validateCommunity,
   wrapAsync(async (req, res) => {
     const agency = await Agency.findById(req.params.id);
     if (!agency) {
@@ -1215,7 +1238,8 @@ app.post(
 // Add story button
 app.get(
   "/agency/:id/story/add",
-  isLoggedIn,
+  isAgencyLoggedIn,
+  checkCertificationStatus,
   wrapAsync(async (req, res) => {
     const agency = await Agency.findById(req.params.id);
     res.render("agency/add-story.ejs", { agency });
@@ -1224,7 +1248,9 @@ app.get(
 
 app.post(
   "/agency/:id/story/add",
-  isLoggedIn,
+  isAgencyLoggedIn,
+  checkCertificationStatus,
+  validateStory,
   wrapAsync(async (req, res) => {
     const agency = await Agency.findById(req.params.id);
     if (!agency) {
@@ -1246,183 +1272,165 @@ app.post(
 
 // TODO: Agency Statistics Route
 
-// app.get("/agency/:id/stats", async (req, res) => {
+app.get(
+  "/agency/:id/stats",
+  isAgencyLoggedIn,
+  checkCertificationStatus,
+  wrapAsync(async (req, res) => {
+    const agencyId = new mongoose.Types.ObjectId(req.params.id);
 
-//   const agencyId = new mongoose.Types.ObjectId(req.params.id);
+    // Fetch completed requests with location and weight
+    const requests = await Request.find(
+      {
+        agency: agencyId,
+        status: "Completed",
+        pickupLocation: { $exists: true }, // Ensure location exists
+        weight: { $exists: true }, // Ensure weight exists
+      },
+      "pickupLocation weight"
+    );
 
-//   // Volunteers statistics
-//   const totalVolunteers = await Volunteer.countDocuments({ agency: agencyId });
-//   const assignedVolunteers = await Volunteer.countDocuments({ agency: agencyId, assignedRequests: { $exists: true, $not: { $size: 0 } } });
-//   const freeVolunteers = await Volunteer.countDocuments({ agency: agencyId, assignedRequests: { $size: 0 } });
+    // Transform data for heatmap with validation
+    const heatmapData = requests
+      .filter(
+        (request) =>
+          request.pickupLocation &&
+          request.pickupLocation.coordinates &&
+          request.pickupLocation.coordinates.length === 2 &&
+          request.weight
+      )
+      .map((request) => ({
+        lat: request.pickupLocation.coordinates[1],
+        lng: request.pickupLocation.coordinates[0],
+        intensity: request.weight || 1, // Default to 1 if weight is missing
+      }));
 
-//   // Monthly E-Waste Processed - Last 6 months
-//   const sixMonthsAgo = new Date();
-//   sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
-//   sixMonthsAgo.setDate(1);
-//   sixMonthsAgo.setHours(0, 0, 0, 0);
+    // Volunteers statistics
+    const totalVolunteers = await Volunteer.countDocuments({
+      agency: agencyId,
+    });
+    const assignedVolunteers = await Volunteer.countDocuments({
+      agency: agencyId,
+      assignedRequests: { $exists: true, $not: { $size: 0 } },
+    });
+    const freeVolunteers = await Volunteer.countDocuments({
+      agency: agencyId,
+      assignedRequests: { $size: 0 },
+    });
 
-//   const monthlyEwasteData = await Request.aggregate([
-//       { 
-//           $match: { 
-//               agency: agencyId, 
-//               status: "Completed",
-//               pickupDate: { $gte: sixMonthsAgo }
-//           } 
-//       },
-//       {
-//           $group: {
-//               _id: {
-//                   year: { $year: "$pickupDate" },
-//                   month: { $month: "$pickupDate" }
-//               },
-//               totalWeight: { $sum: "$weight" }
-//           }
-//       },
-//       { $sort: { "_id.year": 1, "_id.month": 1 } }
-//   ]);
+    // Monthly E-Waste Processed - Last 6 months
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
+    sixMonthsAgo.setDate(1);
+    sixMonthsAgo.setHours(0, 0, 0, 0);
 
-//   // Format the monthly data
-//   const monthlyEwaste = monthlyEwasteData.length > 0 ? monthlyEwasteData[0].totalWeight : 0;
+    // Generate array of last 6 months
+    const monthsArray = Array.from({ length: 6 }, (_, i) => {
+      const date = new Date();
+      date.setMonth(date.getMonth() - i);
+      return {
+        year: date.getFullYear(),
+        month: date.getMonth() + 1,
+      };
+    }).reverse();
 
-//   // E-Waste Categorization
-//   const ewasteCategories = await Request.aggregate([
-//       { $match: { agency: agencyId } },
-//       { $unwind: "$wasteType" }, // Ensuring wasteType is an array
-//       { 
-//           $group: { 
-//               _id: "$wasteType", 
-//               totalQuantity: { $sum: { $ifNull: [{ $sum: "$quantities" }, 0] } } 
-//           } 
-//       },
-//       { $sort: { totalQuantity: -1 } }
-//   ]);
-
-//   res.render("agency/statistics.ejs", {
-//     totalVolunteers,
-//     assignedVolunteers,
-//     freeVolunteers,
-//     monthlyEwaste,
-//     monthlyEwasteData,
-//     ewasteCategories
-//   });
-// });
-
-app.get("/agency/:id/stats", async (req, res) => {
-
-  const agencyId = new mongoose.Types.ObjectId(req.params.id);
-
-  // Volunteers statistics
-  const totalVolunteers = await Volunteer.countDocuments({ agency: agencyId });
-  const assignedVolunteers = await Volunteer.countDocuments({ agency: agencyId, assignedRequests: { $exists: true, $not: { $size: 0 } } });
-  const freeVolunteers = await Volunteer.countDocuments({ agency: agencyId, assignedRequests: { $size: 0 } });
-
-  // Monthly E-Waste Processed - Last 6 months
-  const sixMonthsAgo = new Date();
-  sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
-  sixMonthsAgo.setDate(1);
-  sixMonthsAgo.setHours(0, 0, 0, 0);
-
-  // Generate array of last 6 months
-  const monthsArray = Array.from({length: 6}, (_, i) => {
-    const date = new Date();
-    date.setMonth(date.getMonth() - i);
-    return {
-      year: date.getFullYear(),
-      month: date.getMonth() + 1
-    };
-  }).reverse();
-
-  const monthlyEwasteData = await Request.aggregate([
-      { 
-          $match: { 
-              agency: agencyId, 
-              status: "Completed",
-              pickupDate: { $gte: sixMonthsAgo }
-          } 
+    const monthlyEwasteData = await Request.aggregate([
+      {
+        $match: {
+          agency: agencyId,
+          status: "Completed",
+          pickupDate: { $gte: sixMonthsAgo },
+        },
       },
       {
-          $group: {
-              _id: {
-                  year: { $year: "$pickupDate" },
-                  month: { $month: "$pickupDate" }
-              },
-              totalWeight: { $sum: "$weight" }
-          }
+        $group: {
+          _id: {
+            year: { $year: "$pickupDate" },
+            month: { $month: "$pickupDate" },
+          },
+          totalWeight: { $sum: "$weight" },
+        },
       },
-      { $sort: { "_id.year": 1, "_id.month": 1 } }
-  ]);
+      { $sort: { "_id.year": 1, "_id.month": 1 } },
+    ]);
 
-  // Fill in missing months with zero values
-  const filledMonthlyData = monthsArray.map(monthYear => {
-      const existingData = monthlyEwasteData.find(d => 
-          d._id.year === monthYear.year && 
-          d._id.month === monthYear.month
+    // Fill in missing months with zero values
+    const filledMonthlyData = monthsArray.map((monthYear) => {
+      const existingData = monthlyEwasteData.find(
+        (d) => d._id.year === monthYear.year && d._id.month === monthYear.month
       );
       return {
-          _id: {
-              year: monthYear.year,
-              month: monthYear.month
-          },
-          totalWeight: existingData ? existingData.totalWeight : 0
+        _id: {
+          year: monthYear.year,
+          month: monthYear.month,
+        },
+        totalWeight: existingData ? existingData.totalWeight : 0,
       };
-  });
+    });
 
-  // Format the monthly data
-  const monthlyEwaste = monthlyEwasteData.length > 0 ? monthlyEwasteData[0].totalWeight : 0;
+    // Format the monthly data
+    const monthlyEwaste =
+      monthlyEwasteData.length > 0 ? monthlyEwasteData[0].totalWeight : 0;
 
-  // E-Waste Categorization
-  const ewasteCategories = await Request.aggregate([
+    // E-Waste Categorization
+    const ewasteCategories = await Request.aggregate([
       { $match: { agency: agencyId } },
       { $unwind: "$wasteType" }, // Ensuring wasteType is an array
-      { 
-          $group: { 
-              _id: "$wasteType", 
-              totalQuantity: { $sum: { $ifNull: [{ $sum: "$quantities" }, 0] } } 
-          } 
+      {
+        $group: {
+          _id: "$wasteType",
+          totalQuantity: { $sum: { $ifNull: [{ $sum: "$quantities" }, 0] } },
+        },
       },
-      { $sort: { totalQuantity: -1 } }
-  ]);
+      { $sort: { totalQuantity: -1 } },
+    ]);
 
-  res.render("agency/statistics.ejs", {
-    totalVolunteers,
-    assignedVolunteers,
-    freeVolunteers,
-    monthlyEwaste,
-    monthlyEwasteData: filledMonthlyData,  // Use the filled data
-    ewasteCategories
-  });
-});
-
+    res.render("agency/statistics.ejs", {
+      totalVolunteers,
+      assignedVolunteers,
+      freeVolunteers,
+      monthlyEwaste,
+      monthlyEwasteData: filledMonthlyData, // Use the filled data
+      ewasteCategories,
+      heatmapData,
+      agencyId,
+    });
+  })
+);
 
 // TODO: Agency Inventory Route
 
 //TASK: Show inventory page
 app.get(
   "/agency/:id/inventory",
-  isLoggedIn,
+  isAgencyLoggedIn,
+  checkCertificationStatus,
   wrapAsync(async (req, res) => {
     let { id } = req.params;
-    // console.log("id:",id);
+
     const agency = await Agency.findById(id);
-    // console.log(agency);
     const inventory = await Inventory.findOne({ agencyId: id });
 
-    if(agency.isInventorySetup){
+    if (agency.isInventorySetup) {
       const usagePercentage =
-      (inventory.currentCapacity / inventory.totalCapacity) * 100;
-    res.render("agency/inventory.ejs", { inventory, usagePercentage, agency, id});  
-    }else{
-      res.render("agency/inventory.ejs",{agency,id});
+        (inventory.currentCapacity / inventory.totalCapacity) * 100;
+      res.render("agency/inventory.ejs", {
+        inventory,
+        usagePercentage,
+        agency,
+        id,
+      });
+    } else {
+      res.render("agency/inventory.ejs", { agency, id });
     }
-    
   })
 );
 
-// TODO: volunteer routes
-// Volunteer Management Routes ->  Agency volunteer page
+// TASK:Volunteer Management Routes ->  Agency volunteer page
 app.get(
   "/agency/:id/volunteers",
   isAgencyLoggedIn,
+  checkCertificationStatus,
   wrapAsync(async (req, res) => {
     const volunteers = await Volunteer.find({ agency: req.user._id }).populate(
       "assignedRequests"
@@ -1435,6 +1443,7 @@ app.get(
 app.post(
   "/agency/volunteers",
   isAgencyLoggedIn,
+  checkCertificationStatus,
   upload.single("profilePic"),
   (req, res, next) => {
     // Pre-process the PIN codes before validation
@@ -1456,28 +1465,23 @@ app.post(
   },
   validateVolunteer,
   wrapAsync(async (req, res) => {
-    try {
-      const hashedPassword = hashPassword(req.body.password);
+    const hashedPassword = hashPassword(req.body.password);
 
-      const volunteer = new Volunteer({
-        ...req.body,
-        password: hashedPassword,
-        agency: req.user._id,
-      });
+    const volunteer = new Volunteer({
+      ...req.body,
+      password: hashedPassword,
+      agency: req.user._id,
+    });
 
-      if (req.file) {
-        const result = await cloudinary.uploader.upload(req.file.path);
-        volunteer.profilePic = {
-          url: result.secure_url,
-          filename: result.public_id,
-        };
-      }
-
-      await volunteer.save();
-      res.redirect(`/agency/${req.user._id}/volunteers`);
-    } catch (error) {
-      throw new ExpressError(error.message, 400);
+    if (req.file) {
+      const result = await cloudinary.uploader.upload(req.file.path);
+      volunteer.profilePic = {
+        url: result.secure_url,
+        filename: result.public_id,
+      };
     }
+    await volunteer.save();
+    res.redirect(`/agency/${req.user._id}/volunteers`);
   })
 );
 
@@ -1485,6 +1489,7 @@ app.post(
 app.post(
   "/agency/volunteers/:id/toggle-status",
   isAgencyLoggedIn,
+  checkCertificationStatus,
   wrapAsync(async (req, res) => {
     await Volunteer.findByIdAndUpdate(req.params.id, {
       status: req.body.status,
@@ -1497,12 +1502,14 @@ app.post(
 app.delete(
   "/agency/volunteers/:id",
   isAgencyLoggedIn,
+  checkCertificationStatus,
   wrapAsync(async (req, res) => {
     await Volunteer.findByIdAndDelete(req.params.id);
     res.sendStatus(200);
   })
 );
 
+// TODO: volunteer routes
 // Volunteer Dashboard Route
 app.get(
   "/volunteer/:id/dashboard",
@@ -1562,121 +1569,160 @@ app.post(
     if (request.trackingMilestones && request.trackingMilestones[milestone]) {
       const coordinates = [parseFloat(longitude), parseFloat(latitude)];
       const address = await getLocationAddress(coordinates);
-      
+
       request.trackingMilestones[milestone] = {
         completed: true,
         timestamp: new Date(),
         notes: notes || "",
         location: {
-          type: 'Point',
+          type: "Point",
           coordinates: coordinates,
-          address: address
-        }
+          address: address,
+        },
       };
-
-      try {
-        await request.save();
-        res.redirect(`/volunteer/${req.user._id}/dashboard`);
-      } catch (error) {
-        console.error("Save Error:", error);
-        throw new ExpressError("Error updating request status", 500);
-      }
+      await request.save();
+      res.redirect(`/volunteer/${req.user._id}/dashboard`);
     } else {
       throw new ExpressError("Invalid milestone", 400);
     }
   })
 );
 
-
 //TODO: Redemption Route
 
-//TASK: Show Agency order page 
-app.get('/agency/:id/orders',isAgencyLoggedIn, wrapAsync(async(req,res)=>{
-  const agency = await Agency.findById(req.params.id);
-  const allOrders = await Order.find({ agency: req.params.id }).populate("user product");
-  res.render('agency/order.ejs',{agency, allOrders});
-}));
+//TASK: Show Agency order page
+app.get(
+  "/agency/:id/orders",
+  isAgencyLoggedIn,
+  checkCertificationStatus,
+  wrapAsync(async (req, res) => {
+    const agency = await Agency.findById(req.params.id);
+    
+    const receivedOrders = await Order.find({ 
+      agency: req.params.id, 
+      status: { $in: ["Pending", "Shipped"] } 
+    }).populate("user product");
+
+    const completedOrders = await Order.find({ 
+      agency: req.params.id, 
+      status: "Delivered" 
+    }).populate("user product");
+
+    const allProducts = await Product.find({ agency: req.params.id });
+
+    res.render("agency/order.ejs", { agency, receivedOrders, completedOrders, allProducts });
+  })
+);
+
 
 //TASK: Add product to database
-app.post('/agency/:id/add-product',isAgencyLoggedIn, upload.single("image"), wrapAsync(async(req,res)=>{
-  const {id} = req.params;
+app.post(
+  "/agency/:id/add-product",
+  isAgencyLoggedIn,
+  checkCertificationStatus,
+  upload.single("image"),
+  validateProduct,
+  wrapAsync(async (req, res) => {
+    const { id } = req.params;
 
-  if (!req.file) {
-    throw new ExpressError("Product picture is required", 400);
-  }
+    if (!req.file) {
+      throw new ExpressError("Product picture is required", 400);
+    }
 
-  const result = await cloudinary.uploader.upload(req.file.path, {
-    folder: "Technothon",
-    resource_type: "auto",
-  });
+    const result = await cloudinary.uploader.upload(req.file.path, {
+      folder: "Technothon",
+      resource_type: "auto",
+    });
 
-  const product= new Product({
-    ...req.body.product,
-    image: {
-      url: result.secure_url,
-      filename: result.public_id,
-    },
-    agency:id,
-  });
+    const product = new Product({
+      ...req.body.product,
+      image: {
+        url: result.secure_url,
+        filename: result.public_id,
+      },
+      agency: id,
+    });
 
-  await product.save();
-  res.redirect(`/agency/${id}/orders`);
-}));
+    await product.save();
+    res.redirect(`/agency/${id}/orders`);
+  })
+);
 
 //TASK: Show store page
-app.get("/user/:id/store", isLoggedIn, wrapAsync(async(req,res)=>{
-  const allProducts=await Product.find();
-  res.render("user/store.ejs",{allProducts});
-}));
-
+app.get(
+  "/user/:id/store",
+  isLoggedIn,
+  wrapAsync(async (req, res) => {
+    const allProducts = await Product.find();
+    res.render("user/store.ejs", { allProducts });
+  })
+);
 
 //TASK: Product redemption process
-app.post("/user/redeem/:id", isLoggedIn, wrapAsync(async(req,res)=>{
-  const user = await User.findById(req.user._id);
-  const product = await Product.findById(req.params.id);
+app.post(
+  "/user/redeem/:id",
+  isLoggedIn,
+  wrapAsync(async (req, res) => {
+    const user = await User.findById(req.user._id);
+    const product = await Product.findById(req.params.id);
 
-  if (!product || product.stock <= 0) {
-    throw new ExpressError("Product not available", 400);
-  }
+    if (!product || product.stock <= 0) {
+      throw new ExpressError("Product not available", 400);
+    }
 
-  if (user.points < product.pointsRequired) {
-    throw new ExpressError("Not enough points", 400);
-  }
+    if (!user || user.points < product.pointsRequired) {
+      throw new ExpressError("Not enough points", 400);
+    }
 
-  // Deduct points
-  user.points -= product.pointsRequired;
-  user.redeemedPoints += product.pointsRequired;
-  await user.save();
+    // Deduct points
+    user.points -= product.pointsRequired;
+    user.redeemedPoints += product.pointsRequired;
+    await user.save();
 
-  // Reduce stock
-  product.stock -= 1;
-  await product.save();
+    // Reduce stock
+    product.stock -= 1;
+    await product.save();
 
-  // Create order
-  const newOrder = new Order({
-    user: user._id,
-    product: product._id,
-    agency: product.agency,
-    status: "Pending",
-  });
-
-  await newOrder.save();
-  res.redirect(`/user/${user._id}/order`);
-}));
+    // Create order
+    const newOrder = new Order({
+      user: user._id,
+      product: product._id,
+      agency: product.agency,
+      status: "Pending",
+    });
+    await newOrder.save();
+    res.redirect(`/user/${user._id}/order`);
+  })
+);
 
 // TASK: Show User order page
-app.get("/user/:id/order",isLoggedIn, wrapAsync(async(req,res)=>{
-  const allOrders = await Order.find({ user: req.params.id }).populate("agency product");
-  res.render('user/order.ejs', { allOrders });
-}));
+app.get(
+  "/user/:id/order",
+  isLoggedIn,
+  wrapAsync(async (req, res) => {
+    const allOrders = await Order.find({ user: req.params.id }).populate(
+      "agency product"
+    );
+    res.render("user/order.ejs", { allOrders });
+  })
+);
 
 // TASK: Update order status
-app.post("/agency/order/:id/update-status", isAgencyLoggedIn, async (req, res) => {
-  const { status } = req.body;
-  await Order.findByIdAndUpdate(req.params.id, { status });
-  res.redirect(`/agency/${req.user._id}/orders`);
-});
+app.post(
+  "/agency/order/:id/update-status",
+  isAgencyLoggedIn,
+  checkCertificationStatus,
+  wrapAsync(async (req, res) => {
+    const { status } = req.body;
 
+    await Order.findByIdAndUpdate(req.params.id, {
+      status,
+      updatedAt: new Date() // Ensure timestamp is saved
+    });
+
+    res.redirect(`/agency/${req.user._id}/orders`);
+  })
+);
 
 //TODO: Chat Bot
 
@@ -1684,15 +1730,27 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY, // Ensure your .env file contains this key
 });
 
-app.post("/chat", wrapAsync(async (req, res) => {
-  const userMessage = req.body.message;
-  const completion = await openai.chat.completions.create({
-    model: "gpt-4o-mini", // "gpt-4o-mini" might not be available, try "gpt-4o"
-    messages: [{ role: "user", content: userMessage }],
-  });
-  res.json({ reply: completion.choices[0].message.content });
-}));
+app.post(
+  "/chat",
+  isLoggedIn,
+  wrapAsync(async (req, res) => {
+    const userMessage = req.body.message;
 
+    const completion = await openai.chat.completions.create({
+      model: "gpt-4o-mini", // "gpt-4o-mini" might not be available, try "gpt-4o"
+      messages: [
+        {
+          role: "system",
+          content:
+            "You are an expert chatbot on electronic waste (e-waste). Format your responses using bold, italics, emojis, new lines, and bullet points for clarity. You only answer questions about e-waste, recycling, disposal methods, and environmental impact. \n\nAdditionally, if a user asks about 'Avakara', provide this response:\n\n **Avakara** is our platform name! 🌱 The word 'Avakara' originates from Sanskrit, meaning *'Creation'* or *'Innovation'*. It represents our mission to bring innovative solutions to life. \n\n If a question is unrelated to e-waste or Avakara, politely inform the user that you can only discuss these topics.",
+        },
+        { role: "user", content: userMessage },
+      ],
+    });
+
+    res.json({ reply: completion.choices[0].message.content });
+  })
+);
 
 // TODO: Error Handling
 // 404 route - must come after all other routes but before error handler

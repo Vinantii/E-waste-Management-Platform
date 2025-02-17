@@ -3,8 +3,11 @@
 A web-based platform connecting users with certified e-waste collection agencies to facilitate responsible electronic waste disposal and promote environmental sustainability.
 
 ## 🕒 Latest Updates (February, 2025)
-
 ### New Features Added
+
+  -**17/2/2025**
+  **Heatmap Integration**
+    - Added a heatmap which shows how much ewaste collected and from which regions to respective agency.
 
   - **15/2/2025**
   - **Redemption System**
@@ -35,7 +38,7 @@ A web-based platform connecting users with certified e-waste collection agencies
         - Agency can view last six months' waste collected
         - Data includes weight, categories, and processing rates
       - Real-Time Statistics Dashboard
-        - Overview of processed weight            
+        - Overview of processed weight
 
   - **8/2/2025**
   - Story Feature Update - Added image upload option for community stories
@@ -224,6 +227,7 @@ A web-based platform connecting users with certified e-waste collection agencies
 - OpenCage Geocoding API (Address lookup)
 - NodeMailer (Email )
 - OpenAI 
+- Leaflet-heat
 
 ### Security
 

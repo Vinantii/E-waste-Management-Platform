@@ -11,51 +11,8 @@
   justify-content: flex-start;
   height: 100vh;
   width: 100vw;
-  background: linear-gradient(rgba(0, 0, 0, 0.28), rgba(0, 0, 0, 0.28)),
-    url("/images/bg.png");
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
+  background-color: #1F643A;
   position: relative;
-}
-
-.landing::after{
-    content: "";
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    height: 35%; /* Adjust height of gradient */
-    background: linear-gradient(to top, rgb(208, 224, 152), transparent);
-}
-
-.landing img{
-    position: absolute;
-    z-index: 0;
-}
-
-@keyframes float {
-    0% {
-        transform: translateY(0px);
-    }
-    50% {
-        transform: translateY(-20px);
-    }
-    100% {
-        transform: translateY(0px);
-    }
-}
-
-@keyframes floatReverse {
-    0% {
-        transform: translateY(0px);
-    }
-    50% {
-        transform: translateY(8px);
-    }
-    100% {
-        transform: translateY(0px);
-    }
 }
 
 @keyframes fadeIn {
@@ -91,30 +48,10 @@
     }
 }
 
-#leaf {
-    left: 0;
-    top: 40%;
-    animation: float 5s ease-in-out infinite;
-    opacity: 0;
-    animation-delay: 1s;
-    animation: initialFadeIn 1s ease-out 1s forwards,
-              float 5s ease-in-out infinite 1s;
-}
-
-#light {
-    right: 0;
-    top: 55%;
-    animation: floatReverse 3s ease-in-out infinite;
-    opacity: 0;
-    animation-delay: 1.2s;
-    animation: initialFadeIn 1s ease-out 1.2s forwards,
-              floatReverse 3s ease-in-out infinite 1.2s;
-}
-
 .navbar {
   width: 75%;
   margin-top: 3%;
-  background-color: rgba(208, 224, 152, 0.52);
+  background-color: rgba(0, 0, 0, 0.25);
   padding: 15px 30px;
   border-radius: 25px;
 }
@@ -154,15 +91,16 @@
 }
 
 .login{
-    background-color: #102D16;
+    background-color: #FFF;
+    color: #1F643A !important;
     padding: 10px 15px;
     border-radius: 10px;
     transition: 0.3s all ease;
 }
 
 .login:hover{
-    background-color: white;
-    color: #102D16;
+    background-color: #1F643A;
+    color: white !important;
 }
 
 .headline{
@@ -176,7 +114,7 @@
 
 .headline h2{
     font-family: 'Anek Latin';
-    color: #D0E098;
+    color: #B0D247;
     margin-bottom: 6%;
 }
 
@@ -188,8 +126,8 @@
 }
 
 .headline a{
-    color: white;
-    background-color: #102D16;
+    color: #1F643A;
+    background-color: #FFF;
     padding: 10px 15px;
     border-radius: 10px;
     text-decoration: none;
@@ -200,8 +138,7 @@
 .services{
     height: 100vh;
     width: 100vw;
-    background-color: #D0E098;
-    margin-top: -1.2%;
+    background-color: #FFF;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -228,7 +165,8 @@
     width: 80%;
     height: 75%;
     margin: 2% auto auto;
-    background-color: rgba(16, 45, 22, 0.3);
+    background-color: #FFF;
+    box-shadow: 0 0 20px 10px rgba(0, 0, 0, 0.15);
     border-radius: 25px;
     display: flex;
     justify-content: center;
@@ -288,7 +226,7 @@
 
 .service-card h4{
     overflow: hidden;
-    background-color: #D0E098;
+    background-color: #FFF;
     width: 90%;
     border-radius: 15px;
     font-size: 14px;
@@ -302,7 +240,7 @@
 
 .service-card p{
     font-family: 'Manrope';
-    color: #D0E098;
+    color: #FFF;
     width: 100%;
     margin-top: 5%;
     font-size: 20px;
@@ -313,7 +251,7 @@
 .facts,.feedbacks {
     height: auto;
     width: 100vw;
-    background-color: #D0E098;
+    background-color: #FFF;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -339,6 +277,15 @@
     scrollbar-width: 0;
 }
 
+.fb-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100vw;
+    min-height: 80vh;
+    margin-top: -4%;
+}
+
 .fb-carousel {
     display: flex;
     gap: 20px;
@@ -347,6 +294,7 @@
     scroll-behavior: smooth;
     scrollbar-width: 0;
     padding: 20px;
+    padding-left: 2%;
 }
 
 .fb-container,.facts-container{
@@ -401,7 +349,7 @@
 .fcard{
     scroll-snap-align: start;
     list-style: none;
-    background: #102D16 !important;
+    background: #1F643A !important;
     border-radius: 15px !important;
     padding: 20px !important;
     min-width: 400px;
@@ -428,6 +376,7 @@
     justify-content: center;
     border-radius: 25px;
     padding: 10px 20px;
+    box-shadow: 0 0 10px 5px rgba(0, 0, 0, 0.15);
 }
 
 .head{

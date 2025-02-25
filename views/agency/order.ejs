@@ -19,68 +19,13 @@
         <!-- Tabs Navigation -->
         <ul class="nav nav-tabs" id="orderTabs" role="tablist">
             <li class="nav-item">
-                <button class="nav-link active" id="received-tab" data-bs-toggle="tab" data-bs-target="#received" type="button" role="tab">Received Orders</button>
-            </li>
-            <li class="nav-item">
-                <button class="nav-link" id="completed-tab" data-bs-toggle="tab" data-bs-target="#completed" type="button" role="tab">Completed Orders</button>
-            </li>
-            <li class="nav-item">
-                <button class="nav-link" id="products-tab" data-bs-toggle="tab" data-bs-target="#products" type="button" role="tab">Products List</button>
+                <button class="nav-link active" id="products-tab" data-bs-toggle="tab" data-bs-target="#products" type="button" role="tab">Products List</button>
             </li>
         </ul>
 
-        <!-- Tabs Content -->
+        <!-- Product List -->
         <div class="tab-content mt-3" id="orderTabsContent">
-            <!-- Received Orders -->
-            <div class="tab-pane fade show active" id="received" role="tabpanel">
-                <div class="row">
-                    <% receivedOrders.forEach(order => { %>
-                        <div class="col-md-4 mb-4">
-                            <div class="card p-3">
-                                <h5>Order ID: <%= order._id %></h5>
-                                <p>Product: <%= order.product.name %></p>
-                                <p>User: <%= order.user.name %></p>
-                                <p>Status: <%= order.status %></p>
-                                <p class="text-muted">Created At: <%= order.createdAt.toDateString() %></p>
-                                <form action="/agency/order/<%= order._id %>/update-status" method="POST">
-                                    <select name="status" class="form-select mb-2">
-                                        <option value="Shipped">Ship</option>
-                                        <option value="Delivered">Deliver</option>
-                                    </select>
-                                    <button type="submit" class="btn btn-primary w-100">Update</button>
-                                </form>
-                            </div>
-                        </div>
-                    <% }); %>
-                </div>
-            </div>
-
-            <!-- Completed Orders -->
-            <div class="tab-pane fade" id="completed" role="tabpanel">
-                <div class="row">
-                    <% completedOrders.forEach(order => { %>
-                        <div class="col-md-4 mb-4">
-                            <div class="card p-3">
-                                <h5>Order ID: <%= order._id %></h5>
-                                <p>Product: <%= order.product.name %></p>
-                                <p>User: <%= order.user.name %></p>
-                                <p>Status: <span class="badge bg-success"><%= order.status %></span></p>
-                                <p class="text-muted">
-                                    Delivered On:
-                                    <% if (order.updatedAt) { %>
-                                        <%= new Date(order.updatedAt).toDateString() %>
-                                    <% } else { %>
-                                        Not Available
-                                    <% } %>
-                                </p>
-                            </div>
-                        </div>
-                    <% }); %>
-                </div>
-            </div>
-
-            <!-- Product List -->
-            <div class="tab-pane fade" id="products" role="tabpanel">
+            <div class="tab-pane fade show active" id="products" role="tabpanel">
                 <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addProductModal">Add Product</button>
                 <div class="row">
                     <% allProducts.forEach(product => { %>
@@ -91,8 +36,73 @@
                                 <p><%= product.description %></p>
                                 <p>Points Required: <%= product.pointsRequired %></p>
                                 <p>Stock Available: <strong><%= product.stock %></strong></p>
+                                
+                                <!-- Update Product Button -->
+                                <button class="btn btn-warning w-100 mb-2" data-bs-toggle="modal" data-bs-target="#updateProductModal-<%= product._id %>">Update Product</button>
+
+                                <!-- Delete Product Button -->
+                                <button class="btn btn-danger w-100" data-bs-toggle="modal" data-bs-target="#deleteProductModal-<%= product._id %>">Delete Product</button>
                             </div>
                         </div>
+
+                        <!-- Update Product Modal -->
+                        <div class="modal fade" id="updateProductModal-<%= product._id %>" tabindex="-1" aria-labelledby="updateProductModalLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Update Product</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <form action="/agency/<%= agency._id %>/update-product/<%= product._id %>?_method=PUT" method="POST" enctype="multipart/form-data">
+                                            <div class="mb-3">
+                                                <label for="name" class="form-label">Product Name*</label>
+                                                <input type="text" class="form-control" name="product[name]" value="<%= product.name %>" required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="description" class="form-label">Description</label>
+                                                <textarea class="form-control" name="product[description]" rows="3"><%= product.description %></textarea>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="image" class="form-label">Update Product Image</label>
+                                                <input type="file" class="form-control" name="image" accept="image/*">
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="pointsRequired" class="form-label">Points Required*</label>
+                                                <input type="number" class="form-control" name="product[pointsRequired]" value="<%= product.pointsRequired %>" required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="stock" class="form-label">Stock Available*</label>
+                                                <input type="number" class="form-control" name="product[stock]" value="<%= product.stock %>" required>
+                                            </div>
+                                            <button type="submit" class="btn btn-warning w-100">Update Product</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Delete Product Modal -->
+                        <div class="modal fade" id="deleteProductModal-<%= product._id %>" tabindex="-1" aria-labelledby="deleteProductModalLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Confirm Delete</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p>Are you sure you want to delete the product <strong><%= product.name %></strong>?</p>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                        <form action="/agency/<%= agency._id %>/delete-product/<%= product._id %>?_method=DELETE" method="POST">
+                                            <button type="submit" class="btn btn-danger">Delete</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                     <% }); %>
                 </div>
             </div>
@@ -104,7 +114,7 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="addProductModalLabel">Add New Product</h5>
+                    <h5 class="modal-title">Add New Product</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">

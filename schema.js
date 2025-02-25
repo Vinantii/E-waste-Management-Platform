@@ -24,6 +24,7 @@ const agencySchema = Joi.object({
       )
       //.min(1)
       .required()
+      .single()
       .messages({
         "array.min": "At least one agency type must be selected",
       }),
@@ -36,6 +37,7 @@ const agencySchema = Joi.object({
         "string.pattern.base": "Phone number must be 10 digits",
       }),
     contactPerson: Joi.string().required(),
+    description:Joi.string().required(),
     location: Joi.object({
       type: Joi.string().valid("Point").default("Point"),
       coordinates: Joi.array().items(Joi.number()).length(2).required(),
@@ -53,6 +55,7 @@ const agencySchema = Joi.object({
       )
       .min(1)
       .required()
+      .single()
       .messages({
         "array.min": "At least one waste type must be selected",
       }),
@@ -243,6 +246,13 @@ const storySchema = Joi.object({
   }).required(),
 }).unknown(true); // Allows additional properties if needed
 
+const feedbackSchema = Joi.object({
+  feedback: Joi.object({
+    content: Joi.string().required(),
+    rating:Joi.number().required(),
+  }).required()
+})
+
 // Validation middlewares
 const validateUser = (req, res, next) => {
   const { error } = userSchema.validate(req.body);
@@ -331,6 +341,15 @@ const validateStory = (req, res, next) => {
   }
   next();
 };
+const validateFeedback = (req, res, next) => {
+  const { error } = feedbackSchema.validate(req.body);
+  if (error) {
+    const msg = error.details.map((el) => el.message).join(",");
+    throw new ExpressError(msg, 400);
+  } else {
+    next();
+  }
+};
 
 module.exports = {
   validateUser,
@@ -342,4 +361,5 @@ module.exports = {
   validateInventory,
   validateProduct,
   validateStory,
+  validateFeedback,
 };

@@ -80,7 +80,7 @@
                 </div>
                 <p class="card-text">
                   <strong>Waste Types:</strong> <%= request.wasteType.join(', ') %><br>
-                  <strong>Quantity:</strong> <%= request.quantity %><br>
+                  <strong>Quantity:</strong> <%= request.quantities %><br>
                   <strong>Agency:</strong> <%= request.agency.name %>
                 </p>
                 <a href="/user/request/<%= request._id %>/track" class="btn btn-primary">View Details</a>
@@ -103,7 +103,7 @@
                 </div>
                 <p class="card-text">
                   <strong>Waste Types:</strong> <%= request.wasteType.join(', ') %><br>
-                  <strong>Quantity:</strong> <%= request.quantity %><br>
+                  <strong>Quantity:</strong> <%= request.quantities %><br>
                   <strong>Agency:</strong> <%= request.agency.name %><br>
                   <strong>Completed On:</strong> <%= new Date(request.updatedAt).toLocaleDateString() %>
                 </p>

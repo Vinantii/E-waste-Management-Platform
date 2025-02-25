@@ -25,6 +25,9 @@ const Inventory = require("./models/inventory");
 const Admin = require("./models/admin");
 const Product = require("./models/product");
 const Order = require("./models/order");
+const Facts = require("./models/facts");
+const Feedback = require("./models/feedback");
+
 const cors = require("cors");
 const OpenAI = require("openai");
 
@@ -41,12 +44,14 @@ const {
   validateCommunity,
   validateStory,
   validateInventory,
+  validateFeedback
 } = require("./schema");
 
 // Utilities
 const wrapAsync = require("./utils/wrapAsync");
 const ExpressError = require("./utils/ExpressError");
 const sendInventoryAlert = require("./utils/emailService");
+const { request } = require("http");
 
 // MIDDLEWARE: to protect routes
 // Middleware to check if user is logged in
@@ -250,7 +255,7 @@ const uploadFile = async (file) => {
 
   return {
     url: `https://drive.google.com/file/d/${data.id}/view`,
-    filename: data.name,
+    filename: data.id,
   };
 };
 
@@ -285,8 +290,17 @@ const uploadLogo = async (file) => {
 
   return {
     url: `https://drive.google.com/thumbnail?id=${fileId}&sz=w1000`, // Fallback
-    filename: data.name,
+    filename: data.id,
   };
+};
+
+const deleteFileFromDrive = async (fileId) => {
+  try {
+    await drive.files.delete({ fileId });
+    console.log(`Deleted file ${fileId} from Google Drive.`);
+  } catch (error) {
+    console.error("Error deleting file from Google Drive:", error);
+  }
 };
 
 // Add this helper function at the top with other utilities
@@ -307,7 +321,9 @@ const getLocationAddress = async (coordinates) => {
 app.get(
   "/",
   wrapAsync(async (req, res) => {
-    res.render("index.ejs");
+    const facts = await Facts.find();
+    const feedbacks = await Feedback.find().populate("user", "name profilePic");
+    res.render("index.ejs", { facts,feedbacks });
   })
 );
 
@@ -727,6 +743,100 @@ app.get(
   })
 );
 
+//TASK: Update Profile
+app.put("/user/:id", upload.single("profilePic"), async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { name, phone, address, email, pinCode, latitude, longitude } =
+      req.body;
+    const user = await User.findById(id);
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Handle Image Upload (If New Image is Provided)
+    if (req.file) {
+      if (user.profilePic.filename) {
+        //Delete old image from Cloudinary
+        await cloudinary.uploader.destroy(user.profilePic.filename);
+      }
+
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: "Technothon",
+        resource_type: "auto",
+      });
+
+      // Upload New Image
+      user.profilePic = {
+        url: result.secure_url,
+        filename: result.public_id,
+      };
+    }
+    // Update User Details
+    user.name = name;
+    user.phone = phone;
+    user.address = address;
+    user.email = email;
+    user.pinCode = pinCode;
+    user.location.coordinates = [longitude, latitude];
+    await user.save();
+
+    res.redirect(`/user/${id}/profile`);
+  } catch (error) {
+    console.error("Error updating profile:", error);
+    res.status(500).send("Error updating profile.");
+  }
+});
+
+//TASK: Delete Profile
+app.delete("/user/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const user = await User.findById(id);
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    // Delete Profile Image from Cloudinary (If Exists)
+    if (user.profilePic.filename) {
+      await cloudinary.uploader.destroy(user.profilePic.filename);
+
+    }
+
+    await Story.deleteMany({ "author.user": user._id });
+    await Order.deleteMany({ user: user._id });
+
+    const requests = await Request.find({ user: user._id });
+
+    for (const request of requests) {
+      if (request.status === "Completed") {
+        if (request.volunteerAssigned) {
+          await Volunteer.findByIdAndUpdate(request.volunteerAssigned, {
+            $pull: { assignedRequests: request._id },
+          });
+        }
+
+        if (request.agency) {
+          await Agency.findByIdAndUpdate(request.agency, {
+            $pull: { requests: request._id },
+          });
+        }
+
+        await Request.findByIdAndDelete(request._id);
+      }
+    }
+    // Delete User from Database
+    await User.findOneAndDelete({ _id: user._id });
+
+    res.redirect("/"); // Redirect to signup page after deletion
+  } catch (error) {
+    console.error("Error deleting profile:", error);
+    res.status(500).send("Error deleting profile.");
+  }
+});
+
 // TODO: User Apply Request Route
 app.get(
   "/user/:id/apply-request",
@@ -957,6 +1067,29 @@ app.post(
   })
 );
 
+//TASK: Delete Story
+app.delete(
+  "/user/:id/story/:storyId",
+  isLoggedIn,
+  wrapAsync(async (req, res) => {
+    const { id, storyId } = req.params;
+    const user = await User.findById(id);
+    if (!user) {
+      throw new ExpressError("User not found", 404);
+    }
+    const story = await Story.findById(storyId);
+    if (!story) {
+      throw new ExpressError("Story not found", 404);
+    }
+    // Delete Story Image from Cloudinary (If Exists)
+    if (story.media.filename) {
+      await cloudinary.uploader.destroy(story.media.filename);
+    }
+    await Story.findByIdAndDelete(storyId);
+    res.redirect(`/user/${id}/community`);
+  })
+);
+
 // TODO: Agency Dashboard Route
 app.get(
   "/agency/:id/dashboard",
@@ -976,6 +1109,113 @@ app.get(
   wrapAsync(async (req, res) => {
     const agency = await Agency.findById(req.params.id);
     res.render("agency/profile.ejs", { agency });
+  })
+);
+
+//TASK: Update Profile
+app.put(
+  "/agency/:id",
+  uploadDrive.fields([
+    { name: "logo", maxCount: 1 },
+    { name: "tradeLicense", maxCount: 1 },
+    { name: "pcbAuth", maxCount: 1 },
+  ]),
+  wrapAsync(async (req, res) => {
+    const { id } = req.params;
+    const {
+      name,
+      description,
+      agencyType,
+      workingHours,
+      wasteTypesHandled,
+      phone,
+      contactPerson,
+      region,
+      address,
+    } = req.body;
+
+    const agency = await Agency.findById(id);
+    if (!agency) {
+      return res.status(404).json({ error: "Agency not found" });
+    }
+
+    let logoData = agency.logo;
+    let tradeLicenseData = agency.documents.tradeLicense;
+    let pcbAuthData = agency.documents.pcbAuth;
+
+    // ✅ Handle Logo Update (Delete Old & Upload New)
+    if (req.files["logo"]) {
+      if (agency.logo.filename) await deleteFileFromDrive(agency.logo.filename); // Delete old logo from Google Drive
+      logoData = await uploadLogo(req.files["logo"][0]); // Upload new logo
+    }
+
+    // ✅ Handle Trade License Update (Delete Old & Upload New)
+    if (req.files["tradeLicense"]) {
+      if (agency.documents.tradeLicense.filename)
+        await deleteFileFromDrive(agency.documents.tradeLicense.filename); // Delete old trade license
+      tradeLicenseData = await uploadFile(req.files["tradeLicense"][0]); // Upload new trade license
+    }
+
+    // Handle PCB Authorization Update (Delete Old & Upload New)
+    if (req.files["pcbAuth"]) {
+      if (agency.documents.pcbAuth.filename)
+        await deleteFileFromDrive(agency.documents.pcbAuth.filename); // Delete old PCB Auth
+      pcbAuthData = await uploadFile(req.files["pcbAuth"][0]); // Upload new PCB Auth
+    }
+
+    // ✅ Update Agency Data
+    await Agency.findByIdAndUpdate(
+      id,
+      {
+        name,
+        description,
+        agencyType,
+        workingHours,
+        wasteTypesHandled,
+        phone,
+        contactPerson,
+        region,
+        address,
+        logo: logoData,
+        documents: {
+          tradeLicense: tradeLicenseData,
+          pcbAuth: pcbAuthData,
+        },
+        updatedAt: Date.now(),
+      },
+      { runValidators: true } // Return updated document & enforce validation
+    );
+
+    res.redirect(`/agency/${id}/profile`);
+  })
+);
+
+//TASK: Delete Profile
+app.delete(
+  "/agency/:id",
+  wrapAsync(async (req, res) => {
+    const { id } = req.params;
+    const agency = await Agency.findById(id);
+    if (!agency) {
+      throw new ExpressError("Agency not found", 404);
+    }
+
+    if (agency.logo && agency.logo.filename) {
+      await deleteFileFromDrive(agency.logo.filename);
+    }
+
+    if (
+      agency.documents.tradeLicense &&
+      agency.documents.tradeLicense.filename
+    ) {
+      await deleteFileFromDrive(agency.documents.tradeLicense.filename);
+    }
+    if (agency.documents.pcbAuth && agency.documents.pcbAuth.filename) {
+      await deleteFileFromDrive(agency.documents.pcbAuth.filename);
+    }
+
+    await Agency.findByIdAndDelete(id);
+    res.redirect("/"); 
   })
 );
 
@@ -1494,7 +1734,7 @@ app.post(
     await Volunteer.findByIdAndUpdate(req.params.id, {
       status: req.body.status,
     });
-    res.sendStatus(200);
+    res.redirect(`/agency/${req.user._id}/volunteers`);
   })
 );
 
@@ -1503,11 +1743,29 @@ app.delete(
   "/agency/volunteers/:id",
   isAgencyLoggedIn,
   checkCertificationStatus,
-  wrapAsync(async (req, res) => {
-    await Volunteer.findByIdAndDelete(req.params.id);
-    res.sendStatus(200);
+  wrapAsync(async (req, res, next) => {
+    let { id } = req.params;
+
+    let volunteer = await Volunteer.findById(id);
+    if (!volunteer) {
+      throw new ExpressError("Volunteer not found", 404);
+    }
+
+    let requests = await Request.find({ _id: { $in: volunteer.assignedRequests } });
+
+    let allCompleted = requests.every(request => request.status === "Completed");
+    if (!allCompleted) {
+      throw new ExpressError("Cannot delete volunteer. Some assigned requests are not completed", 404);
+    }
+    if (volunteer.profilePic.filename) {
+      await cloudinary.uploader.destroy(volunteer.profilePic.filename);
+    }
+    await Volunteer.findByIdAndDelete(id);
+    res.redirect(`/agency/${req.user._id}/volunteers`);
   })
 );
+
+
 
 // TODO: volunteer routes
 // Volunteer Dashboard Route
@@ -1597,23 +1855,27 @@ app.get(
   checkCertificationStatus,
   wrapAsync(async (req, res) => {
     const agency = await Agency.findById(req.params.id);
-    
-    const receivedOrders = await Order.find({ 
-      agency: req.params.id, 
-      status: { $in: ["Pending", "Shipped"] } 
+
+    const receivedOrders = await Order.find({
+      agency: req.params.id,
+      status: { $in: ["Pending", "Shipped"] },
     }).populate("user product");
 
-    const completedOrders = await Order.find({ 
-      agency: req.params.id, 
-      status: "Delivered" 
+    const completedOrders = await Order.find({
+      agency: req.params.id,
+      status: "Delivered",
     }).populate("user product");
 
     const allProducts = await Product.find({ agency: req.params.id });
 
-    res.render("agency/order.ejs", { agency, receivedOrders, completedOrders, allProducts });
+    res.render("agency/order.ejs", {
+      agency,
+      receivedOrders,
+      completedOrders,
+      allProducts,
+    });
   })
 );
-
 
 //TASK: Add product to database
 app.post(
@@ -1647,6 +1909,70 @@ app.post(
     res.redirect(`/agency/${id}/orders`);
   })
 );
+
+//TASK: Update product
+app.put(
+  "/agency/:id/update-product/:productId",
+  isAgencyLoggedIn,
+  checkCertificationStatus,
+  upload.single("image"),
+  wrapAsync(async (req, res) => {
+    const { id, productId } = req.params;
+    const product = await Product.findById(productId);
+
+    if (!product) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+
+    // Handle Image Upload (If New Image is Provided)
+    if (req.file) {
+      if (product.image && product.image.filename) {
+        // Delete old image from Cloudinary
+        await cloudinary.uploader.destroy(product.image.filename);
+        console.log("Deleted old image");
+      }
+
+      // Upload new image
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: "Technothon",
+        resource_type: "auto",
+      });
+
+      // Add new image details to request body
+      req.body.product.image = {
+        url: result.secure_url,
+        filename: result.public_id,
+      };
+    }
+
+    // Update product
+    await Product.findByIdAndUpdate(productId, req.body.product, { new: true });
+
+    res.redirect(`/agency/${id}/orders`);
+  })
+);
+
+//TASK: Delete product
+app.delete(
+  "/agency/:id/delete-product/:productId",
+  isAgencyLoggedIn,
+  checkCertificationStatus,
+  wrapAsync(async (req, res) => {
+    const { id, productId } = req.params;
+    const product = await Product.findById(productId);
+    if (!product) {
+      return res.status(404).json({ error: "Product not found" });
+    }
+     // Delete Profile Image from Cloudinary (If Exists)
+     if (product.image.filename) {
+      await cloudinary.uploader.destroy(product.image.filename);
+    }
+    await Product.findByIdAndDelete(productId);
+    res.redirect(`/agency/${id}/orders`);
+  })
+);
+
+
 
 //TASK: Show store page
 app.get(
@@ -1717,7 +2043,7 @@ app.post(
 
     await Order.findByIdAndUpdate(req.params.id, {
       status,
-      updatedAt: new Date() // Ensure timestamp is saved
+      updatedAt: new Date(), // Ensure timestamp is saved
     });
 
     res.redirect(`/agency/${req.user._id}/orders`);
@@ -1751,6 +2077,18 @@ app.post(
     res.json({ reply: completion.choices[0].message.content });
   })
 );
+
+//TODO: Feedback 
+app.post("/user/:id/feedback",isLoggedIn, validateFeedback, wrapAsync(async (req, res) => {
+  const feedback = new Feedback({
+    ...req.body.feedback,
+    user: req.params.id,
+  });
+  
+  await feedback.save();
+  res.redirect(`/user/${req.params.id}/dashboard`);
+}))
+
 
 // TODO: Error Handling
 // 404 route - must come after all other routes but before error handler
@@ -1794,7 +2132,12 @@ app.use((err, req, res, next) => {
   });
 });
 
+const deleteExpiredEvents = async () => {
+  await Community.deleteMany({ endDate: { $lt: new Date() } });
+};
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
+  deleteExpiredEvents();
 });

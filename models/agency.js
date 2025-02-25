@@ -28,6 +28,11 @@ const agencySchema = new mongoose.Schema(
     },
     contactPerson: String, // Name of the contact person for the agency
 
+    description: {
+      type:String,
+      required:true,
+    },
+
     // Location with GeoJSON format
     location: {
       type: {
@@ -114,7 +119,7 @@ const agencySchema = new mongoose.Schema(
       },
     },
   },
-  { timestamps: true } // Automatically manages createdAt & updatedAt
+  { timestamps: true }, // Automatically manages createdAt & updatedAt
 );
 
 // // Add this pre-save middleware to log what's being saved

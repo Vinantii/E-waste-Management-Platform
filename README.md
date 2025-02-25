@@ -5,6 +5,16 @@ A web-based platform connecting users with certified e-waste collection agencies
 ## 🕒 Latest Updates (February, 2025)
 ### New Features Added
 
+  - **24/02/2024**
+  - **Handling Deletions**
+    - Implemented updation and deletion for agency and user profiles.
+    - Implemented deletion for event and stories.
+    - Implemented cascade deletions for User, Volunteer.
+
+  - **Feedback Form and Facts**  
+    - Added a feedback from for users.
+    - Added various facts related E-waste. 
+
   -**17/2/2025**
   **Heatmap Integration**
     - Added a heatmap which shows how much ewaste collected and from which regions to respective agency.

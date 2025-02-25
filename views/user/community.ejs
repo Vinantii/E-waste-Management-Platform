@@ -103,6 +103,7 @@
                                             Email: <%= event.contactInfo.email %><br>
                                             Phone: <%= event.contactInfo.phone %>
                                         </div>
+                                        
                                     </div>
                                     <div class="card-footer">
                                         <a href="<%= event.registrationLink %>" class="btn btn-primary w-100" target="_blank">
@@ -152,6 +153,13 @@
                                             Read More
                                         </button>
                                     </div>
+                                    <% if (story.author.user && story.author.user.toString() === user._id.toString()) { %>
+                                        <form action="/user/<%= user._id %>/story/<%= story._id %>?_method=DELETE" method="POST" style="display: inline;">
+                                            <button type="submit" class="btn btn-danger w-25" onclick="return confirm('Are you sure you want to delete this story?');">
+                                                Delete
+                                            </button>
+                                        </form>
+                                    <% } %>
                                 </div>
                             </div>
                         <% }) %>

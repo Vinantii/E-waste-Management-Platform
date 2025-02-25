@@ -18,6 +18,12 @@
         .tab-content {
             padding: 20px 0;
         }
+        .story-img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            border-radius: 10px;
+        }
     </style>
 </head>
 <body>
@@ -97,6 +103,7 @@
                                             Email: <%= event.contactInfo.email %><br>
                                             Phone: <%= event.contactInfo.phone %>
                                         </div>
+                                        
                                     </div>
                                     <div class="card-footer">
                                         <a href="<%= event.registrationLink %>" class="btn btn-primary w-100" target="_blank">
@@ -123,9 +130,12 @@
                         <% allStories.forEach(story => { %>
                             <div class="col">
                                 <div class="card h-100">
+                                    <% if (story.media && story.media.url) { %>
+                                        <img src="<%= story.media.url %>" alt="Story Image" class="story-img">
+                                    <% } %>
                                     <div class="card-body">
                                         <h5 class="card-title mb-3"><%= story.title %></h5>
-                                        <p class="card-text"><%= story.content.substring(0, 200) %>...</p>
+                                        <p class="card-text"><%= story.content.substring(0, 150) %>...</p>
                                         <div class="text-muted mb-3">
                                             <small>Published: <%= new Date(story.publishedAt).toLocaleDateString() %></small>
                                         </div>
@@ -138,10 +148,18 @@
                                     <div class="card-footer">
                                         <button class="btn btn-outline-primary w-100 read-more-btn" 
                                                 data-title="<%= story.title %>" 
-                                                data-content="<%= story.content %>">
+                                                data-content="<%= story.content %>"
+                                                data-image="<%= story.media.url %>">
                                             Read More
                                         </button>
                                     </div>
+                                    <% if (story.author.user && story.author.user.toString() === user._id.toString()) { %>
+                                        <form action="/user/<%= user._id %>/story/<%= story._id %>?_method=DELETE" method="POST" style="display: inline;">
+                                            <button type="submit" class="btn btn-danger w-25" onclick="return confirm('Are you sure you want to delete this story?');">
+                                                Delete
+                                            </button>
+                                        </form>
+                                    <% } %>
                                 </div>
                             </div>
                         <% }) %>
@@ -164,7 +182,10 @@
                         <h5 class="modal-title" id="readMoreModalLabel"></h5>
                         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                     </div>
-                    <div class="modal-body" id="readMoreModalContent"></div>
+                    <div class="modal-body">
+                        <img id="modalImage" class="img-fluid mb-3" src="" alt="Story Image">
+                        <p id="readMoreModalContent"></p>
+                    </div>
                 </div>
             </div>
         </div>
@@ -173,23 +194,14 @@
     <!-- Bootstrap Bundle with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     
-    <!-- Custom JavaScript -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            const readMoreButtons = document.querySelectorAll('.read-more-btn');
-            const modalTitle = document.getElementById('readMoreModalLabel');
-            const modalContent = document.getElementById('readMoreModalContent');
-            
-            readMoreButtons.forEach(button => {
+            document.querySelectorAll('.read-more-btn').forEach(button => {
                 button.addEventListener('click', () => {
-                    const title = button.getAttribute('data-title');
-                    const content = button.getAttribute('data-content');
-                    
-                    modalTitle.textContent = title;
-                    modalContent.textContent = content;
-                    
-                    const readMoreModal = new bootstrap.Modal(document.getElementById('readMoreModal'));
-                    readMoreModal.show();
+                    document.getElementById('readMoreModalLabel').textContent = button.getAttribute('data-title');
+                    document.getElementById('readMoreModalContent').textContent = button.getAttribute('data-content');
+                    document.getElementById('modalImage').src = button.getAttribute('data-image');
+                    new bootstrap.Modal(document.getElementById('readMoreModal')).show();
                 });
             });
         });

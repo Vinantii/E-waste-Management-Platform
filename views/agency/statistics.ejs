@@ -1,0 +1,404 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agency Statistics</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.7.1/dist/leaflet.css" />
+    <style>
+        #map {
+            height: 400px;
+            width: 100%;
+            margin: 20px 0;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Data Storage -->
+    <div id="statisticsData" 
+        data-volunteer-total="<%= totalVolunteers %>"
+        data-volunteer-assigned="<%= assignedVolunteers %>"
+        data-volunteer-free="<%= freeVolunteers %>"
+        data-monthly-ewaste='<%= JSON.stringify(monthlyEwasteData) %>'
+        data-categories='<%= JSON.stringify(ewasteCategories) %>'
+        data-heatmap-data='<%= JSON.stringify(heatmapData) %>'
+        data-agency-id="<%= agencyId %>"
+        style="display: none;">
+    </div>
+
+    <div class="container mt-5">
+        <h2 class="text-center mb-4">Agency Statistics Dashboard</h2>
+
+        <!-- Volunteer Section -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3>Volunteer Statistics</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-7">
+                        <canvas id="volunteerChart"></canvas>
+                    </div>
+                    <div class="col-md-5">
+                        <div class="row g-3">
+                            <div class="col-12">
+                                <div class="card text-white bg-primary">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Total Volunteers</h5>
+                                        <p class="card-text display-6"><%= totalVolunteers %></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card text-white bg-success">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Assigned</h5>
+                                        <p class="card-text h3"><%= assignedVolunteers %></p>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card text-white bg-warning">
+                                    <div class="card-body">
+                                        <h5 class="card-title">Free</h5>
+                                        <p class="card-text h3"><%= freeVolunteers %></p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Monthly E-Waste Section -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3>Monthly E-Waste Processing</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-8">
+                        <canvas id="monthlyEwasteChart"></canvas>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="alert alert-info h4 text-center">
+                            <div class="mb-2">Current Month</div>
+                            <strong><%= monthlyEwaste %> kg</strong>
+                            <div class="mt-2">processed</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- E-Waste Categories Section -->
+        <div class="card">
+            <div class="card-header">
+                <h3>E-Waste Categories</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-7">
+                        <canvas id="categoryChart"></canvas>
+                    </div>
+                    <div class="col-md-5">
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Waste Type</th>
+                                        <th>Total Quantity</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <% if (ewasteCategories.length > 0) { %>
+                                        <% ewasteCategories.forEach(category => { %>
+                                            <tr>
+                                                <td><%= category._id %></td>
+                                                <td><%= category.totalQuantity %></td>
+                                            </tr>
+                                        <% }) %>
+                                    <% } else { %>
+                                        <tr>
+                                            <td colspan="2" class="text-center">No e-waste data available</td>
+                                        </tr>
+                                    <% } %>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- E-Waste Collection Heatmap Section -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h3>E-Waste Collection Heatmap</h3>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-12">
+                        <div id="map"></div>
+                        <div class="text-muted mt-2">
+                            <small>The heatmap shows the concentration of e-waste collection points. 
+                            Red indicates high concentration, while blue indicates low concentration.</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    
+    <!-- Leaflet JS -->
+    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <!-- Leaflet Heat Plugin -->
+    <script src="https://unpkg.com/leaflet.heat/dist/leaflet-heat.js"></script>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            const dataElement = document.getElementById('statisticsData');
+            
+            // Get and parse heatmap data
+            let heatmapData;
+            try {
+                heatmapData = JSON.parse(dataElement.dataset.heatmapData || '[]');
+            } catch (e) {
+                heatmapData = [];
+            }
+
+            // Initialize the map centered on India
+            const map = L.map('map').setView([20.5937, 78.9629], 5);
+
+            // Add the OpenStreetMap tiles
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+            }).addTo(map);
+
+            if (heatmapData && heatmapData.length > 0) {
+                // Find the maximum weight
+                const maxWeight = Math.max(...heatmapData.map(point => point.intensity));
+
+                // Add markers for each collection point
+                heatmapData.forEach(point => {
+                    // Add a visible marker for each point with custom icon
+                    const marker = L.circleMarker([point.lat, point.lng], {
+                        radius: 8,
+                        fillColor: point.intensity === maxWeight ? '#cc0000' : '#ff9933',
+                        color: '#fff',
+                        weight: 2,
+                        opacity: 1,
+                        fillOpacity: 0.8
+                    }).addTo(map);
+                    
+                    // Add popup with more detailed information
+                    marker.bindPopup(`
+                        <strong>E-Waste Collection Point</strong><br>
+                        Weight: ${point.intensity}kg<br>
+                        ${point.intensity === maxWeight ? '(Highest collection point)' : ''}
+                    `);
+                });
+
+                // Transform data for heatmap
+                const heatPoints = heatmapData.map(point => [
+                    point.lat,
+                    point.lng,
+                    point.intensity / maxWeight // Normalize intensity
+                ]);
+
+                // Create and add the heat layer
+                const heat = L.heatLayer(heatPoints, {
+                    radius: 50,              // Increased radius to make points more visible
+                    blur: 30,                // Adjusted blur
+                    maxZoom: 18,            // Increased max zoom to allow closer inspection
+                    minOpacity: 0.6,        // Increased minimum opacity
+                    max: maxWeight,         // Using max weight as the maximum value
+                    gradient: {             // Adjusted gradient for better visualization of small datasets
+                        0.1: '#66b2ff',    // Light blue for very low values
+                        0.3: '#ffff66',    // Yellow for low-medium values
+                        0.5: '#ff9933',    // Orange for medium values
+                        0.7: '#ff5050',    // Light red for medium-high values
+                        0.9: '#cc0000'     // Deep red for high values
+                    }
+                }).addTo(map);
+
+                // Fit bounds to show all points
+                const bounds = L.latLngBounds(heatPoints.map(p => [p[0], p[1]]));
+                map.fitBounds(bounds, { padding: [50, 50] });
+
+                // Add legend
+                const legend = L.control({ position: 'bottomright' });
+                legend.onAdd = function(map) {
+                    const div = L.DomUtil.create('div', 'info legend');
+                    div.style.backgroundColor = 'rgba(255, 255, 255, 0.9)';
+                    div.style.padding = '12px';
+                    div.style.borderRadius = '6px';
+                    div.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
+                    
+                    div.innerHTML = `
+                        <h4 style="margin:0 0 8px 0;font-size:14px;font-weight:bold">Collection Intensity</h4>
+                        <div style="display:flex;flex-direction:column;gap:6px">
+                            <div style="display:flex;align-items:center;gap:8px">
+                                <span style="background:#cc0000;width:20px;height:20px;display:inline-block;border-radius:3px"></span>
+                                <span style="font-size:12px">High (${Math.round(maxWeight * 0.8)}-${maxWeight}kg)</span>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:8px">
+                                <span style="background:#ff5050;width:20px;height:20px;display:inline-block;border-radius:3px"></span>
+                                <span style="font-size:12px">Medium-High (${Math.round(maxWeight * 0.6)}-${Math.round(maxWeight * 0.8)}kg)</span>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:8px">
+                                <span style="background:#ff9933;width:20px;height:20px;display:inline-block;border-radius:3px"></span>
+                                <span style="font-size:12px">Medium (${Math.round(maxWeight * 0.4)}-${Math.round(maxWeight * 0.6)}kg)</span>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:8px">
+                                <span style="background:#ffff66;width:20px;height:20px;display:inline-block;border-radius:3px"></span>
+                                <span style="font-size:12px">Low-Medium (${Math.round(maxWeight * 0.2)}-${Math.round(maxWeight * 0.4)}kg)</span>
+                            </div>
+                            <div style="display:flex;align-items:center;gap:8px">
+                                <span style="background:#66b2ff;width:20px;height:20px;display:inline-block;border-radius:3px"></span>
+                                <span style="font-size:12px">Low (0-${Math.round(maxWeight * 0.2)}kg)</span>
+                            </div>
+                        </div>
+                    `;
+                    return div;
+                };
+                legend.addTo(map);
+
+            } else {
+                // Show message if no data
+                const messageDiv = document.createElement('div');
+                messageDiv.style.textAlign = 'center';
+                messageDiv.style.padding = '20px';
+                messageDiv.innerHTML = 'No collection data available';
+                document.getElementById('map').appendChild(messageDiv);
+            }
+
+            // Helper function to get color based on intensity
+            function getColor(intensity) {
+                if (intensity > 0.8) return 'red';
+                if (intensity > 0.6) return 'yellow';
+                if (intensity > 0.4) return 'lime';
+                if (intensity > 0.2) return 'cyan';
+                return 'blue';
+            }
+        });
+    </script>
+
+    <script>
+        // Get the data element
+        const dataElement = document.getElementById('statisticsData');
+        
+        // Parse the data from data attributes
+        const volunteerData = {
+            total: parseInt(dataElement.dataset.volunteerTotal),
+            assigned: parseInt(dataElement.dataset.volunteerAssigned),
+            free: parseInt(dataElement.dataset.volunteerFree)
+        };
+
+        const monthlyData = JSON.parse(dataElement.dataset.monthlyEwaste);
+        const categories = JSON.parse(dataElement.dataset.categories);
+
+        // Volunteer Chart
+        new Chart(document.getElementById('volunteerChart'), {
+            type: 'pie',
+            data: {
+                labels: ['Total Volunteers', 'Assigned Volunteers', 'Free Volunteers'],
+                datasets: [{
+                    data: [volunteerData.total, volunteerData.assigned, volunteerData.free],
+                    backgroundColor: ['#0d6efd', '#198754', '#ffc107']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'Volunteer Distribution'
+                    },
+                    legend: {
+                        display: true,
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+
+        // Monthly E-Waste Chart
+        new Chart(document.getElementById('monthlyEwasteChart'), {
+            type: 'bar',
+            data: {
+                labels: monthlyData.map(d => {
+                    const monthNames = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                                      'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+                    return `${monthNames[d._id.month - 1]} ${d._id.year}`;
+                }),
+                datasets: [{
+                    label: 'E-Waste Processed (kg)',
+                    data: monthlyData.map(d => d.totalWeight),
+                    backgroundColor: '#0dcaf0'
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Weight (kg)'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            display: false
+                        }
+                    }
+                },
+                plugins: {
+                    legend: {
+                        display: true,
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+
+        // E-Waste Categories Chart
+        new Chart(document.getElementById('categoryChart'), {
+            type: 'doughnut',
+            data: {
+                labels: categories.map(c => c._id),
+                datasets: [{
+                    data: categories.map(c => c.totalQuantity),
+                    backgroundColor: [
+                        '#FF6384',
+                        '#36A2EB',
+                        '#FFCE56',
+                        '#4BC0C0',
+                        '#9966FF',
+                        '#FF9F40'
+                    ]
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    title: {
+                        display: true,
+                        text: 'E-Waste Categories Distribution'
+                    },
+                    legend: {
+                        display: true,
+                        position: 'bottom'
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

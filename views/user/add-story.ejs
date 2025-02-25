@@ -10,7 +10,7 @@
 <body>
    <div class="container mt-5">
        <h2 class="mb-4">Create New Story</h2>
-       <form action="/user/<%=user._id%>/story/add" method="POST" class="needs-validation" novalidate>
+       <form action="/user/<%=user._id%>/story/add" method="POST" class="needs-validation"  enctype="multipart/form-data" novalidate>
            <div class="mb-3">
                <label for="title" class="form-label">Story Title*</label>
                <input 
@@ -41,6 +41,21 @@
                    Please provide story content (minimum 10 characters).
                </div>
            </div>
+
+           <div class="mb-3">
+            <label for="media" class="form-label"> Upload Image </label>       
+            <input
+              type="file"
+              class="form-control"
+              id="media"
+              name="media"
+              accept="image/*"
+              required
+            />
+            <div class="invalid-feedback">
+              Please upload an Image
+            </div>
+          </div>
 
            <!-- Hidden fields for author information -->
            <div hidden>

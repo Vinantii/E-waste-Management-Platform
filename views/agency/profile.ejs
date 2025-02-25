@@ -1,22 +1,152 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Agency Profile</title>
-  </head>
-  <body>
-    <h1>Agency Profile</h1>
-    <img src="<%= agency.logo %>" alt="Agency Logo" />
-    <p>Name: <%= agency.name %></p>
-    <p>Agency Type: <%= agency.agencyType %></p>
-    <p>Working Hours: <%= agency.workingHours %></p>
-    <p>Certification: <%= agency.certificationStatus %></p>
-    <p>wasteTypesHandled: <%= agency.wasteTypesHandled %></p>
-    <p>Email: <%= agency.email %></p>
-    <p>Phone: <%= agency.phone %></p>
-    <p>Address: <%= agency.address %></p>
-    <p>Contact Person: <%= agency.contactPerson %></p>
-    <p>Region: <%= agency.region %></p>
-  </body>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-5">
+        <h2 class="text-center mb-4">Agency Profile</h2>
+
+        <div class="card p-4 shadow-sm">
+            <div class="row">
+                <!-- Logo Section -->
+                <div class="col-md-4 text-center">
+                    <img src="<%= agency.logo.url %>" class="rounded-circle mb-3" alt="Agency Logo" style="width: 150px; height: 150px;">
+                </div>
+
+                <!-- Agency Details -->
+                <div class="col-md-8">
+                    <p><strong>Name:</strong> <%= agency.name %></p>
+                    <p><strong>Description:</strong><%= agency.description %></p>
+                    <p><strong>Agency Type:</strong> <%= agency.agencyType.join(', ') %></p>
+                    <p><strong>Working Hours:</strong> <%= agency.workingHours %></p>
+                    <p><strong>Certification:</strong> <%= agency.certificationStatus %></p>
+                    <p><strong>Waste Types Handled:</strong> <%= agency.wasteTypesHandled.join(', ') %></p>
+                    <p><strong>Email:</strong> <%= agency.email %></p>
+                    <p><strong>Phone:</strong> <%= agency.phone %></p>
+                    <p><strong>Address:</strong> <%= agency.address %></p>
+                    <p><strong>Region:</strong> <%= agency.region %></p>
+                    <p><strong>Contact Person:</strong> <%= agency.contactPerson %></p>
+
+                    <!-- Trade License -->
+                    <p><strong>Trade License:</strong> 
+                        <a href="<%= agency.documents.tradeLicense.url %>" target="_blank">View License</a>
+                    </p>
+
+                    <!-- PCB Authorization -->
+                    <p><strong>PCB Authorization:</strong> 
+                        <a href="<%= agency.documents.pcbAuth.url %>" target="_blank">View PCB Auth</a>
+                    </p>
+
+                    <!-- Update Profile Button -->
+                    <button class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#updateAgencyModal">
+                        Edit Profile
+                    </button>
+
+                    <!-- Delete Profile Form -->
+                    <form action="/agency/<%= agency._id %>?_method=DELETE" method="POST" class="d-inline">
+                        <button type="submit" class="btn btn-danger">Delete Profile</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ✅ Update Agency Modal -->
+    <div class="modal fade" id="updateAgencyModal" tabindex="-1" aria-labelledby="updateAgencyModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Update Agency Profile</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="/agency/<%= agency._id %>?_method=PUT" method="POST" enctype="multipart/form-data">
+                        <!-- Logo -->
+                        <div class="mb-3 text-center">
+                            <label class="form-label">Current Logo</label><br>
+                            <img id="profilePreview" src="<%= agency.logo.url %>" class="rounded-circle" width="120" height="120">
+                            <input type="file" name="logo" class="form-control mt-2" accept="image/*" onchange="previewLogo(event)">
+                        </div>
+
+                        <!-- Trade License -->
+                        <div class="mb-3">
+                            <label class="form-label">Trade License (PDF)</label>
+                            <input type="file" name="tradeLicense" class="form-control" accept=".pdf">
+                        </div>
+
+                        <!-- PCB Authorization -->
+                        <div class="mb-3">
+                            <label class="form-label">PCB Authorization (PDF)</label>
+                            <input type="file" name="pcbAuth" class="form-control" accept=".pdf">
+                        </div>
+
+                        <!-- Other Fields -->
+                        <div class="mb-3">
+                            <label class="form-label">Name</label>
+                            <input type="text" class="form-control" name="name" value="<%= agency.name %>" required>
+                        </div>
+                        <div class="mb-3">
+                          <label class="form-label">Description</label>
+                          <textarea class="form-control" name="description"><%= agency.description %> </textarea>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Phone</label>
+                            <input type="text" class="form-control" name="phone" value="<%= agency.phone %>" pattern="\d{10}" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Address</label>
+                            <input type="text" class="form-control" name="address" value="<%= agency.address %>" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Region</label>
+                            <input type="text" class="form-control" name="region" value="<%= agency.region %>">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Contact Person</label>
+                            <input type="text" class="form-control" name="contactPerson" value="<%= agency.contactPerson %>">
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label">Working Hours</label>
+                            <input type="text" class="form-control" name="workingHours" value="<%= agency.workingHours %>">
+                        </div>
+
+                        <div class="mb-3">
+                          <label for="wasteTypesHandled" class="form-label">Waste Types Handled:</label>
+                          <select class="form-select" id="wasteTypesHandled" name="wasteTypesHandled" multiple>
+                            <option value="mobile" <%= agency.wasteTypesHandled.includes("mobile") ? "selected" : "" %>>Mobile</option>
+                            <option value="laptop" <%= agency.wasteTypesHandled.includes("laptop") ? "selected" : "" %>>Laptop</option>
+                            <option value="computers" <%= agency.wasteTypesHandled.includes("computers") ? "selected" : "" %>>Computer</option>
+                            <option value="Batteries" <%= agency.wasteTypesHandled.includes("Batteries") ? "selected" : "" %>>Batteries</option>
+                            <option value="phones" <%= agency.wasteTypesHandled.includes("phones") ? "selected" : "" %>>Phones</option>
+                          </select>
+                        </div>
+
+                        <!-- Submit Button -->
+                        <button type="submit" class="btn btn-primary w-100">Update Agency</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ✅ Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- ✅ Preview Logo Before Upload -->
+    <script>
+        function previewLogo(event) {
+            const preview = document.getElementById("profilePreview");
+            preview.src = URL.createObjectURL(event.target.files[0]);
+        }
+    </script>
+</body>
 </html>

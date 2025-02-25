@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Agency Orders</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        .container { margin-top: 50px; }
+        .card { border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
+        .form-control, .form-select { border-radius: 8px; }
+        .preview-img { max-width: 100%; height: auto; border-radius: 10px; display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2 class="text-center mb-4">Agency Orders & Products</h2>
+        
+        <!-- Tabs Navigation -->
+        <ul class="nav nav-tabs" id="orderTabs" role="tablist">
+            <li class="nav-item">
+                <button class="nav-link active" id="products-tab" data-bs-toggle="tab" data-bs-target="#products" type="button" role="tab">Products List</button>
+            </li>
+        </ul>
+
+        <!-- Product List -->
+        <div class="tab-content mt-3" id="orderTabsContent">
+            <div class="tab-pane fade show active" id="products" role="tabpanel">
+                <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addProductModal">Add Product</button>
+                <div class="row">
+                    <% allProducts.forEach(product => { %>
+                        <div class="col-md-4 mb-4">
+                            <div class="card p-3">
+                                <img src="<%= product.image.url %>" class="img-fluid mb-2" alt="<%= product.name %>">
+                                <h5><%= product.name %></h5>
+                                <p><%= product.description %></p>
+                                <p>Points Required: <%= product.pointsRequired %></p>
+                                <p>Stock Available: <strong><%= product.stock %></strong></p>
+                                
+                                <!-- Update Product Button -->
+                                <button class="btn btn-warning w-100 mb-2" data-bs-toggle="modal" data-bs-target="#updateProductModal-<%= product._id %>">Update Product</button>
+
+                                <!-- Delete Product Button -->
+                                <button class="btn btn-danger w-100" data-bs-toggle="modal" data-bs-target="#deleteProductModal-<%= product._id %>">Delete Product</button>
+                            </div>
+                        </div>
+
+                        <!-- Update Product Modal -->
+                        <div class="modal fade" id="updateProductModal-<%= product._id %>" tabindex="-1" aria-labelledby="updateProductModalLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Update Product</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <form action="/agency/<%= agency._id %>/update-product/<%= product._id %>?_method=PUT" method="POST" enctype="multipart/form-data">
+                                            <div class="mb-3">
+                                                <label for="name" class="form-label">Product Name*</label>
+                                                <input type="text" class="form-control" name="product[name]" value="<%= product.name %>" required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="description" class="form-label">Description</label>
+                                                <textarea class="form-control" name="product[description]" rows="3"><%= product.description %></textarea>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="image" class="form-label">Update Product Image</label>
+                                                <input type="file" class="form-control" name="image" accept="image/*">
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="pointsRequired" class="form-label">Points Required*</label>
+                                                <input type="number" class="form-control" name="product[pointsRequired]" value="<%= product.pointsRequired %>" required>
+                                            </div>
+                                            <div class="mb-3">
+                                                <label for="stock" class="form-label">Stock Available*</label>
+                                                <input type="number" class="form-control" name="product[stock]" value="<%= product.stock %>" required>
+                                            </div>
+                                            <button type="submit" class="btn btn-warning w-100">Update Product</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Delete Product Modal -->
+                        <div class="modal fade" id="deleteProductModal-<%= product._id %>" tabindex="-1" aria-labelledby="deleteProductModalLabel" aria-hidden="true">
+                            <div class="modal-dialog">
+                                <div class="modal-content">
+                                    <div class="modal-header">
+                                        <h5 class="modal-title">Confirm Delete</h5>
+                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                    </div>
+                                    <div class="modal-body">
+                                        <p>Are you sure you want to delete the product <strong><%= product.name %></strong>?</p>
+                                    </div>
+                                    <div class="modal-footer">
+                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                                        <form action="/agency/<%= agency._id %>/delete-product/<%= product._id %>?_method=DELETE" method="POST">
+                                            <button type="submit" class="btn btn-danger">Delete</button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    <% }); %>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Product Modal -->
+    <div class="modal fade" id="addProductModal" tabindex="-1" aria-labelledby="addProductModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Add New Product</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="/agency/<%= agency._id %>/add-product" method="POST" enctype="multipart/form-data">
+                        <div class="mb-3">
+                            <label for="name" class="form-label">Product Name*</label>
+                            <input type="text" class="form-control" id="name" name="product[name]" required minlength="3">
+                        </div>
+                        <div class="mb-3">
+                            <label for="description" class="form-label">Description</label>
+                            <textarea class="form-control" id="description" name="product[description]" rows="3"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="image" class="form-label">Product Image</label>
+                            <input type="file" class="form-control" id="image" name="image" accept="image/*" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="pointsRequired" class="form-label">Points Required*</label>
+                            <input type="number" class="form-control" id="pointsRequired" name="product[pointsRequired]" required min="1">
+                        </div>
+                        <div class="mb-3">
+                            <label for="stock" class="form-label">Stock Available*</label>
+                            <input type="number" class="form-control" id="stock" name="product[stock]" required min="1">
+                        </div>
+                        <button type="submit" class="btn btn-primary w-100">Add Product</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

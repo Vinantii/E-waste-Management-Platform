@@ -83,40 +83,44 @@
 
       <!-- Tab Content -->
       <div class="tab-content" id="requestTabsContent">
-        <!-- New Requests Tab -->
+       <!-- New Requests Tab -->
         <div class="tab-pane fade show active" id="new" role="tabpanel">
           <% const pendingRequests = requests.filter(request => request.status === 'Pending'); %>
           <% pendingRequests.forEach(function(request) { %>
-            <div class="card request-card">
-              <div class="card-body">
-                <span class="badge bg-primary status-badge">New</span>
-                <h5 class="card-title">
-                  Request #<%= request._id.toString().slice(-6) %>
-                </h5>
-                <p class="card-text">
-                  <strong>User:</strong> <%= request.user.name %><br>
-                  <strong>Waste Types:</strong> <%= request.wasteType.join(', ') %><br>
-                  <strong>Quantity:</strong> <%= request.quantity %><br>
-                  <strong>Pickup Address:</strong> <%= request.pickupAddress %><br>
-                  <strong>Contact:</strong> <%= request.contactNumber %>
-                </p>
-                <div class="d-flex gap-2">
-                  <form
-                    action="/agency/requests/<%= request._id %>/approve"
-                    method="POST"
-                    class="d-inline"
-                  >
-                    <button type="submit" class="btn btn-success">
-                      <i class="bi bi-check-circle"></i> Accept
-                    </button>
-                  </form>
-                  <form
-                    action="/agency/request/<%= request._id %>/reject"
-                    method="POST"
-                    class="d-inline"
-                  >
-                    <button type="submit" class="btn btn-danger">Reject</button>
-                  </form>
+            <div class="card request-card p-3">
+              <div class="card-body d-flex align-items-center">
+                <div class="flex-grow-1">
+                  <span class="badge bg-primary status-badge">New</span>
+                  <h5 class="card-title">
+                    Request #<%= request._id.toString().slice(-6) %>
+                  </h5>
+                  <p class="card-text">
+                    <strong>User:</strong> <%= request.user.name %><br>
+                    <strong>Waste Types:</strong> <%= request.wasteType.join(', ') %><br>
+                    <strong>Quantity:</strong> <%= request.quantities %><br>
+                    <strong>Pickup Address:</strong> <%= request.pickupAddress %><br>
+                    <strong>Contact:</strong> <%= request.contactNumber %>
+                  </p>
+
+                  <div class="d-flex gap-2">
+                    <form action="/agency/requests/<%= request._id %>/approve" method="POST" class="d-inline">
+                      <button type="submit" class="btn btn-success">
+                        <i class="bi bi-check-circle"></i> Accept
+                      </button>
+                    </form>
+                    <form action="/agency/request/<%= request._id %>/reject" method="POST" class="d-inline">
+                      <button type="submit" class="btn btn-danger">Reject</button>
+                    </form>
+                  </div>
+                </div>
+
+                <!-- Image Section -->
+                <div class="ms-3">
+                  <% if (request.wasteImages.length > 0) { %>
+                    <a href="<%= request.wasteImages[0].url %>" target="_blank">
+                      <img src="<%= request.wasteImages[0].url %>" alt="Waste Image" class="img-fluid rounded" style="width: 150px; height: auto;">
+                    </a>
+                  <% } %>
                 </div>
               </div>
             </div>

@@ -23,6 +23,13 @@ const inventorySchema = new mongoose.Schema({
       message: "Current capacity cannot exceed total capacity",
     },
   },
+  wasteBreakdown: {
+    mobile: { type: Number, default: 0 }, // Store per category
+    phones: { type: Number, default: 0 },
+    computers: { type: Number, default: 0 },
+    laptop: { type: Number, default: 0 },
+    Batteries: { type: Number, default: 0 },
+  },
   location: {
     address: {
       type: String,

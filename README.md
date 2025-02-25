@@ -2,10 +2,60 @@
 
 A web-based platform connecting users with certified e-waste collection agencies to facilitate responsible electronic waste disposal and promote environmental sustainability.
 
-## 🕒 Latest Updates (January, 2025)
-
+## 🕒 Latest Updates (February, 2025)
 ### New Features Added
-- **New Features added:**
+
+  - **24/02/2024**
+  - **Handling Deletions**
+    - Implemented updation and deletion for agency and user profiles.
+    - Implemented deletion for event and stories.
+    - Implemented cascade deletions for User, Volunteer.
+
+  - **Feedback Form and Facts**  
+    - Added a feedback from for users.
+    - Added various facts related E-waste. 
+
+  -**17/2/2025**
+  **Heatmap Integration**
+    - Added a heatmap which shows how much ewaste collected and from which regions to respective agency.
+
+  - **15/2/2025**
+  - **Redemption System**
+      - Merchandise Store for Users
+          - Agencies can list their merchandise products on the platform
+          - Users can purchase these products using earned e-points
+          - Agencies handle product shipping through third-party logistics services (e.g., BlueDart)
+      - Redemption flow:
+          - Users browse available merchandise
+          - Select item and redeem using e-points
+          - Agency receives request and confirms shipping
+
+  - **Chatbot Integration**
+      - AI-powered Chatbot Assistance
+          - Helps users navigate platform features
+          - Provides instant responses for:
+            - Waste disposal guidelines
+            - Reward system queries
+            - Live chat support with FAQs
+            
+  - **Agency Statistics**
+      - Performance Metrics
+        - Track number of volunteers
+        - Total assigned vs free volunteers
+        - Monthly e-waste processed (last 6 months)
+        - Waste categorization breakdown
+      - Monthly E-Waste Processing Data
+        - Agency can view last six months' waste collected
+        - Data includes weight, categories, and processing rates
+      - Real-Time Statistics Dashboard
+        - Overview of processed weight
+
+  - **8/2/2025**
+  - Story Feature Update - Added image upload option for community stories
+  - Inventory Feature Update - Added waste breakdown options in inventory management
+  - Inventory Storage Exhaustion Alert - Email notification when inventory reaches 90% capacity
+  
+  - **7/2/2025**
   - Inventory & Admin Authorization
   - Inventory Management System
   - Agencies can now manage inventory for collected e-waste
@@ -185,6 +235,9 @@ A web-based platform connecting users with certified e-waste collection agencies
 - Multer (File upload)
 - Cloudinary (Image storage)
 - OpenCage Geocoding API (Address lookup)
+- NodeMailer (Email )
+- OpenAI 
+- Leaflet-heat
 
 ### Security
 
@@ -209,7 +262,9 @@ env
 5.CLOUD_API_KEY=your_cloudinary_api_key
 6.CLOUD_API_SECRET=your_cloudinary_api_secret
 7.OPENCAGE_API_KEY=your_opencage_api_key
-
+8.APP_PASSWORD=your_gmail_app_password
+9.APP_EMAIL=your_gmail
+10.OPENAI_API_KEY=your_openapikey
 
 ## 🔄 Authentication Flows
 
@@ -248,7 +303,7 @@ env
 - [ ] In-app notifications
 - [ ] Mobile responsive design
 - [ ] Chat system between users and agencies
-- [ ] Analytics dashboard
+- [x] Analytics dashboard
 - [ ] Payment integration
 
 

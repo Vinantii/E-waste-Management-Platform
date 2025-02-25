@@ -34,23 +34,18 @@ const storySchema = new mongoose.Schema({
       required: true,
     },
   },
-
-
-//   media: [
-//     {
-//       type: {
-//         type: String,
-//         enum: ['image', 'video'],
-//         required: true,
-//       },
-//       url: {
-//         type: String,
-//         required: true,
-//       },
-//     },
-//   ],
   
-  
+  media: {
+    url: {
+      type: String,
+      required: false,
+    },
+    filename: {
+      type: String,
+      required: false,
+    },
+  },
+
 //   likes: {
 //     type: Number,
 //     default: 0,

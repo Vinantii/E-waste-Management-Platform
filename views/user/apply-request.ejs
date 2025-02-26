@@ -24,12 +24,24 @@
         display: flex;
         gap: 1rem;
         margin-bottom: 1rem;
+        flex-wrap: wrap;
       }
       .waste-item select,
       .waste-item input {
         flex: 1;
       }
-      button[type="button"] {
+      .remove-btn {
+        background: #dc3545;
+        color: white;
+        border: none;
+        padding: 0.5rem 1rem;
+        border-radius: 0.25rem;
+        cursor: pointer;
+      }
+      .remove-btn:hover {
+        background: #c82333;
+      }
+      .add-btn {
         background: #6c757d;
         color: white;
         border: none;
@@ -37,7 +49,7 @@
         border-radius: 0.25rem;
         cursor: pointer;
       }
-      button[type="button"]:hover {
+      .add-btn:hover {
         background: #5a6268;
       }
     </style>
@@ -57,7 +69,7 @@
         >
           <!-- Waste Type Selection -->
           <div class="mb-3">
-            <label for="wasteType" class="form-label">Waste Type</label>
+            <label for="wasteType" class="form-label">Waste Type</label> 
             <div class="waste-items">
               <div class="waste-item">
                 <select name="request[wasteType][]" required>
@@ -69,15 +81,12 @@
                   <option value="Batteries">Batteries</option>
                 </select>
                 <input type="number" name="request[quantities][]" min="1" required placeholder="Quantity">
+                <input type="file" name="wasteImages[]" accept="image/*" class="form-control" onchange="classifyWasteImage(event)">
+                <button type="button" class="remove-btn" onclick="removeWasteItem(this)">Remove</button><br>
               </div>
-              <!-- Add button to dynamically add more waste items -->
-              <button type="button" onclick="addWasteItem()">Add Another Item</button>
             </div>
-            <div class="invalid-feedback">
-              Please select at least one waste type.
-            </div>
+            <button type="button" class="add-btn" onclick="addWasteItem()">Add Another Item</button>
           </div>
-
           <!-- Weight -->
           <div class="mb-3">
             <label for="weight" class="form-label">Weight (in kilos)</label>
@@ -90,7 +99,6 @@
             />
             <div class="invalid-feedback">Please enter a valid Weight.</div>
           </div>
-
           <!-- Pickup Address - Pre-filled from user profile -->
           <div class="mb-3">
             <label for="pickupAddress" class="form-label">Pickup Address</label>
@@ -140,35 +148,6 @@
               Please select a valid future date.
             </div>
           </div>
-
-          <!-- Location Coordinates -->
-          <div class="row mb-3">
-            <div class="col-md-6">
-              <label for="longitude" class="form-label">Longitude</label>
-              <input
-                type="number"
-                class="form-control"
-                id="longitude"
-                name="request[pickupLocation][coordinates][0]"
-                step="any"
-                required
-              />
-              <div class="invalid-feedback">Please enter longitude.</div>
-            </div>
-            <div class="col-md-6">
-              <label for="latitude" class="form-label">Latitude</label>
-              <input
-                type="number"
-                class="form-control"
-                id="latitude"
-                name="request[pickupLocation][coordinates][1]"
-                step="any"
-                required
-              />
-              <div class="invalid-feedback">Please enter latitude.</div>
-            </div>
-          </div>
-
           <!-- Special Instructions -->
           <div class="mb-3">
             <label for="specialInstructions" class="form-label">
@@ -184,100 +163,54 @@
             <div class="form-text">Maximum 500 characters.</div>
           </div>
 
-          <!-- Add this after the waste type selection -->
+          <!-- Select Agency -->
           <div class="mb-3">
             <label for="agency" class="form-label">Select Agency</label>
-            <select
-              class="form-select"
-              id="agency"
-              name="request[agency]"
-              required
-            >
+            <select class="form-select" id="agency" name="request[agency]" required>
               <option value="">Choose an agency...</option>
             </select>
-            <div class="invalid-feedback">Please select an agency.</div>
           </div>
 
-          <!-- Change the file input to accept multiple images -->
-          <div class="mb-3">
-            <label for="wasteImages" class="form-label"
-              >Upload Waste Images</label
-            >
-            <input
-              type="file"
-              class="form-control"
-              id="wasteImages"
-              name="wasteImages"
-              accept="image/*"
-              multiple
-              required
-            />
-            <div class="invalid-feedback">
-              Please upload at least one image of the e-waste.
+          <!-- Location Coordinates -->
+          <div class="row mb-3">
+            <div class="col-md-6">
+              <label for="longitude" class="form-label">Longitude</label>
+              <input type="number" class="form-control" id="longitude" name="request[pickupLocation][coordinates][0]" step="any" required />
             </div>
-            <div class="form-text">
-              Upload clear images of the e-waste items. You can select multiple
-              images.
+            <div class="col-md-6">
+              <label for="latitude" class="form-label">Latitude</label>
+              <input type="number" class="form-control" id="latitude" name="request[pickupLocation][coordinates][1]" step="any" required />
             </div>
           </div>
 
           <!-- Submit Button -->
           <div class="d-grid gap-2">
-            <button type="submit" class="btn btn-primary">
-              Submit Request
-            </button>
-            <a
-              href="/user/<%= currentUser._id %>/dashboard"
-              class="btn btn-secondary"
-            >
-              Cancel
-            </a>
+            <button type="submit" class="btn btn-primary">Submit Request</button>
+            <a href="/user/<%= currentUser._id %>/dashboard" class="btn btn-secondary">Cancel</a>
           </div>
         </form>
       </div>
     </div>
 
-    <!-- Bootstrap JS -->
-    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.min.js"></script>
-
-    <!-- Custom validation script -->
-    <script src="/js/script.js"></script>
     <script>
-      // Get reference to the agency select element
       const agencySelect = document.getElementById("agency");
-      
-      // Get agencies data from form's data attribute
       const agencies = JSON.parse(document.querySelector("form").dataset.agencies);
 
-      // Function to update available agencies based on selected waste types
       function updateAgencyOptions() {
-        // Get all waste type selects
         const wasteTypeSelects = document.querySelectorAll('select[name="request[wasteType][]"]');
-        
-        // Get all selected waste types
-        const selectedWasteTypes = Array.from(wasteTypeSelects)
-          .map(select => select.value)
-          .filter(value => value); // Remove empty values
+        const selectedWasteTypes = Array.from(wasteTypeSelects).map(select => select.value).filter(value => value);
 
-        // Enable/disable agency select based on selections
         agencySelect.disabled = selectedWasteTypes.length === 0;
 
-        // Filter agencies that handle ANY of the selected waste types
         const matchingAgencies = agencies.filter(agency =>
-          selectedWasteTypes.some(wasteType =>
-            agency.wasteTypesHandled.includes(wasteType)
-          )
+          selectedWasteTypes.some(wasteType => agency.wasteTypesHandled.includes(wasteType))
         );
 
-        // Clear existing options
         agencySelect.innerHTML = '<option value="">Choose an agency...</option>';
 
-        // Add matching agencies to select
         matchingAgencies.forEach(agency => {
           const option = document.createElement("option");
           option.value = agency._id;
-          // Show which waste types this agency handles from the selected types
           const handledTypes = selectedWasteTypes
             .filter(type => agency.wasteTypesHandled.includes(type))
             .join(", ");
@@ -286,39 +219,65 @@
         });
       }
 
-      // Add event listener to the waste-items container for delegation
       document.querySelector('.waste-items').addEventListener('change', function(e) {
         if (e.target.matches('select[name="request[wasteType][]"]')) {
           updateAgencyOptions();
         }
       });
 
-      // Function to add new waste item
       function addWasteItem() {
         const container = document.querySelector('.waste-items');
         const newItem = document.querySelector('.waste-item').cloneNode(true);
-        // Clear the values
-        newItem.querySelector('select').value = '';
-        newItem.querySelector('input').value = '';
-        container.insertBefore(newItem, container.lastElementChild);
-      }
-    </script>
 
-    <!-- Optional: Add geolocation script -->
-    <script>
-      // Get current location if available
+        newItem.querySelector('select[name="request[wasteType][]"]').value = '';
+        newItem.querySelector('input[name="request[quantities][]"]').value = '';
+        newItem.querySelector('input[type="file"]').value = '';
+
+        container.appendChild(newItem);
+      }
+
+      function removeWasteItem(button) {
+        const wasteItems = document.querySelectorAll('.waste-item');
+        if (wasteItems.length > 1) {
+          button.parentElement.remove();
+          updateAgencyOptions();
+        }
+      }
+
+      async function classifyWasteImage(event) {
+        if (event.target.files.length === 0) return;
+
+        const file = event.target.files[0];
+        const formData = new FormData();
+        formData.append("image", file);
+
+        try {
+          const response = await fetch("/classify-image", {
+            method: "POST",
+            body: formData,
+          });
+
+          const data = await response.json();
+          if (data.category) {
+            const wasteItem = event.target.closest(".waste-item");
+            const wasteTypeSelect = wasteItem.querySelector('select[name="request[wasteType][]"]');
+
+            if (wasteTypeSelect) {
+              wasteTypeSelect.value = data.category.toLowerCase();
+              updateAgencyOptions();
+            }
+          }
+        } catch (error) {
+          console.error("Error classifying image:", error);
+        }
+      }
+
       if ("geolocation" in navigator) {
         navigator.geolocation.getCurrentPosition(function (position) {
           document.getElementById("latitude").value = position.coords.latitude;
-          document.getElementById("longitude").value =
-            position.coords.longitude;
+          document.getElementById("longitude").value = position.coords.longitude;
         });
       }
-
-      // Prevent selecting past dates
-      const pickupDateInput = document.getElementById("pickupDate");
-      const today = new Date().toISOString().split("T")[0];
-      pickupDateInput.setAttribute("min", today);
     </script>
   </body>
 </html>

@@ -55,6 +55,10 @@
                         <i class="bi bi-trophy-fill me-2"></i>
                         <h4 class="mb-0">Points: <%= user.points %></h4>
                     </div>
+                    <div class="d-flex align-items-center mb-3">
+                        <i class="bi bi-trophy-fill me-2"></i>
+                        <h4 class="mb-0">Monthly Points: <%= user.monthlyPoints %></h4>
+                    </div>
                     <p class="mb-2">
                         <i class="bi bi-check-circle-fill me-2"></i>
                         Completed Requests: <%= user.completedRequests %>
@@ -73,8 +77,7 @@
                         <h4>How to Earn Points</h4>
                         <ul class="list-group list-group-flush">
                             <li class="list-group-item d-flex justify-content-between align-items-center">
-                                Complete a Request
-                                <span class="points-badge">+100 points</span>
+                                Complete a Request to earn points according to your E-waste product!
                             </li>
                             <li class="list-group-item d-flex justify-content-between align-items-center">
                                 Reach #1 on Leaderboard
@@ -103,23 +106,23 @@
                         <tr>
                             <th>Rank</th>
                             <th>User</th>
-                            <th>Points</th>
+                            <th>Monthly Points</th>
                             <th>Completed Requests</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <% topUsers.forEach((topUser, index) => { %>
+                        <% topUsers.forEach((topUser) => { %>
                             <tr class="<%= topUser._id.equals(user._id) ? 'table-active' : '' %>">
                                 <td>
-                                    <div class="rank-badge rank-<%= index + 1 %>">
-                                        <%= index + 1 %>
+                                    <div class="rank-badge rank-<%= topUser.ranking.lastRank %>">
+                                        <%= topUser.ranking.lastRank %>
                                     </div>
                                 </td>
                                 <td>
                                     <%= topUser.name %>
                                     <%= topUser._id.equals(user._id) ? '(You)' : '' %>
                                 </td>
-                                <td><%= topUser.points %></td>
+                                <td><%= topUser.ranking.lastPoints %></td>
                                 <td><%= topUser.completedRequests %></td>
                             </tr>
                         <% }); %>

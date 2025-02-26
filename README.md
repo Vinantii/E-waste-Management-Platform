@@ -4,6 +4,18 @@ A web-based platform connecting users with certified e-waste collection agencies
 
 ## 🕒 Latest Updates (February, 2025)
 ### New Features Added
+  - **26/02/2024**
+  - **Redeemption System Enhancements**
+    - Handling cancellation of orders
+
+  - **Navigation Map for Volunteers**  
+    - Provide navigational map for volunteer with source and destination.
+
+  - **Notification System**
+    - Sending notifications to users after completing respective milestone by agency/volunteer.
+
+  - **Image Recognition using Gemini**
+    - Implemented image recognition using Gemini API.    
 
   - **24/02/2024**
   - **Handling Deletions**
@@ -15,8 +27,8 @@ A web-based platform connecting users with certified e-waste collection agencies
     - Added a feedback from for users.
     - Added various facts related E-waste. 
 
-  -**17/2/2025**
-  **Heatmap Integration**
+  - **17/2/2025**
+  - **Heatmap Integration**
     - Added a heatmap which shows how much ewaste collected and from which regions to respective agency.
 
   - **15/2/2025**
@@ -51,42 +63,42 @@ A web-based platform connecting users with certified e-waste collection agencies
         - Overview of processed weight
 
   - **8/2/2025**
-  - Story Feature Update - Added image upload option for community stories
-  - Inventory Feature Update - Added waste breakdown options in inventory management
-  - Inventory Storage Exhaustion Alert - Email notification when inventory reaches 90% capacity
+    - Story Feature Update - Added image upload option for community stories
+    - Inventory Feature Update - Added waste breakdown options in inventory management
+    - Inventory Storage Exhaustion Alert - Email notification when inventory reaches 90% capacity
   
   - **7/2/2025**
-  - Inventory & Admin Authorization
-  - Inventory Management System
-  - Agencies can now manage inventory for collected e-waste
-  - User gets reward based on the items te give for recycling and Quantity of those items.
+    - Inventory & Admin Authorization
+    - Inventory Management System
+    - Agencies can now manage inventory for collected e-waste
+    - User gets reward based on the items te give for recycling and Quantity of those items.
 - **Inventory tracking includes:**
-  - Waste type (Mobile, Laptop, Batteries, etc.)
-  - Quantity in stock
-  - Segregation status
-  - Processing status
+    - Waste type (Mobile, Laptop, Batteries, etc.)
+    - Quantity in stock
+    - Segregation status
+    - Processing status
 
 - **Real-time updates for:**
-  - New waste additions
-  - Items sent for recycling
-  - Processed inventory statistics
-  - Dashboard for agencies to monitor inventory levels
-  - Admin Authorization for New Agencies
+    - New waste additions
+    - Items sent for recycling
+    - Processed inventory statistics
+    - Dashboard for agencies to monitor inventory levels
+    - Admin Authorization for New Agencies
 
 - **Enhanced Agency Registration Process:**
-  - Agencies must now undergo an authorization process before activation
+   - Agencies must now undergo an authorization process before activation
 
 - **Required Documents:**
-  - PCB Authorization Certificate (Pollution Control Board)
-  - Trade License
-    - Documents are uploaded and securely stored in Google Drive
-    - Admin reviews and verifies documents before approval
+    - PCB Authorization Certificate (Pollution Control Board)
+    - Trade License
+      - Documents are uploaded and securely stored in Google Drive
+      - Admin reviews and verifies documents before approval
 
 - **Admin Dashboard for Authorizations:**
-  - Pending agency requests
-  - Approve/Reject agency applications
-  - Document verification
-  - Track agency certification status
+    - Pending agency requests
+    - Approve/Reject agency applications
+    - Document verification
+    - Track agency certification status
 
 ### Community Features
 - **Community Events**
@@ -238,6 +250,8 @@ A web-based platform connecting users with certified e-waste collection agencies
 - NodeMailer (Email )
 - OpenAI 
 - Leaflet-heat
+- Gemini API
+- Twilio API
 
 ### Security
 
@@ -265,6 +279,11 @@ env
 8.APP_PASSWORD=your_gmail_app_password
 9.APP_EMAIL=your_gmail
 10.OPENAI_API_KEY=your_openapikey
+11.GEMINI_API_KEY=your_gemini_api_key
+12.ACCOUNT_SID=twilio_account_sid
+13.AUTH_TOKEN=twilio_auth_token
+14.TWILIO_PHONE_NUMBER=twilio_phone_number
+
 
 ## 🔄 Authentication Flows
 
@@ -300,7 +319,7 @@ env
 ## 🔜 Planned Features
 
 - [x] Real-time location tracking with interactive map
-- [ ] In-app notifications
+- [x] In-app notifications
 - [ ] Mobile responsive design
 - [ ] Chat system between users and agencies
 - [x] Analytics dashboard

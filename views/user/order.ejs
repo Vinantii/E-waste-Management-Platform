@@ -30,6 +30,11 @@
                                         <p class="card-text">Product: <%= order.product.name %></p>
                                         <p class="card-text">Agency: <%= order.agency.name %></p>
                                         <p class="text-muted">Created At: <%= order.createdAt.toDateString() %></p>
+                                        <% if(order.status == "Pending"){ %>
+                                            <form action="/user/<%= order.user._id %>/cancel/<%= order._id %>?_method=DELETE" method="POST">
+                                                <button class="btn btn-danger">Cancel Order</button>
+                                            </form>
+                                       <% } %>
                                     </div>
                                 </div>
                             </div>

@@ -113,6 +113,7 @@
                                                     Update Status
                                                 </button>
                                             </form>
+                                            <button onclick="openGoogleMaps('<%= request.pickupLocation.coordinates[1] %>,<%= request.pickupLocation.coordinates[0] %>')">View Route</button>
                                         </div>
                                     </div>
                                 <% } %>
@@ -175,6 +176,26 @@
             }
         );
         return false;
+    }
+    function openGoogleMaps(destination) {
+        if (!navigator.geolocation) {
+            alert("Geolocation is not supported by your browser");
+            return;
+        }
+
+        navigator.geolocation.getCurrentPosition(
+            (position) => {
+                let latitude = position.coords.latitude;
+                let longitude = position.coords.longitude;
+
+                // Construct Google Maps URL with valid coordinates
+                const mapsURL = `https://www.google.com/maps/dir/?api=1&origin=${latitude},${longitude}&destination=${destination}`;
+                window.open(mapsURL, "_blank");
+            },
+            (error) => {
+                alert("Unable to get location. Please enable location services.");
+            }
+        );
     }
     </script>
 </body>

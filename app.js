@@ -14,6 +14,7 @@ const GoogleStrategy = require("passport-google-oauth20");
 const { google } = require("googleapis");
 const stream = require("stream");
 const uploadDrive = multer({ storage: multer.memoryStorage() });
+const twilio = require("twilio");
 
 const User = require("./models/user");
 const Agency = require("./models/agency");
@@ -30,6 +31,8 @@ const Feedback = require("./models/feedback");
 
 const cors = require("cors");
 const OpenAI = require("openai");
+const fs = require("fs");
+const axios = require("axios");
 
 const app = express();
 const crypto = require("crypto");
@@ -44,7 +47,7 @@ const {
   validateCommunity,
   validateStory,
   validateInventory,
-  validateFeedback
+  validateFeedback,
 } = require("./schema");
 
 // Utilities
@@ -52,6 +55,24 @@ const wrapAsync = require("./utils/wrapAsync");
 const ExpressError = require("./utils/ExpressError");
 const sendInventoryAlert = require("./utils/emailService");
 const { request } = require("http");
+
+const client = new twilio(process.env.ACCOUNT_SID, process.env.AUTH_TOKEN);
+
+// Send SMS
+const sendNotification = wrapAsync(async (msg, recipient) => {
+  try {
+    const message = await client.messages.create({
+      body: msg.concat("\n~Avakara"),
+      from: process.env.TWILIO_PHONE_NUMBER, // Ensure this is in E.164 format
+      to: "+91" + recipient, // Must be in E.164 format (+countrycode1234567890)
+    });
+    console.log(`Message sent with SID: ${message.sid}`);
+    return message.sid; // Return message SID for tracking
+  } catch (error) {
+    console.error(`Error sending message: ${error.message}`);
+    throw error; // Rethrow for wrapAsync to handle
+  }
+});
 
 // MIDDLEWARE: to protect routes
 // Middleware to check if user is logged in
@@ -310,7 +331,13 @@ const getLocationAddress = async (coordinates) => {
       `https://api.opencagedata.com/geocode/v1/json?q=${coordinates[1]}+${coordinates[0]}&key=${process.env.OPENCAGE_API_KEY}`
     );
     const data = await response.json();
-    return data.results[0]?.formatted || "Location unavailable";
+    // console.log("Data:", data);
+    const extracted = data.results[0]?.formatted.replace(
+      /^unnamed road,\s*/,
+      ""
+    );
+    // console.log("Address:", extracted);
+    return extracted || "Location unavailable";
   } catch (error) {
     console.error("Error getting address:", error);
     return "Location unavailable";
@@ -323,7 +350,7 @@ app.get(
   wrapAsync(async (req, res) => {
     const facts = await Facts.find();
     const feedbacks = await Feedback.find().populate("user", "name profilePic");
-    res.render("index.ejs", { facts,feedbacks });
+    res.render("index.ejs", { facts, feedbacks });
   })
 );
 
@@ -802,7 +829,6 @@ app.delete("/user/:id", async (req, res) => {
     // Delete Profile Image from Cloudinary (If Exists)
     if (user.profilePic.filename) {
       await cloudinary.uploader.destroy(user.profilePic.filename);
-
     }
 
     await Story.deleteMany({ "author.user": user._id });
@@ -862,7 +888,7 @@ app.get(
 app.post(
   "/user/:id/apply-request",
   isLoggedIn,
-  upload.array("wasteImages", 5),
+  upload.array("wasteImages[]", 5),
   wrapAsync(async (req, res) => {
     const { id } = req.params;
     const user = await User.findById(id);
@@ -905,6 +931,58 @@ app.post(
 
       await newRequest.save();
       res.redirect(`/user/${id}/check-request`);
+    });
+  })
+);
+
+app.post(
+  "/classify-image",
+  isLoggedIn,
+  upload.single("image"),
+  wrapAsync(async (req, res) => {
+    if (!req.file) {
+      return res.status(400).json({ error: "No file uploaded" });
+    }
+
+    const imagePath = req.file.path;
+    const imageBuffer = fs.readFileSync(imagePath);
+    const base64Image = imageBuffer.toString("base64");
+
+    const response = await axios.post(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+      {
+        contents: [
+          {
+            parts: [
+              {
+                inlineData: {
+                  mimeType: "image/jpeg",
+                  data: base64Image,
+                },
+              },
+              {
+                text: "Classify this as Battery, Laptop, Computer, or Mobile.",
+              },
+            ],
+          },
+        ],
+      },
+      { headers: { "Content-Type": "application/json" } }
+    );
+
+    let result = response.data.candidates[0].content.parts[0].text
+      .trim()
+      .toLowerCase();
+
+    // Standardize the output category
+    const validCategories = ["battery", "laptop", "computer", "mobile"];
+    const matchedCategory = validCategories.find((category) =>
+      result.includes(category)
+    );
+
+    res.json({
+      category: matchedCategory || null,
+      imageUrl: `/${req.file.filename}`,
     });
   })
 );
@@ -954,6 +1032,20 @@ app.get(
   })
 );
 
+// // TODO:User Reward Route
+// app.get(
+//   "/user/:id/reward",
+//   isLoggedIn,
+//   wrapAsync(async (req, res) => {
+//     const user = await User.findById(req.params.id).populate("requests");
+
+//     // Get top 5 users by points
+//     const topUsers = await User.find().sort({ points: -1 }).limit(5);
+
+//     res.render("user/reward.ejs", { user, topUsers });
+//   })
+// );
+
 // TODO:User Reward Route
 app.get(
   "/user/:id/reward",
@@ -961,12 +1053,12 @@ app.get(
   wrapAsync(async (req, res) => {
     const user = await User.findById(req.params.id).populate("requests");
 
-    // Calculate and update user's points
-    await user.calculatePoints();
+    // Step 1: Retrieve users who have a valid rank (lastRank is not null)
+    const topUsers = await User.find({ "ranking.lastRank": { $ne: null } })
+      .sort({ "ranking.lastRank": 1 }) // Sort by rank (1st place → top)
+      .limit(5);
 
-    // Get top 5 users by points
-    const topUsers = await User.find().sort({ points: -1 }).limit(5);
-
+    // Step 2: Render the leaderboard with existing ranks
     res.render("user/reward.ejs", { user, topUsers });
   })
 );
@@ -1014,7 +1106,7 @@ app.post(
     await newCommunity.save();
 
     // Add 20 points to user for creating a community event
-    await user.addCommunityPoints(20);
+    // await user.addCommunityPoints(20);
 
     res.redirect(`/user/${user._id}/community`);
   })
@@ -1215,7 +1307,7 @@ app.delete(
     }
 
     await Agency.findByIdAndDelete(id);
-    res.redirect("/"); 
+    res.redirect("/");
   })
 );
 
@@ -1235,7 +1327,7 @@ app.get(
       agency: req.params.id,
       status: "Active",
     });
-    console.dir(requests);
+    // console.dir(requests);
     res.render("agency/requests.ejs", { requests, volunteers });
   })
 );
@@ -1246,7 +1338,10 @@ app.post(
   isAgencyLoggedIn,
   checkCertificationStatus,
   wrapAsync(async (req, res) => {
-    const request = await Request.findById(req.params.id);
+    const request = await Request.findById(req.params.id)
+      .populate("user", "phone")
+      .populate("agency", "name"); // Populating agency and fetching only the name field
+
     const inventory = await Inventory.findOne({ agencyId: request.agency });
 
     if (!request) throw new ExpressError("Request not found", 404);
@@ -1258,6 +1353,10 @@ app.post(
     }
 
     request.status = "Accepted";
+    // sendNotification(
+    //  `${request.agency.name} Agency Accepted your ewaste collection request`,
+    //   request.user.phone
+    // );
 
     // Important: Only update the specific milestone, not the entire trackingMilestones object
     request.trackingMilestones.agencyAccepted = {
@@ -1280,7 +1379,9 @@ app.post(
     const requestId = req.params.id;
 
     // Find the request to get user ID before deletion
-    const request = await Request.findById(requestId);
+    const request = await Request.findById(req.params.id)
+      .populate("user", "phone")
+      .populate("agency", "name");
     if (!request) {
       throw new ExpressError("Request not found", 404);
     }
@@ -1301,6 +1402,10 @@ app.post(
       rejectedAt: new Date(),
     });
 
+    // sendNotification(
+    //   `${request.agency.name} Agency Rejected your ewaste collection request`,
+    //   request.user.phone
+    // );
     res.redirect(`/agency/${req.user._id}/requests`);
   })
 );
@@ -1313,7 +1418,9 @@ app.post(
   wrapAsync(async (req, res) => {
     const volunteerId = req.body.volunteerId;
     const { id } = req.params;
-    const request = await Request.findById(id);
+    const request = await Request.findById(req.params.id)
+      .populate("user", "phone")
+      .populate("agency", "name");
     const volunteer = await Volunteer.findById(volunteerId);
 
     if (!request || !volunteer) {
@@ -1323,6 +1430,10 @@ app.post(
     request.volunteerAssigned = volunteerId;
     request.volunteerName = volunteer.name;
     request.status = "Assigned";
+    // sendNotification(
+    //   `Volunteer ${volunteer.name} assigned to handle the request`,
+    //   request.user.phone
+    // );
 
     // Important: Only update the specific milestone
     request.trackingMilestones.volunteerAssigned = {
@@ -1357,7 +1468,9 @@ app.post(
       throw new ExpressError("Invalid milestone for agency", 400);
     }
 
-    const request = await Request.findById(id);
+    const request = await Request.findById(req.params.id)
+      .populate("user", "phone")
+      .populate("agency", "name");
 
     if (!request) {
       throw new ExpressError("Request not found", 404);
@@ -1387,6 +1500,16 @@ app.post(
           address: address,
         },
       };
+
+      if(milestone === "wasteSegregated" && request.trackingMilestones[milestone].completed) {
+        // sendNotification(`Your e-waste product has been segregated by ${request.agency.name}.`, request.user.phone);
+      }
+      if(milestone === "processingStarted" && request.trackingMilestones[milestone].completed){
+        //  sendNotification( `The processing of your e-waste product has started by ${request.agency.name}.`, request.user.phone);
+      }
+      if (milestone === "processingCompleted" && request.trackingMilestones[milestone].completed) {
+        // sendNotification(`The processing of your e-waste product has been successfully completed by ${request.agency.name}.`,request.user.phone);
+      }
 
       if (milestone === "wasteSegregated") {
         inventory.currentCapacity += request.weight;
@@ -1418,6 +1541,10 @@ app.post(
       }
 
       await request.save();
+
+      if (request.status == "Completed") {
+        updateUserPointsOnCompletion(request);
+      }
 
       res.redirect(`/agency/${req.user._id}/requests#Assigned`);
     } else {
@@ -1751,11 +1878,18 @@ app.delete(
       throw new ExpressError("Volunteer not found", 404);
     }
 
-    let requests = await Request.find({ _id: { $in: volunteer.assignedRequests } });
+    let requests = await Request.find({
+      _id: { $in: volunteer.assignedRequests },
+    });
 
-    let allCompleted = requests.every(request => request.status === "Completed");
+    let allCompleted = requests.every(
+      (request) => request.status === "Completed"
+    );
     if (!allCompleted) {
-      throw new ExpressError("Cannot delete volunteer. Some assigned requests are not completed", 404);
+      throw new ExpressError(
+        "Cannot delete volunteer. Some assigned requests are not completed",
+        404
+      );
     }
     if (volunteer.profilePic.filename) {
       await cloudinary.uploader.destroy(volunteer.profilePic.filename);
@@ -1764,8 +1898,6 @@ app.delete(
     res.redirect(`/agency/${req.user._id}/volunteers`);
   })
 );
-
-
 
 // TODO: volunteer routes
 // Volunteer Dashboard Route
@@ -1812,7 +1944,9 @@ app.post(
       );
     }
 
-    const request = await Request.findById(id);
+    const request = await Request.findById(req.params.id)
+      .populate("user", "phone")
+      .populate("agency", "name");
 
     if (!request) {
       throw new ExpressError("Request not found", 404);
@@ -1827,6 +1961,7 @@ app.post(
     if (request.trackingMilestones && request.trackingMilestones[milestone]) {
       const coordinates = [parseFloat(longitude), parseFloat(latitude)];
       const address = await getLocationAddress(coordinates);
+      console.log("Address:", address);
 
       request.trackingMilestones[milestone] = {
         completed: true,
@@ -1839,6 +1974,18 @@ app.post(
         },
       };
       await request.save();
+
+      // twilio notifications
+      if ( milestone === "pickupScheduled" && request.trackingMilestones[milestone].completed) {
+        // sendNotification(`Your e-waste product pickup has been scheduled by ${request.agency.name}.`,request.user.phone);
+       }
+      if ( milestone === "pickupStarted" && request.trackingMilestones[milestone].completed) {
+        // sendNotification(`Your e-waste product pickup has started with ${request.agency.name}.`,request.user.phone);
+      }
+      if ( milestone === "pickupCompleted" && request.trackingMilestones[milestone].completed) {
+        // sendNotification(`Your e-waste product pickup has been completed by ${request.agency.name}.`,request.user.phone);
+      }
+
       res.redirect(`/volunteer/${req.user._id}/dashboard`);
     } else {
       throw new ExpressError("Invalid milestone", 400);
@@ -1963,16 +2110,14 @@ app.delete(
     if (!product) {
       return res.status(404).json({ error: "Product not found" });
     }
-     // Delete Profile Image from Cloudinary (If Exists)
-     if (product.image.filename) {
+    // Delete Profile Image from Cloudinary (If Exists)
+    if (product.image.filename) {
       await cloudinary.uploader.destroy(product.image.filename);
     }
     await Product.findByIdAndDelete(productId);
     res.redirect(`/agency/${id}/orders`);
   })
 );
-
-
 
 //TASK: Show store page
 app.get(
@@ -2027,11 +2172,52 @@ app.get(
   isLoggedIn,
   wrapAsync(async (req, res) => {
     const allOrders = await Order.find({ user: req.params.id }).populate(
-      "agency product"
+      "agency product user"
     );
     res.render("user/order.ejs", { allOrders });
   })
 );
+
+//TASK: cancel order 
+
+app.delete("/user/:id/cancel/:orderId", isLoggedIn,wrapAsync( async (req, res) => {
+  const { id, orderId } = req.params;
+
+  // Find the order and populate necessary fields
+  const order = await Order.findOne({ _id: orderId, user: id }).populate("product");
+  if (!order) {
+    throw new ExpressError("Order not found.", 404);
+  }
+
+  // Check if the order is in Pending state
+  if (order.status !== "Pending") {
+    throw new ExpressError("Order cannot be cancelled as it has been processed.", 404);
+  }
+
+  // Fetch the product associated with the order
+  const product = await Product.findById(order.product);
+  if (!product) {
+    throw new ExpressError("Product not found.", 400);
+  }
+  
+  // Fetch the user to return points
+  const user = await User.findById(id);
+  if (!user) {
+    throw new ExpressError("User not found.", 400);
+  }
+
+  // Increment product stock
+  product.stock += 1;
+  await product.save();
+  
+  // Refund points to user
+  user.points += product.pointsRequired;
+  await user.save();
+  // Delete the order
+  await Order.findByIdAndDelete(orderId);
+  res.redirect(`/user/${id}/order`);
+}));
+
 
 // TASK: Update order status
 app.post(
@@ -2078,17 +2264,21 @@ app.post(
   })
 );
 
-//TODO: Feedback 
-app.post("/user/:id/feedback",isLoggedIn, validateFeedback, wrapAsync(async (req, res) => {
-  const feedback = new Feedback({
-    ...req.body.feedback,
-    user: req.params.id,
-  });
-  
-  await feedback.save();
-  res.redirect(`/user/${req.params.id}/dashboard`);
-}))
+//TODO: Feedback
+app.post(
+  "/user/:id/feedback",
+  isLoggedIn,
+  validateFeedback,
+  wrapAsync(async (req, res) => {
+    const feedback = new Feedback({
+      ...req.body.feedback,
+      user: req.params.id,
+    });
 
+    await feedback.save();
+    res.redirect(`/user/${req.params.id}/dashboard`);
+  })
+);
 
 // TODO: Error Handling
 // 404 route - must come after all other routes but before error handler
@@ -2132,12 +2322,95 @@ app.use((err, req, res, next) => {
   });
 });
 
-const deleteExpiredEvents = async () => {
+const deleteExpiredEvents = wrapAsync(async () => {
   await Community.deleteMany({ endDate: { $lt: new Date() } });
-};
+});
+
+const resetMonthlyPointsAndAwardBonuses = wrapAsync(async () => {
+  const rankBonuses = { 1: 1000, 2: 750, 3: 500, 4: 250, 5: 100 };
+  const now = new Date();
+  const firstDayOfMonth = new Date(
+    Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1)
+  );
+
+  // Step 1: Check if reset has already been done today
+  const lastUser = await User.findOne().sort({ lastResetDate: -1 });
+
+  if (lastUser && lastUser.lastResetDate >= firstDayOfMonth) {
+    console.log("⚠️ Reset already performed today. Skipping...");
+    return;
+  }
+
+  // **Step 2: Reset previous ranks for all users before reassigning**
+  await User.updateMany({}, { $set: { "ranking.lastRank": null } });
+
+  // **Step 3: Get top 5 users based on monthly points after reset**
+  const topUsers = await User.find().sort({ monthlyPoints: -1 }).limit(5);
+
+  // **Step 4: Reassign ranks and award bonuses only to the top 5 users**
+  for (let i = 0; i < topUsers.length; i++) {
+    let user = topUsers[i];
+    let rank = i + 1;
+    let bonus = rankBonuses[rank] || 0;
+
+    user.points += bonus;
+    user.ranking.lastRank = rank;
+    user.lastResetDate = firstDayOfMonth;
+
+    await user.save();
+  }
+
+  // **Step 5: Store `monthlyPoints` inside `ranking.lastPoints` before resetting**
+  await User.updateMany(
+    {},
+    {
+      $set: {
+        "ranking.lastPoints": "monthlyPoints",
+        monthlyPoints: 0,
+        lastResetDate: firstDayOfMonth,
+      },
+    }
+  );
+
+  console.log("🔄 Monthly points reset for all users!");
+});
+
+const updateUserPointsOnCompletion = wrapAsync(async (request) => {
+  if (request.status !== "Completed") return;
+
+  const WASTE_TYPE_POINTS = {
+    mobile: 50,
+    phones: 50,
+    computers: 150,
+    laptop: 100,
+    Batteries: 20,
+  };
+
+  const user = await User.findById(request.user);
+  if (!user) {
+    console.error("User not found for request:", request._id);
+    return;
+  }
+
+  let points = user.points;
+  let monthlyPoints = user.monthlyPoints;
+
+  request.wasteType.forEach((type, index) => {
+    let perUnitPoints = WASTE_TYPE_POINTS[type] || 0;
+    points += perUnitPoints * request.quantities[index];
+    monthlyPoints += perUnitPoints * request.quantities[index];
+  });
+
+  await User.findByIdAndUpdate(user._id, {
+    points,
+    monthlyPoints,
+    $inc: { completedRequests: 1 },
+  });
+});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
   deleteExpiredEvents();
+  // resetMonthlyPointsAndAwardBonuses();
 });

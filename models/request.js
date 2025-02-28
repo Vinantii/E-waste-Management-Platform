@@ -276,10 +276,10 @@ requestSchema.post("save", async function (doc) {
     $addToSet: { requests: doc._id },
   });
 
-  if (doc.status === 'Completed') {
-    const user = await User.findById(doc.user);
-    await user.calculatePoints();
-  }
+  // if (doc.status === 'Completed') {
+  //   const user = await User.findById(doc.user);
+  //   // await user.calculatePoints();
+  // }
 });
 
 const Request = mongoose.model("Request", requestSchema);

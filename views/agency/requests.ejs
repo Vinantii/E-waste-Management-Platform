@@ -108,10 +108,13 @@
 
                 <!-- Image Section -->
                 <div class="ms-3">
+
                   <% if (request.wasteImages.length > 0) { %>
-                    <a href="<%= request.wasteImages[0].url %>" target="_blank">
-                      <img src="<%= request.wasteImages[0].url %>" alt="Waste Image" class="img-fluid rounded" style="width: 150px; height: auto;">
-                    </a>
+                    <% request.wasteImages.forEach((img) =>{ %>
+                      <a href="<%= img.url %>" target="_blank">
+                        <img src="<%= img.url %>" alt="Waste Image" class="img-fluid rounded" style="width: 150px; height: auto;">
+                      </a>
+                    <% });%>
                   <% } %>
                 </div>
               </div>

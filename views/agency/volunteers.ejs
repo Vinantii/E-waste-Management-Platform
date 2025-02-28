@@ -96,94 +96,105 @@
                     <div class="modal-content">
                         <div class="modal-header">
                             <h5 class="modal-title">Add New Volunteer</h5>
-                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                         </div>
                         <form action="/agency/volunteers" method="POST" enctype="multipart/form-data">
                             <div class="modal-body">
-                                <div class="mb-3">
+                                <div class="form-group">
                                     <label class="form-label">Name</label>
-                                    <input type="text" class="form-control" name="name" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Email</label>
-                                    <input type="email" class="form-control" name="email" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Phone</label>
-                                    <input type="tel" class="form-control" name="phone" pattern="\d{10}" required>
-                                </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Address</label>
-                                    <textarea class="form-control" name="address" required></textarea>
+                                    <input type="text" class="form-control" name="name" placeholder="Name" required>
                                 </div>
 
-                                <!-- New Pickup Area fields -->
-                                <hr>
-                                <h6 class="mb-3">Pickup Area Details</h6>
+                                <div class="form-group">
+                                    <label class="form-label">Email</label>
+                                    <input type="email" class="form-control" name="email" placeholder="Email" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Phone</label>
+                                    <input type="tel" class="form-control" name="phone" placeholder="Phone" pattern="\d{10}" required>
+                                </div>
+
+                                <div class="form-group">
+                                    <label class="form-label">Address</label>
+                                    <textarea class="form-control" name="address" placeholder="Address" required></textarea>
+                                </div>
+
+                                <div class="pickup-area-title">Pickup Area Detail</div>
                                 
-                                <div class="mb-3">
+                                <div class="form-group">
                                     <label class="form-label">City</label>
-                                    <input type="text" class="form-control" name="pickupArea[city]" required>
+                                    <input type="text" class="form-control" name="pickupArea[city]" placeholder="City" required>
                                 </div>
-                                <div class="mb-3">
+
+                                <div class="form-group">
                                     <label class="form-label">District</label>
-                                    <input type="text" class="form-control" name="pickupArea[district]" required>
+                                    <input type="text" class="form-control" name="pickupArea[district]" placeholder="District" required>
                                 </div>
-                                <div class="mb-3">
-                                    <label class="form-label">PIN Codes (comma-separated)</label>
+                                
+                                <div class="form-group">
+                                    <label class="form-label">Pin Codes</label>
                                     <input type="text" 
                                            class="form-control" 
                                            name="pickupArea[pinCodes]" 
+                                           placeholder="Pin Codes (Comma-Separated)"
                                            pattern="^\d{6}(,\s*\d{6})*$" 
-                                           placeholder="e.g., 400001, 400002" 
                                            required>
-                                    <small class="text-muted">Enter 6-digit PIN codes separated by commas</small>
+                                    <small class="text-muted">error: 6 digit pin codes separated by comma</small>
                                 </div>
-                                <div class="mb-3">
-                                    <label class="form-label">Landmarks (comma-separated)</label>
+                                
+                                <div class="form-group">
+                                    <label class="form-label">Landmarks</label>
                                     <input type="text" 
                                            class="form-control" 
                                            name="pickupArea[landmarks]" 
-                                           placeholder="e.g., City Mall, Central Park">
+                                           placeholder="Landmarks (Comma - Separated)">
+                                    <small class="text-muted">e.g city mall,central park</small>
                                 </div>
-                                <div class="row mb-3">
+                                
+                                <div class="row">
                                     <div class="col">
-                                        <label class="form-label">Latitude</label>
-                                        <input type="number" 
-                                               class="form-control" 
-                                               name="pickupArea[coordinates][coordinates][1]" 
-                                               step="any" 
-                                               required>
+                                        <div class="form-group">
+                                            <label class="form-label">Latitude</label>
+                                            <input type="number" 
+                                                   class="form-control" 
+                                                   name="pickupArea[coordinates][coordinates][1]" 
+                                                   placeholder="Latitude"
+                                                   step="any" 
+                                                   required>
+                                        </div>
                                     </div>
                                     <div class="col">
-                                        <label class="form-label">Longitude</label>
-                                        <input type="number" 
-                                               class="form-control" 
-                                               name="pickupArea[coordinates][coordinates][0]" 
-                                               step="any" 
-                                               required>
+                                        <div class="form-group">
+                                            <label class="form-label">Longitude</label>
+                                            <input type="number" 
+                                                   class="form-control" 
+                                                   name="pickupArea[coordinates][coordinates][0]" 
+                                                   placeholder="Longitude"
+                                                   step="any" 
+                                                   required>
+                                        </div>
                                     </div>
                                 </div>
 
-                                <div class="mb-3">
+                                <div class="form-group">
                                     <label class="form-label">Profile Picture</label>
                                     <input type="file" class="form-control" name="profilePic" accept="image/*">
                                 </div>
 
-                                <div class="mb-3">
+                                <div class="form-group">
                                     <label class="form-label">Password</label>
                                     <input type="password" 
                                            class="form-control" 
                                            name="password" 
+                                           placeholder="Set password for volunteer login"
                                            required 
-                                           minlength="6"
-                                           placeholder="Set password for volunteer login">
+                                           minlength="6">
                                     <small class="text-muted">Minimum 6 characters</small>
                                 </div>
                             </div>
                             <div class="modal-footer">
-                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                                <button type="submit" class="btn btn-primary">Add Volunteer</button>
+                                <button type="button" class="btn btn-close" data-bs-dismiss="modal">Close</button>
+                                <button type="submit" class="btn btn-add">Add Volunteer</button>
                             </div>
                         </form>
                     </div>

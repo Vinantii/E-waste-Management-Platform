@@ -25,18 +25,7 @@
 </head>
 <body>
     <div class="container mt-4">
-        <!-- Header Section -->
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1>Community Hub</h1>
-            <div>
-                <a href="/user/<%= user._id %>/community/add" class="btn btn-primary me-2">
-                    Add Event
-                </a>
-                <a href="/user/<%= user._id %>/story/add" class="btn btn-primary">
-                    Add Story
-                </a>
-            </div>
-        </div>
+        <div class="tab-btn-container">
 
         <!-- Tabs Navigation -->
         <ul class="nav nav-tabs" id="communityTabs" role="tablist">
@@ -55,6 +44,20 @@
                 </button>
             </li>
         </ul>
+        <!-- Header Section -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>Community Hub</h1>
+            <div>
+                <a href="/user/<%= user._id %>/community/add" class="btn btn-primary me-2">
+                    Add Event
+                </a>
+                <a href="/user/<%= user._id %>/story/add" class="btn btn-primary">
+                    Add Story
+                </a>
+            </div>
+        </div>
+
+    </div>
 
         <!-- Tabs Content -->
         <div class="tab-content" id="communityTabsContent">

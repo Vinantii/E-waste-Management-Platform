@@ -1,0 +1,167 @@
+* {
+    margin: 0;
+    padding: 0;
+    font-family: 'Anek Latin', sans-serif;
+}
+
+.background {
+    background: url(/images/lines.png) no-repeat center center;
+    background-size: cover;
+    background-color: #1F643A;
+    min-height: 100vh;
+    width: 100vw;
+    display: flex;
+    justify-content: center;
+    padding: 40px 0;
+}
+
+.container {
+    position: relative;
+    width: 90%;
+    max-width: 1200px;
+    background: white;
+    border-radius: 30px;
+    padding: 40px;
+    margin: 20px auto;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.page-title {
+    position: absolute;
+    top: -25px;
+    left: 40px;
+    background: #1F643A;
+    color: white;
+    padding: 10px 30px;
+    border-radius: 15px;
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.8rem;
+    z-index: 1;
+}
+
+.add-volunteer-btn {
+    background: #007AFF;
+    color: white;
+    border: none;
+    padding: 8px 20px;
+    border-radius: 8px;
+    font-size: 1rem;
+    cursor: pointer;
+    position: absolute;
+    top: 40px;
+    right: 40px;
+}
+
+.volunteer-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    padding: 20px;
+    margin-top: 20px;
+}
+
+.volunteer-card {
+    background: #F5F5F5;
+    border-radius: 15px;
+    padding: 20px;
+    position: relative;
+}
+
+.profile-section {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.profile-pic {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: #ddd;
+}
+
+.volunteer-name {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.status-badge {
+    background: #30D158;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 15px;
+    font-size: 0.8rem;
+}
+
+.contact-info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 15px;
+}
+
+.info-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    color: #666;
+    font-size: 0.9rem;
+}
+
+.pickup-area {
+    background: white;
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 15px;
+}
+
+.pickup-area-title {
+    color: #666;
+    font-size: 0.9rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+}
+
+.area-details {
+    font-size: 0.85rem;
+    color: #666;
+}
+
+.assigned-requests {
+    font-size: 0.85rem;
+    color: #666;
+    margin-bottom: 15px;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.deactivate-btn {
+    background: #007AFF;
+    color: white;
+    border: none;
+    padding: 6px 15px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    cursor: pointer;
+}
+
+.delete-btn {
+    background: #FF3B30;
+    color: white;
+    border: none;
+    padding: 6px 15px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    cursor: pointer;
+}

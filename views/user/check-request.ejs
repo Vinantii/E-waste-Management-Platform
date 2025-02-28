@@ -4,54 +4,27 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>My Requests</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
-      href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+      href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Afacad:ital,wght@0,400..700;1,400..700&family=Anek+Latin:wght@100..800&family=Manrope:wght@200..800&family=Michroma&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap"
       rel="stylesheet"
     />
-    <style>
-        .request-card {
-            transition: all 0.3s ease;
-        }
-        .request-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-        .tracking-step {
-            position: relative;
-            padding-bottom: 20px;
-        }
-        .tracking-step::before {
-            content: '';
-            position: absolute;
-            left: 15px;
-            top: 28px;
-            bottom: 0;
-            width: 2px;
-            background: #dee2e6;
-        }
-        .tracking-step:last-child::before {
-            display: none;
-        }
-        .step-icon {
-            width: 32px;
-            height: 32px;
-            border-radius: 50%;
-            background: #fff;
-            border: 2px solid #dee2e6;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-right: 10px;
-        }
-        .step-icon.completed {
-            background: #28a745;
-            border-color: #28a745;
-            color: white;
-        }
-    </style>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+      integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <link rel="stylesheet" href="/styles/user/check-request.css">
   </head>
   <body>
-    <div class="container mt-4">
+    <div class="background">
+    <div class="container">
       <h2 class="mb-4">My Requests</h2>
 
       <!-- Request Type Tabs -->
@@ -70,20 +43,34 @@
         <div class="tab-pane fade show active" id="current">
           <% const currentRequests = requests.filter(req => !req.status.includes('Completed') && !req.status.includes('Rejected')); %>
           <% currentRequests.forEach(request => { %>
-            <div class="card request-card mb-3">
-              <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                  <h5 class="card-title">Request #<%= request._id.toString().slice(-6) %></h5>
-                  <span class="badge <%= request.status === 'Pending' ? 'bg-warning' : 'bg-primary' %>">
-                    <%= request.status %>
-                  </span>
+            <div class="request-card">
+              <div class="d-flex justify-content-between align-items-start mb-3">
+                <div>
+                  <h5 class="mb-2">Request #<%= request._id.toString().slice(-6) %></h5>
                 </div>
-                <p class="card-text">
-                  <strong>Waste Types:</strong> <%= request.wasteType.join(', ') %><br>
-                  <strong>Quantity:</strong> <%= request.quantities %><br>
-                  <strong>Agency:</strong> <%= request.agency.name %>
-                </p>
-                <a href="/user/request/<%= request._id %>/track" class="btn btn-primary">View Details</a>
+                <span class="status-badge <%= 
+                  request.status === 'Pending' ? 'pending' : 
+                  request.status === 'Processing' ? 'processing' : 
+                  'completed' %>">
+                  <%= request.status %>
+                </span>
+              </div>
+              <div class="request-info">
+                <div class="info-item">
+                  <span class="info-label">Waste Type :</span>
+                  <span class="info-value"><%= request.wasteType.join(', ') %></span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Quantity :</span>
+                  <span class="info-value"><%= request.quantities %></span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Agency :</span>
+                  <span class="info-value"><%= request.agency.name %></span>
+                </div>
+              </div>
+              <div class="request-actions">
+                <a href="/user/request/<%= request._id %>/track" class="view-details-btn">View Details</a>
               </div>
             </div>
           <% }); %>
@@ -93,28 +80,42 @@
         <div class="tab-pane fade" id="old">
           <% const oldRequests = requests.filter(req => req.status.includes('Completed') || req.status.includes('Rejected')); %>
           <% oldRequests.forEach(request => { %>
-            <div class="card request-card mb-3">
-              <div class="card-body">
-                <div class="d-flex justify-content-between align-items-center">
-                  <h5 class="card-title">Request #<%= request._id.toString().slice(-6) %></h5>
-                  <span class="badge <%= request.status === 'Completed' ? 'bg-success' : 'bg-danger' %>">
-                    <%= request.status %>
-                  </span>
+            <div class="request-card">
+              <div class="d-flex justify-content-between align-items-start mb-3">
+                <div>
+                  <h5 class="mb-2">Request #<%= request._id.toString().slice(-6) %></h5>
                 </div>
-                <p class="card-text">
-                  <strong>Waste Types:</strong> <%= request.wasteType.join(', ') %><br>
-                  <strong>Quantity:</strong> <%= request.quantities %><br>
-                  <strong>Agency:</strong> <%= request.agency.name %><br>
-                  <strong>Completed On:</strong> <%= new Date(request.updatedAt).toLocaleDateString() %>
-                </p>
-                <a href="/user/request/<%= request._id %>/track" class="btn btn-primary">View Details</a>
+                <span class="status-badge <%= request.status === 'Completed' ? 'completed' : 'rejected' %>">
+                  <%= request.status %>
+                </span>
+              </div>
+              <div class="request-info">
+                <div class="info-item">
+                  <span class="info-label">Waste Type :</span>
+                  <span class="info-value"><%= request.wasteType.join(', ') %></span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Quantity :</span>
+                  <span class="info-value"><%= request.quantities %></span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Agency :</span>
+                  <span class="info-value"><%= request.agency.name %></span>
+                </div>
+                <div class="info-item">
+                  <span class="info-label">Completed On :</span>
+                  <span class="info-value"><%= new Date(request.updatedAt).toLocaleDateString() %></span>
+                </div>
+              </div>
+              <div class="request-actions">
+                <a href="/user/request/<%= request._id %>/track" class="view-details-btn">View Details</a>
               </div>
             </div>
           <% }); %>
         </div>
       </div>
     </div>
-
+  </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   </body>
 </html>

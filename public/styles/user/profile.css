@@ -1,0 +1,75 @@
+* {
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+  }
+
+.background {
+    background: url(/images/lines.png) no-repeat center center;
+    background-size: 100% 100%;
+    background-color: #1F643A;
+    height: 100vh;
+    width: 100vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.profile-container{
+    background-color: #FFF;
+    border-radius: 25px;
+    padding: 30px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 0 40px 40px rgba(0, 0, 0, 0.5);
+    width: 500px;
+}
+
+.profile-image-section{
+    margin: 0 auto;
+}
+
+.profile-container h1{
+    color: #1F643A;
+    font-family: 'Anek Latin';
+    font-size: xx-large;
+}
+
+.details{
+    margin-left: 22%;
+    margin-top: 4%;
+}
+
+.details p{
+    margin-bottom: 3%;
+    font-family: 'Poppins';
+    font-weight: bold;
+}
+
+.details p span{
+    color: #1F643A;
+}
+
+.buttons{
+    display: flex;
+    justify-content: center;
+    gap: 50px;
+    margin-top: 4%;
+}
+
+.delete,.edit{
+    width: 120px;
+    padding: 10px;
+    border-radius: 10px;
+    border: none;
+    color: #FFF;
+    font-family: 'Anek Latin';
+}
+
+.delete{
+    background-color: #FF3B30;
+}
+
+.edit{
+    background-color: #007AFF;
+}

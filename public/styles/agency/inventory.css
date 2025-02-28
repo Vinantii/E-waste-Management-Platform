@@ -1,0 +1,157 @@
+* {
+    margin: 0;
+    padding: 0;
+    font-family: 'Anek Latin', sans-serif;
+    overflow-x: hidden;
+}
+
+.background {
+    background: url(/images/lines.png) no-repeat center center;
+    background-size: cover;
+    background-color: #1F643A;
+    min-height: 100vh;
+    height: auto;
+    width: 100vw;
+    display: flex;
+    justify-content: center;
+    padding: 40px 0;
+}
+
+.container {
+    position: relative;
+    width: 90%;
+    max-width: 1200px;
+    background: white;
+    border-radius: 30px;
+    padding: 40px;
+    margin: 20px auto;
+    overflow: visible;
+}
+
+h2.inventory-title {
+    position: absolute;
+    top: -25px;
+    left: 40px;
+    background: #1F643A;
+    color: white;
+    padding: 10px 30px;
+    border-radius: 15px;
+    font-size: 1.8rem;
+    z-index: 1;
+    white-space: nowrap;
+    overflow: visible;
+}
+
+.inventory-heading {
+    color: #1F643A;
+    font-size: 2rem;
+    text-align: center;
+    margin-bottom: 30px;
+    margin-top: 30px;
+    font-family: 'Anek Latin', sans-serif;
+    overflow: visible;
+}
+
+.capacity-section {
+    display: flex;
+    justify-content: flex-start;
+    gap: 100px;
+    margin-bottom: 40px;
+}
+
+.capacity-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+}
+
+.capacity-label {
+    font-size: 1.2rem;
+    font-weight: 500;
+    color: #333;
+}
+
+.capacity-value {
+    padding: 5px 20px;
+    border-radius: 10px;
+    color: white;
+    font-weight: 500;
+}
+
+.total-capacity {
+    background: #007AFF;
+}
+
+.current-capacity {
+    background: #1F643A;
+}
+
+.waste-breakdown {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    margin-bottom: 40px;
+}
+
+.waste-breakdown h3 {
+    font-size: 1.5rem;
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.waste-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0;
+    border-bottom: 1px solid #eee;
+}
+
+.waste-item:last-child {
+    border-bottom: none;
+}
+
+.waste-name {
+    color: #666;
+    font-size: 1.1rem;
+}
+
+.waste-units {
+    background: #6B7280;
+    color: white;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 0.9rem;
+}
+
+.location-section {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 30px;
+    margin-bottom: 30px;
+}
+
+.location-item {
+    display: flex;
+    gap: 10px;
+}
+
+.location-label {
+    font-weight: 600;
+    color: #333;
+}
+
+.location-value {
+    color: #666;
+}
+
+.last-updated {
+    color: #666;
+    font-size: 1rem;
+}
+
+.last-updated-label {
+    font-weight: 600;
+    color: #333;
+}

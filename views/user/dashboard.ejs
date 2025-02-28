@@ -7,162 +7,85 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
-    <style>
-        :root {
-            --bs-success-rgb: 45, 90, 39;
-            --bs-success-light-rgb: 232, 245, 233;
-        }
-
-        /* Floating button to open chatbot */
-        .chat-toggle-btn {
-            position: fixed;
-            bottom: 20px;
-            right: 20px;
-            background-color: rgba(var(--bs-success-rgb), 1);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            width: 60px;
-            height: 60px;
-            font-size: 24px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
-        }
-
-        .chat-toggle-btn:hover {
-            background-color: rgb(38, 77, 32);
-        }
-
-        /* Chat container */
-        .chat-container {
-            position: fixed;
-            bottom: 80px;
-            right: 20px;
-            width: 400px;
-            height: 600px;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-            overflow: hidden;
-            display: none;
-            flex-direction: column;
-            transition: transform 0.3s ease-in-out;
-        }
-
-        .chat-header {
-            background-color: rgba(var(--bs-success-rgb), 1);
-            color: white;
-            text-align: center;
-            padding: 10px;
-            font-size: 18px;
-            font-weight: bold;
-        }
-
-        #chat-box {
-            flex-grow: 1;
-            padding: 10px;
-            overflow-y: auto;
-            background-color: #f8f9fa;
-        }
-
-        .user-message,
-        .bot-message {
-            max-width: 75%;
-            padding: 8px 12px;
-            border-radius: 10px;
-            margin-bottom: 8px;
-            word-wrap: break-word;
-        }
-
-        .user-message {
-            background-color: rgba(var(--bs-success-light-rgb), 1);
-            align-self: flex-end;
-            color: black;
-        }
-
-        .bot-message {
-            background-color: white;
-            align-self: flex-start;
-            color: black;
-            box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
-        }
-
-        .chat-footer {
-            display: flex;
-            align-items: center;
-            padding: 10px;
-            background: white;
-            border-top: 1px solid #ddd;
-        }
-
-        #user-input {
-            flex-grow: 1;
-            padding: 8px;
-            border: 1px solid rgba(var(--bs-success-rgb), 0.5);
-            border-radius: 5px;
-        }
-
-        #send-btn,
-        #voice-btn {
-            background-color: rgba(var(--bs-success-rgb), 1);
-            color: white;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 5px;
-            margin-left: 5px;
-            cursor: pointer;
-        }
-
-        #send-btn:hover,
-        #voice-btn:hover {
-            background-color: rgb(38, 77, 32);
-        }
-
-        /* Pulse effect for voice button when recording */
-@keyframes pulse {
-    0% {
-        transform: scale(1);
-        box-shadow: 0 0 5px rgba(45, 90, 39, 0.8);
-    }
-    50% {
-        transform: scale(1.1);
-        box-shadow: 0 0 15px rgba(45, 90, 39, 0.9);
-    }
-    100% {
-        transform: scale(1);
-        box-shadow: 0 0 5px rgba(45, 90, 39, 0.8);
-    }
-}
-
-/* Default voice button */
-#voice-btn {
-    transition: background-color 0.3s ease, transform 0.2s ease;
-}
-
-/* Active state when recording */
-#voice-btn.recording {
-    background-color: rgb(255, 50, 50) !important; /* Red when active */
-    animation: pulse 1s infinite; /* Pulsing effect */
-}
-
-    </style>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Afacad:ital,wght@0,400..700;1,400..700&family=Anek+Latin:wght@100..800&family=Manrope:wght@200..800&family=Michroma&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+      integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
     <link rel="stylesheet" href="/styles/rating.css">
+    <link rel="stylesheet" href="/styles/user/dashboard.css">
 </head>
 <body>
-    <h1>Welcome, <%= user.name %></h1>
+    <div class="landing">
+        <div class="navbar">
+            <div class="navbar-brand">AVAKARA</div>
+            <div class="d-flex">
+              <a href="/user/<%= user._id %>/check-request" class="butn">Check Request</a>
+              <a href="/user/<%= user._id %>/apply-request" class="butn">Apply Request</a>
+              <a href="/user/<%= user._id %>/reward" class="butn">Reward</a>
+              <a href="/user/<%= user._id %>/community" class="butn">Community</a>
+              <a href="/user/<%= user._id %>/store" class="butn">Store</a>
+              <a href="/user/<%= user._id %>/order" class="butn">Your Orders</a>
+              <a href="/user/<%= user._id %>/profile" class="login">Profile</a>
+            </div>
+          </div>
+          <div class="headline">
+            <h2>
+              E-waste Management is <span>innovative</span>
+            </h2>
+          </div>
+    </div>
+    <div class="container-1">
+        <h1>Why E-Was<u>te Awareness</u> is Important?</h1>
+        <div class="info">
+            <div class="info-container">
+                <div class="content">
+                    <h3>Environmental Impact:</h3>
+                    <ul>
+                        <li><span>Toxic Chemicals:</span> Electronic waste contains hazardous materials like lead, mercury, and cadmium that can leach into the soil and water when not disposed of properly.</li>
+                        <li><span>Non-Biodegradable:</span> Most electronics don’t break down in landfills, contributing to pollution and environmental degradation.</li>
+                        <li><span>E-Waste Problem:</span> The amount of e-waste is rapidly increasing due to the fast pace of technology upgrades, and it’s expected to grow exponentially in the coming years.</li>
+                    </ul>
+                </div>
+                <img src="/images/info-img1.png" alt="">
+            </div>
+        </div>
+        <div class="info">
+            <div class="info-container">
+                <img src="/images/info-img2.png" alt="">
+                <div class="content right">
+                    <h3>Health Hazards:</h3>
+                    <ul>
+                        <li><span>Exposure to Harmful Substances:</span> Improper recycling or disposal of e-waste can release dangerous substances that harm workers in informal recycling sectors and can contaminate local water sources.</li>
+                        <li><span>Effects on Humans and Wildlife:</span> Chemicals from e-waste can enter the food chain, affecting both human and animal health.</li>
+                    </ul>
+                </div>
+                
+            </div>
+        </div>
+        <div class="info">
+            <div class="info-container">
+                <div class="content">
+                    <h3>Resource Recovery:</h3>
+                    <ul>
+                        <li><span>Valuable Materials:</span> Electronics contain valuable metals (gold, silver, copper, and rare earth elements) that can be recycled and reused. When e-waste is properly processed, these resources can be recovered, reducing the need for mining.</li>
+                        <li><span>Energy Saving:</span> Recycling e-waste uses far less energy than manufacturing new electronics from raw materials.</li>
+                    </ul>
+                </div>
+                <img src="/images/info-img3.png" alt="">
+            </div>
+        </div>
+    </div>
 
-    <ul>
-        <li><a href="/user/<%= user._id %>/profile">Profile</a></li>
-        <li><a href="/user/<%= user._id %>/apply-request">Apply Request</a></li>
-        <li><a href="/user/<%= user._id %>/check-request">Check Request</a></li>
-        <li><a href="/user/<%= user._id %>/reward">Reward</a></li>
-        <li><a href="/user/<%= user._id %>/community">Community</a></li>
-        <li><a href="/user/<%= user._id %>/store">Store</a></li>
-        <li><a href="/user/<%= user._id %>/order">Your Orders</a></li>
-    </ul>
+    
 
     <button class="chat-toggle-btn" id="toggle-chat" data-bs-toggle="modal" data-bs-target="#chatbotModal">
         <i class="fas fa-comment"></i>
@@ -184,14 +107,24 @@
         </div>
     </div>
     <div class="container">
-        <h1>Feedback</h1>
+        
+    </div>
+
+    <div class="footer">
+        <div class="about">
+          <div class="about-us">
+            <div class="about-info">
+              At AVAKARA, we reduce e-waste through recycling, reuse, and
+              education. Join us in building a greener, sustainable future! ♻️
+            </div>
+            <div class="feedback">
         <form action="/user/<%= user._id %>/feedback" method="POST">
             <div class="mb-3">
                 <label for="feedback" class="form-label">Feedback</label>
-                <textarea class="form-control" id="feedback" name="feedback[content]" rows="3" required></textarea>
+                <textarea class="form-control" id="feedback" name="feedback[content]" placeholder="Enter your feedback here..." rows="3" required></textarea>
             </div>
-            <div class="mb-3 mt-3">
-                <label for="rating" class="form-label">Rating</label>
+            <div class="mb-3 mt-3 rating-container">
+                <label for="rating" class="form-label rating">Rating</label>
                 <fieldset class="starability-slot">
                     <input type="radio" id="no-rate" class="input-no-rate" name="feedback[rating]"
                         value="1" checked aria-label="No rating." />
@@ -206,13 +139,29 @@
                     <input type="radio" id="first-rate5" name="feedback[rating]" value="5" />
                     <label for="first-rate5" title="Amazing">5 stars</label>
                 </fieldset>
+                <button type="submit" class="btn btn-primary">Submit</button>
             </div>
             <!-- <div class="mb-3">
                 <label for="feedback" class="form-label">Rating</label>
                 <input type="range" min="1" max="5" class="form-control" id="feedback" name="feedback[rating]" rows="3" required/>
             </div> -->
-            <button type="submit" class="btn btn-primary">Submit</button>
-    </div>
+            
+            </div>
+          </div>
+          <div class="links">
+            <h3>Links</h3>
+            <ul>
+              <li class="link"></li>
+              <li class="link"></li>
+              <li class="link"></li>
+            </ul>
+          </div>
+        </div>
+        <div class="footer-logo">
+          <h1>AVAKARA</h1>
+          <p>E-waste today is a disaster tomorrow – <span>Act now.</span></p>
+        </div>
+      </div>
 
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>  
 <script>

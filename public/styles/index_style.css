@@ -15,15 +15,69 @@
   position: relative;
 }
 
+.landing img {
+    position: absolute;
+    z-index: 1;
+    opacity: 0; /* Start with 0 visibility */
+ /* Apply fadeIn animation */
+}
+
 @keyframes fadeIn {
     from {
+        opacity: 0; /* Start invisible */
+        transform: translateY(20px); /* Optional: start slightly lower */
+    }
+    to {
+        opacity: 1; /* End fully visible */
+        transform: translateY(0); /* Move to original position */
+    }
+}
+
+@keyframes slideIn {
+    from {
         opacity: 0;
-        transform: translateY(30px) scale(0.98);
+        transform: translateX(-100%) scale(0.8); /* Start from outside the left side */
     }
     to {
         opacity: 1;
-        transform: translateY(0) scale(1);
+        transform: translateX(0) scale(1); /* Move to original position */
     }
+}
+
+@keyframes slideOut {
+    from {
+        opacity: 0;
+        transform: translateX(50%) scale(0.8); /* Reduce movement */
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0) scale(1); /* Keep in view */
+    }
+}
+
+/* Specific image animations */
+#img1 {
+    left: -4%;
+    top: 10%; /* Delay for staggered effect */
+    animation: slideIn 2s forwards;
+}
+
+#img2 {
+    right: -4%;
+    top: 10%;/* Delay for staggered effect */
+    animation: slideOut 2s forwards;
+}
+
+#img3 {
+    left: -4%;
+    bottom: 10%; /* Delay for staggered effect */
+    animation: slideIn 2s forwards;
+}
+
+#img4 {
+    right: -4%;
+    bottom: 10%; /* Delay for staggered effect */
+    animation: slideOut 2s forwards;
 }
 
 @keyframes fadeOut {

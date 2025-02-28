@@ -220,6 +220,7 @@
       }
 
       async function classifyWasteImage(event) {
+        console.log("inside classification");
         if (event.target.files.length === 0) return;
 
         const file = event.target.files[0];

@@ -2013,6 +2013,7 @@ app.get(
       status: "Delivered",
     }).populate("user product");
 
+    console.log(completedOrders);
     const allProducts = await Product.find({ agency: req.params.id });
 
     res.render("agency/order.ejs", {

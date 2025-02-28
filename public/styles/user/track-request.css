@@ -1,0 +1,136 @@
+.tracking-timeline {
+    position: relative;
+    padding: 20px;
+}
+.tracking-step {
+    display: flex;
+    margin-bottom: 30px;
+    position: relative;
+    opacity: 0.5;
+    transition: all 0.3s ease;
+}
+.tracking-step.completed {
+    opacity: 1;
+}
+.tracking-step:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    left: 24px;
+    top: 40px;
+    width: 2px;
+    height: calc(100% - 10px);
+    background-color: #dee2e6;
+    transition: background-color 0.3s ease;
+}
+.tracking-step.completed:not(:last-child)::after {
+    background-color: #28a745;
+}
+.step-icon {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    background: #f8f9fa;
+    border: 2px solid #dee2e6;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 20px;
+    position: relative;
+    z-index: 1;
+    color: #6c757d;
+    transition: all 0.3s ease;
+}
+.step-icon.completed {
+    background: #28a745;
+    border-color: #28a745;
+    color: white;
+    transform: scale(1.05);
+}
+.step-content {
+    flex: 1;
+    background: #f8f9fa;
+    padding: 15px;
+    border-radius: 8px;
+    position: relative;
+}
+.step-content::before {
+    content: '';
+    position: absolute;
+    left: -8px;
+    top: 20px;
+    width: 16px;
+    height: 16px;
+    background: #f8f9fa;
+    transform: rotate(45deg);
+}
+.step-content h6 {
+    margin: 0;
+    color: #333;
+    font-weight: 600;
+}
+.step-content small {
+    display: block;
+    margin-top: 5px;
+    color: #666;
+}
+.step-content p {
+    margin-top: 8px;
+    font-size: 0.9rem;
+}
+.request-details {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+.status-badge {
+    font-size: 0.9rem;
+    padding: 5px 12px;
+}
+#tracking-map {
+    position: relative;
+    height: 50vh;
+    width: 100%;
+    z-index: 1;
+    margin-bottom: 20px;
+    border-radius: 0 0 10px 10px;
+}
+.container {
+    position: relative;
+    z-index: 2;
+}
+.map-container {
+    position: relative;
+    width: 100%;
+    background: rgba(255, 255, 255, 0.95);
+    padding: 0;
+    margin-bottom: 20px;
+    border-radius: 0 0 10px 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.content-wrapper {
+    padding: 20px;
+}
+.request-details, .card {
+    background: rgba(255, 255, 255, 0.95) !important;
+    backdrop-filter: blur(5px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.card-header {
+    background: rgba(255, 255, 255, 0.95) !important;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+.tracking-step.completed:hover {
+    transform: translateX(5px);
+}
+.tracking-step.completed:hover .step-content {
+    background: #e9ecef;
+}
+.tracking-step.completed:hover .step-content::before {
+    background: #e9ecef;
+}
+
+body {
+    min-height: 100vh;
+    background: transparent;
+}

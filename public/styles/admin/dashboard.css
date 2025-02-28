@@ -1,0 +1,197 @@
+* {
+    margin: 0;
+    padding: 0;
+    font-family: 'Anek Latin', sans-serif;
+}
+
+body {
+    overflow-x: hidden;
+}
+
+.background {
+    background: url(/images/lines2.png) no-repeat center center;
+    background-size: cover;
+    background-color: #1F643A;
+    min-height: 100vh;
+    width: 100vw;
+    padding: 2rem;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 5% auto;
+    background-color: #fff;
+    position: relative;
+    border-radius: 25px;
+    box-shadow: 0 0 40px 40px rgba(0, 0, 0, 0.5);
+}
+
+h1 {
+    position: absolute;
+    z-index: 2;
+    left: 25px;
+    top: -30px;
+    color: white;
+    font-size: 2rem;
+    margin-bottom: 2rem;
+    font-weight: 600;
+    background-color: #1F643A;
+    display: inline-block;
+    border-radius: 15px;
+    padding: 10px 20px;
+}
+
+/* Tab styling */
+.nav-tabs {
+    margin-top: 3rem;
+    border: none;
+    background: white;
+    border-radius: 15px;
+    padding: 7px;
+    display: inline-flex;
+    margin-bottom: 2rem;
+    margin-left: 1rem;
+    border: 3px solid #B0D247;
+}
+
+.nav-tabs .nav-link {
+    border: none;
+    color: #000;
+    padding: 12px 30px;
+    border-radius: 50px;
+    font-weight: 500;
+    font-size: 1.1rem;
+    transition: all 0.3s ease;
+    min-width: 200px;
+    text-align: center;
+}
+
+.nav-tabs .nav-link.active {
+    background-color: #9DC88D;
+    color: white;
+    border: none;
+    font-weight: 600;
+    border-radius: 15px;
+}
+
+.nav-tabs .nav-link:not(.active) {
+    background: transparent;
+    color: #000;
+}
+
+.nav-tabs .nav-link:hover:not(.active) {
+    background-color: #f0f0f0;
+    border: none;
+}
+
+/* Card styling */
+.card {
+    background: white;
+    border-radius: 15px;
+    border: none;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    margin-bottom: 1.5rem;
+    overflow: hidden;
+}
+
+.card-header {
+    border: none;
+    padding: 1rem 1.5rem;
+}
+
+.card-header h5 {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.card-body {
+    padding: 1.5rem;
+}
+
+.card-body p {
+    margin-bottom: 0.75rem;
+    color: #666;
+    font-size: 0.95rem;
+}
+
+.card-body p strong {
+    color: #333;
+    font-weight: 600;
+    margin-right: 0.5rem;
+}
+
+/* Badge styling */
+.badge {
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    font-weight: 500;
+    font-size: 0.85rem;
+}
+
+/* Button styling */
+.btn {
+    border-radius: 8px;
+    padding: 0.5rem 1rem;
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-right: 0.5rem;
+}
+
+.btn-primary {
+    background-color: #007bff;
+    border: none;
+}
+
+.btn-secondary {
+    background-color: #1F643A;
+    border: none;
+}
+
+.btn:hover {
+    opacity: 0.9;
+}
+
+/* Logo image */
+.logo-img {
+    max-width: 100px;
+    height: auto;
+    border-radius: 8px;
+    margin: 1rem 0;
+}
+
+/* Tab content */
+.tab-content {
+    background: transparent;
+}
+
+.tab-pane h3 {
+    color: white;
+    margin-bottom: 1.5rem;
+    font-weight: 500;
+}
+
+/* Grid layout */
+.row {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(500px, 1fr));
+    gap: 1.5rem;
+    margin: 0;
+}
+
+/* Badge alignment */
+.card-body p .badge {
+    display: inline-block;
+    vertical-align: middle;
+    margin-left: 5px;
+}
+
+/* Adjust certification status line */
+.card-body p:has(.badge) {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}

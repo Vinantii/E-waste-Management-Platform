@@ -1,0 +1,87 @@
+.stats-card {
+    background: linear-gradient(to right, #A7C957 0%, #B4F41F 100%);
+    color: #102D16;
+    border-radius: 15px;
+    font-family: 'Anek Latin';
+}
+
+.stats-card h3{
+    font-weight: bold;
+}
+
+.stats-card p{
+    font-weight: 500;
+}
+
+.leaderboard-card {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+.rank-1 { background-color: #ffd700; }
+.rank-2 { background-color: #c0c0c0; }
+.rank-3 { background-color: #cd7f32; }
+.rank-badge {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: black;
+    font-weight: bold;
+}
+.points-badge {
+    background: #28a745;
+    color: white;
+    padding: 5px 15px;
+    border-radius: 20px;
+    width: 150px;
+    text-align: center;
+}
+
+*{
+    overflow-x: hidden;
+}
+
+.background{
+    background: url(/images/lines.png) no-repeat center center;
+    background-size: 100% 100%;
+    background-color: #1F643A;
+    height: auto;
+    width: 100vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.container{
+    background-color: rgba(0, 0, 0, 0.0) !important;
+    margin-top: 3% !important;
+}
+
+.container h2{
+    font-family: 'Abril Fatface';
+    font-size: 30px;
+    color: #FFF;
+    overflow-y: hidden;
+    margin-bottom: 3%;
+}
+
+.row{
+    margin-top: 5% !important;
+}
+
+h4{
+    overflow-y: hidden;
+    padding: 10px 20px;
+    background-color: #1F643A;
+    color: #FFF;
+    display: inline-block;
+    border-radius: 15px;
+}
+
+.leaderboard-card{
+    border-radius: 25px;
+    margin-bottom: 5%;
+}

@@ -1,0 +1,309 @@
+* {
+    margin: 0;
+    padding: 0;
+    font-family: 'Anek Latin', sans-serif;
+}
+
+body {
+    background: url(/images/lines2.png) no-repeat center center;
+    background-size: cover;
+    background-color: #1F643A;
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.container {
+    background: white;
+    border-radius: 25px;
+    padding: 30px;
+    position: relative;
+    margin-top: 30px;
+    padding-top: 40px;
+}
+
+/* Header Section */
+.container h1 {
+    position: absolute;
+    top: -15px;
+    left: 30px;
+    background: #1F643A;
+    color: white;
+    padding: 6px 20px;
+    border-radius: 10px;
+    font-size: 2rem;
+    font-weight: 600;
+    margin: 0;
+    z-index: 1;
+    text-transform: uppercase;
+}
+
+/* Tab container */
+.tab-btn-container {
+    margin-top: 3%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Tab Navigation */
+.nav-tabs {
+    border: none;
+    display: inline-flex;
+    padding: 0;
+    margin: 0;
+    border: 1px solid #E8E8E8;
+    border-radius: 25px;
+    padding: 3px;
+    background: white;
+}
+
+.nav-tabs .nav-item {
+    margin: 0;
+}
+
+.nav-tabs .nav-link {
+    border: none;
+    border-radius: 20px;
+    padding: 8px 20px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #333;
+    margin: 0;
+    transition: all 0.3s ease;
+}
+
+.nav-tabs .nav-link.active {
+    background: #9DC88D;
+    color: white;
+    border: none;
+}
+
+.nav-tabs .nav-link:hover:not(.active) {
+    background: #f0f0f0;
+}
+
+/* Action Buttons */
+.btn-primary {
+    background: #007AFF;
+    border: none;
+    padding: 6px 15px;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    color: white;
+    margin-left: 10px;
+}
+
+/* Remove any duplicate nav-tabs styles */
+.nav-tabs-wrapper,
+.community-hub,
+.nav-tabs .nav-link.active {
+    /* Remove duplicate styles */
+    background: none;
+    border: none;
+}
+
+/* Navigation and buttons container */
+.d-flex.justify-content-between {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 15px 0;
+    padding: 0 15px;
+}
+
+/* Card Styling */
+.card {
+    background: #F8F9FA;
+    border: none;
+    border-radius: 15px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+}
+
+.card-body {
+    padding: 20px;
+}
+
+.card-title {
+    color: #333;
+    font-size: 1.2rem;
+    font-weight: 500;
+    margin-bottom: 15px;
+}
+
+/* Badge Styling */
+.badge {
+    background: #9DC88D !important;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: normal;
+}
+
+/* Event Details */
+.card-text {
+    color: #666;
+    font-size: 0.9rem;
+    margin-bottom: 15px;
+}
+
+.mb-2 strong {
+    color: #333;
+    display: inline-block;
+    min-width: 80px;
+}
+
+/* Register Button */
+.card-footer {
+    background: transparent;
+    border: none;
+    padding: 0 20px 20px 20px;
+}
+
+.card-footer .btn-primary {
+    background: #007AFF;
+    color: white;
+    border: none;
+    padding: 8px 0;
+    border-radius: 8px;
+    width: 100%;
+    font-size: 0.9rem;
+}
+
+/* Story Section */
+.story-img {
+    border-radius: 15px 15px 0 0;
+    height: 200px;
+    object-fit: cover;
+}
+
+/* Modal Styling */
+.modal-content {
+    border-radius: 15px;
+}
+
+.modal-header {
+    border-bottom: none;
+}
+
+.modal-body img {
+    border-radius: 10px;
+}
+
+/* Alert Styling */
+.alert {
+    border-radius: 12px;
+    padding: 15px;
+}
+
+/* Row Spacing */
+.row {
+    margin-top: 20px;
+}
+
+/* Responsive Grid */
+@media (min-width: 768px) {
+    .row-cols-md-2 > * {
+        padding: 10px;
+    }
+}
+
+/* Event Type Badge Position */
+.d-flex.justify-content-between {
+    align-items: center;
+}
+
+/* Contact Info Styling */
+.mb-2 {
+    color: #666;
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
+
+.nav-tabs .nav-link {
+    color: #495057;
+    font-weight: 500;
+}
+.nav-tabs .nav-link.active {
+    color: #0d6efd;
+    font-weight: 600;
+}
+.tab-content {
+    padding: 20px 0;
+}
+
+/* Header styling */
+.community-hub {
+    background-color: #1B4D3E;
+    color: white;
+    padding: 10px 20px;
+    margin: -20px -20px 20px -20px;
+    border-radius: 0 0 10px 10px;
+}
+
+/* Tab styling */
+.nav-tabs {
+    border: none;
+    display: inline-flex;
+    background-color: #f8f9fa;
+    padding: 5px;
+    border-radius: 25px;
+}
+
+.nav-tabs .nav-link {
+    border: none;
+    border-radius: 20px;
+    padding: 8px 20px;
+    margin: 0 5px;
+    color: #333;
+}
+
+.nav-tabs .nav-link.active {
+    background-color: #4CAF50;
+    color: white;
+}
+
+/* Card styling */
+.card {
+    border-radius: 15px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    border: none;
+    background-color: #f8f9fa;
+    padding: 15px;
+    margin-bottom: 20px;
+}
+
+/* Button styling */
+.btn-primary:hover {
+    background: #0056b3;
+}
+
+/* Event badge styling */
+.badge {
+    border-radius: 15px;
+    padding: 5px 15px;
+}
+
+/* Drive badge styling */
+.badge-drive {
+    background-color: #4CAF50;
+    color: white;
+    padding: 3px 10px;
+    border-radius: 12px;
+    font-size: 0.8em;
+}
+
+/* Add Events and Add Stories buttons */
+.action-buttons {
+    position: absolute;
+    right: 20px;
+    top: 20px;
+}
+
+.action-buttons .btn {
+    margin-left: 10px;
+    border-radius: 20px;
+    padding: 8px 20px;
+}
+

@@ -1,0 +1,459 @@
+:root {
+    --bs-success-rgb: 45, 90, 39;
+    --bs-success-light-rgb: 232, 245, 233;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    overflow-x: hidden;
+  }
+
+/* Floating button to open chatbot */
+.chat-toggle-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background-color: rgba(var(--bs-success-rgb), 1);
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    font-size: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.chat-toggle-btn:hover {
+    background-color: rgb(38, 77, 32);
+}
+
+/* Chat container */
+.chat-container {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    width: 400px;
+    height: 600px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    display: none;
+    flex-direction: column;
+    transition: transform 0.3s ease-in-out;
+}
+
+.chat-header {
+    background-color: rgba(var(--bs-success-rgb), 1);
+    color: white;
+    text-align: center;
+    padding: 10px;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+#chat-box {
+    flex-grow: 1;
+    padding: 10px;
+    overflow-y: auto;
+    background-color: #f8f9fa;
+}
+
+.user-message,
+.bot-message {
+    max-width: 75%;
+    padding: 8px 12px;
+    border-radius: 10px;
+    margin-bottom: 8px;
+    word-wrap: break-word;
+}
+
+.user-message {
+    background-color: rgba(var(--bs-success-light-rgb), 1);
+    align-self: flex-end;
+    color: black;
+}
+
+.bot-message {
+    background-color: white;
+    align-self: flex-start;
+    color: black;
+    box-shadow: 1px 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.chat-footer {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+    background: white;
+    border-top: 1px solid #ddd;
+}
+
+#user-input {
+    flex-grow: 1;
+    padding: 8px;
+    border: 1px solid rgba(var(--bs-success-rgb), 0.5);
+    border-radius: 5px;
+}
+
+#send-btn,
+#voice-btn {
+    background-color: rgba(var(--bs-success-rgb), 1);
+    color: white;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 5px;
+    margin-left: 5px;
+    cursor: pointer;
+}
+
+#send-btn:hover,
+#voice-btn:hover {
+    background-color: rgb(38, 77, 32);
+}
+
+/* Pulse effect for voice button when recording */
+@keyframes pulse {
+0% {
+transform: scale(1);
+box-shadow: 0 0 5px rgba(45, 90, 39, 0.8);
+}
+50% {
+transform: scale(1.1);
+box-shadow: 0 0 15px rgba(45, 90, 39, 0.9);
+}
+100% {
+transform: scale(1);
+box-shadow: 0 0 5px rgba(45, 90, 39, 0.8);
+}
+}
+
+/* Default voice button */
+#voice-btn {
+transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+/* Active state when recording */
+#voice-btn.recording {
+background-color: rgb(255, 50, 50) !important; /* Red when active */
+animation: pulse 1s infinite; /* Pulsing effect */
+}
+
+.landing {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    height: 100vh;
+    width: 100vw;
+    background-color: #1F643A;
+    position: relative;
+  }
+
+  .navbar {
+    width: 85%;
+    margin-top: 3%;
+    background-color: rgba(0, 0, 0, 0.25);
+    padding: 15px 30px;
+    border-radius: 25px;
+  }
+  
+  .navbar-brand{
+      color: white;
+      font-size: 20px;
+      font-family: 'Abril Fatface';
+  }
+  
+  .d-flex{
+      margin-right: 5px;
+      display: flex;
+      align-items: center;
+  }
+  
+  .d-flex a{
+      font-family: 'Michroma'; 
+      color: white;
+      font-size: 15px;
+      margin-left: 30px;
+      text-decoration: none;
+  }
+  
+  .butn {
+      padding-bottom: 5px;
+      text-decoration: none !important; /* Removes default underline */
+      text-underline-offset: 5px;
+      transition: all 0.5s ease !important;
+  }
+  
+  .butn:hover {
+      text-decoration: underline !important; /* Reapply underline */
+      text-decoration-thickness: 2px !important;
+      text-decoration-color: #102D16 !important; /* Change underline color */
+      text-underline-offset: 7px; /* Increase spacing on hover */
+  }
+  
+  .login{
+      background-color: #FFF;
+      color: #1F643A !important;
+      padding: 10px 15px;
+      border-radius: 10px;
+      transition: 0.3s all ease;
+  }
+  
+  .login:hover{
+      background-color: #1F643A;
+      color: white !important;
+  }
+
+  .headline{
+    margin: auto;
+    margin-top: 12%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    overflow-y: hidden;
+}
+
+.headline h2{
+    font-family: 'Anek Latin';
+    color: #FCEF02;
+    margin-bottom: 6%;
+    overflow-y: hidden;
+    font-size: 45px;
+}
+
+.headline h2 span{
+    color: white;
+    font-family: 'Afacad';
+    font-style: italic;
+    font-size: 60px;
+}
+
+.container-1{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    height: auto !important;
+    width: 100vw !important;
+}
+
+.container-1 h1{
+    font-family: 'Michroma';
+    margin-top: 8%;
+    overflow-y: hidden;
+    padding-bottom: 15px;
+    font-size: 35px;
+    margin-bottom: 6%;
+}
+
+.container-1 h1 u{
+    text-decoration: underline;
+  text-decoration-color: #1F643A;
+  text-decoration-thickness: 2px;
+  text-underline-offset: 10px;
+
+}
+
+.info{
+    margin-bottom: 6%;
+    width: 90%;
+    box-shadow: 0 0 10px 10px rgba(0, 0, 0, 0.2);
+    border-radius: 25px;
+    height: auto;
+    padding: 30px 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.content h3{
+    color: #1F643A;
+    font-family: 'Afacad';
+    font-weight: bold;
+    overflow-y: hidden;
+    margin-bottom: 4%;
+}
+
+.info-container{
+    display: flex;
+    flex-direction: row;   
+    margin-top: 1%;
+    margin-left: 5%;
+}
+
+.content{
+    width: 60%;
+    padding-right: 12%;
+    text-align: justify;
+}
+
+.content ul{
+    margin-left: 3%;
+}
+
+.content ul li{
+    font-family: 'Afacad';
+    margin-bottom: 6%;
+    font-size: 22px;
+    line-height: normal;
+}
+
+.content ul li span{
+    color: #1F643A;
+    font-weight: bold;
+}
+
+.info-container img{
+    width: auto;
+    height: 70%;
+    margin-top: 2%;
+}
+
+.right{
+    margin-left: 5%;
+    padding-right: 10px;
+}
+
+.footer{
+    height: auto;
+    width: 100vw;
+    background-color: #102D16;
+    color: white;
+    display: flex;
+    flex-direction: column;
+}
+
+.about{
+    padding-top: 2.5%;
+    display: flex;
+    justify-content: space-around;
+    width: 90%;
+    margin: auto;
+}
+
+.about-info{
+    width: 90%;
+    font-family: 'Poppins';
+    font-size: 1rem;
+}
+
+.about-us{
+    display: flex;
+    flex-direction: column;
+    width: 50%;
+}
+
+.links{
+    width: 50%;
+}
+
+.footer-logo{
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 0.8%;
+    align-items: center;
+}
+
+.footer-logo h1{
+    font-family: 'Afacad';
+    font-size: 10rem;
+    background: linear-gradient(to bottom, 
+    #A4AF76 0%,  /* Light green at the top */
+    #A4AF76 30%,  /* Light green at the top */
+    #102D16 100% /* Fades to dark at the bottom */
+  );
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    overflow: hidden;
+}
+
+.footer-logo p{
+    color: #D0E098;
+    font-size: 1.2rem;
+}
+
+.footer-logo p span{
+    font-size: 1.8rem;
+}
+
+#feedback{
+    background-color: white;
+    height: 200px;
+    width: 400px;
+    border-radius: 25px;
+    outline: none;
+    resize: none;
+    padding: 20px;
+    
+    
+}
+
+.links{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.links h3{
+    font-family: 'Poppins';
+    font-weight: bold;
+    overflow: hidden;
+}
+
+.about-feedback{
+    margin-top: 8%;
+}
+
+.about-feedback h5{
+    font-weight: bold;
+    margin-bottom: 2%;
+    font-family: 'Poppins';
+    overflow: hidden;
+}
+
+.feedback{
+    margin-top: 4%;
+}
+
+.rating-container{
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin-left: 2%;
+}
+
+.form-label{
+    font-size: 1.5rem !important;
+}
+
+.rating{
+    font-size: 1.2rem !important;
+}
+
+.starability-slot{
+    margin-top: 3% !important;
+    margin-left: 3% !important;
+}
+
+.btn{
+    background-color: #4CAF50 !important;
+    margin-left: 6%;
+    margin-top: -1%;
+    border: none;
+    font-family: 'Afacad';
+    font-size: large;
+    transition: 0.3s all ease;
+}
+
+.btn:hover{
+    background-color: #FFF !important;
+    color: #4CAF50 !important;
+    box-shadow: 0 0 10px 10px rgba(255, 255, 255, 0.2);
+}

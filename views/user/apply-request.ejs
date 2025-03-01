@@ -49,6 +49,7 @@
                   <option value="Batteries">Batteries</option>
                 </select>
                 <input type="number" name="request[quantities][]" min="1" required placeholder="Quantity">
+                <br>
                 <input type="file" name="wasteImages[]" accept="image/*" class="form-control" onchange="classifyWasteImage(event)">
                 <button type="button" class="remove-btn" onclick="removeWasteItem(this)">Remove</button><br>
               </div>
@@ -140,12 +141,12 @@
           </div>
 
           <!-- Location Coordinates -->
-          <div class="row mb-3">
+          <div class="row mb-3" style="display: none;">
             <div class="col-md-6">
               <label for="longitude" class="form-label">Longitude</label>
               <input type="number" class="form-control" id="longitude" name="request[pickupLocation][coordinates][0]" step="any" required />
             </div>
-            <div class="col-md-6">
+            <div class="col-md-6" style="display: none;">
               <label for="latitude" class="form-label">Latitude</label>
               <input type="number" class="form-control" id="latitude" name="request[pickupLocation][coordinates][1]" step="any" required />
             </div>

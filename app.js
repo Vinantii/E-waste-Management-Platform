@@ -654,6 +654,7 @@ app.post(
   ]),
   validateAgency,
   wrapAsync(async (req, res) => {
+    console.log("Agency registration route call");
     // Ensure agency logo is uploaded
     if (!req.files["agencyLogo"]) {
       throw new ExpressError("Agency logo is required", 400);

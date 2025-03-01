@@ -27,7 +27,7 @@
       <div class="container">
         <h2>Agency Registration</h2>
         
-        <form action="/register/agency" method="POST" enctype="multipart/form-data">
+        <form action="/register/agency" method="POST" enctype="multipart/form-data" onsubmit="return checkCoordinates();">
           <!-- Agency Logo -->
           <div class="file-input-container">
             <label class="file-input-label">Agency Logo</label>
@@ -116,21 +116,21 @@
             </div>
 
             <!-- Location Type -->
-            <div class="form-group">
+            <!-- <div class="form-group">
               <label class="form-label">Location Type</label>
               <input type="text" class="form-control" name="agency[location][type]" placeholder="Location Type" required>
             </div>
-          </div>
+          </div> -->
 
-          <div class="form-row">
+          <div class="form-row" hidden>
             <!-- Coordinates -->
             <div class="form-group">
               <label class="form-label">Latitude</label>
-              <input type="number" class="form-control hidden-field" name="agency[location][coordinates][]" placeholder="Latitude (Hidden Field)" step="any" required>
+              <input type="number" class="form-control hidden-field" name="agency[location][coordinates][]" placeholder="Latitude (Hidden Field)" step="any" >
             </div>
             <div class="form-group">
               <label class="form-label">Longitude</label>
-              <input type="number" class="form-control hidden-field" name="agency[location][coordinates][]" placeholder="Longitude (Hidden Field)" step="any" required>
+              <input type="number" class="form-control hidden-field" name="agency[location][coordinates][]" placeholder="Longitude (Hidden Field)" step="any" >
             </div>
           </div>
 
@@ -187,6 +187,46 @@
         const status = document.getElementById(statusId);
         status.textContent = input.files[0] ? input.files[0].name : 'No File Chosen';
       }
+
+  // Function to get user's location and update the hidden fields
+  function getUserLocation() {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      function (position) {
+        
+        // Get all hidden coordinate fields by name
+        const coordinateFields = document.getElementsByName("agency[location][coordinates][]");
+        
+        if (coordinateFields.length >= 2) {
+          coordinateFields[0].value = position.coords.latitude;  // Latitude
+          coordinateFields[1].value = position.coords.longitude; // Longitude
+        }
+      },
+      function (error) {
+        console.error("Error getting location:", error);
+      }
+    );
+  } else {
+    console.error("Geolocation is not supported by this browser.");
+  }
+}
+
+// Call function on page load
+document.addEventListener("DOMContentLoaded", getUserLocation);
+
+
+            function checkCoordinates() {
+                let coordInputs = document.querySelectorAll("input[name='agency[location][coordinates][]']");
+                if (coordInputs.length < 2 || !coordInputs[0].value || !coordInputs[1].value) {
+                    alert("Location coordinates are required. Please enable location services.");
+                    return false;
+                }
+                return true;
+            }
+
+
+      // Call the function when the page loads
+      window.onload = getUserLocation;
     </script>
   </body>
 </html>

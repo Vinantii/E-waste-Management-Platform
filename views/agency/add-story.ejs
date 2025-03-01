@@ -28,7 +28,7 @@
     <div class="background">
         <div class="story-container">
        <h2>Create New Story</h2>
-       <form action="/agency/<%=agency._id%>/story/add" method="POST" class="needs-validation" novalidate>
+       <form class="needs-validation" novalidate onsubmit="detectSpamAndSubmit(event, '<%= agency._id %>')">
            <div class="mb-3">
                <label for="title" class="form-label">Story Title*</label>
                <input 
@@ -61,6 +61,21 @@
                    Please provide story content (minimum 10 characters).
                </div>
            </div>
+           <div class="mb-3">
+            <label for="media" class="form-label"> Upload Image </label>       
+            <input
+              type="file"
+              class="form-control"
+              id="media"
+              name="media"
+              accept="image/*"
+              required
+            />
+            <div class="invalid-feedback">
+              Please upload an Image
+            </div>
+          </div>
+
 
            <!-- Hidden fields for author information -->
            <div hidden>
@@ -102,6 +117,57 @@
            });
        });
    })();
+      // Spam detection
+
+    const detectSpamAndSubmit = async (event, agencyId) => {
+        event.preventDefault(); // Prevent default form submission
+
+        const formData = new FormData(event.target);
+        const title = formData.get("story[title]");
+        const content = formData.get("story[content]");
+
+        try {
+            const spamCheckResponse = await fetch("/check-spam", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ title, content }),
+            });
+
+            const spamCheckResult = await spamCheckResponse.json();
+            console.log("Spam Check Response:", spamCheckResult);
+
+            if (spamCheckResult.isSpam) {
+                if (spamCheckResult.category === "SPAM") {
+                    alert("Your story appears to be spam. Please modify your content.");
+                } else if (spamCheckResult.category === "GIBBERISH") {
+                    alert("Your story contains random or meaningless text. Please enter meaningful content.");
+                }
+                return; // Stop submission
+            }
+
+            console.log("Before submitting the actual story...");
+
+            const response = await fetch(`/agency/${agencyId}/story/add`, {
+                method: "POST",
+                body: formData // Send form data directly (includes file uploads)
+            });
+            if (response.redirected) {
+                // If server sends a redirect, follow it
+                window.location.href = response.url;
+            } else if (response.ok) {
+                // If manually redirecting
+                window.location.href = `/agency/${agencyId}/community`;
+            } else {
+                const result = await response.json();
+                alert(`Error: ${result.error || "Failed to submit the story"}`);
+            }
+
+        } catch (error) {
+            console.error("Error:", error);
+            alert("Something went wrong. Please try again.");
+        }
+    };
+    
    </script>
 </body>
 </html>

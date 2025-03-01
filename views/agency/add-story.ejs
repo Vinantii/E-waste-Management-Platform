@@ -6,10 +6,28 @@
    <title>Add Story</title>
    <!-- Bootstrap CSS -->
    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+   <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+   <link rel="preconnect" href="https://fonts.googleapis.com" />
+   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+   <link
+     href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Afacad:ital,wght@0,400..700;1,400..700&family=Anek+Latin:wght@100..800&family=Manrope:wght@200..800&family=Michroma&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap"
+     rel="stylesheet"
+   />
+   <link
+     rel="stylesheet"
+     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+     integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
+     crossorigin="anonymous"
+     referrerpolicy="no-referrer"
+   />
+   <link rel="stylesheet" href="/styles/add-story.css">
 </head>
 <body>
-   <div class="container mt-5">
-       <h2 class="mb-4">Create New Story</h2>
+    <div class="background">
+        <div class="story-container">
+       <h2>Create New Story</h2>
        <form action="/agency/<%=agency._id%>/story/add" method="POST" class="needs-validation" novalidate>
            <div class="mb-3">
                <label for="title" class="form-label">Story Title*</label>
@@ -21,6 +39,7 @@
                    required
                    minlength="3"
                    maxlength="100"
+                   placeholder="Enter Your Title"
                />
                <div class="invalid-feedback">
                    Please provide a story title (3-100 characters).
@@ -36,6 +55,7 @@
                    rows="10"
                    required
                    minlength="10"
+                   placeholder="Content"
                ></textarea>
                <div class="invalid-feedback">
                    Please provide story content (minimum 10 characters).
@@ -57,9 +77,10 @@
              
            </div>
 
-           <button type="submit" class="btn btn-primary">Publish Story</button>
+           <button type="submit" class="butn">Publish Story</button>
        </form>
    </div>
+    </div>
 
    <!-- Bootstrap JS -->
    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

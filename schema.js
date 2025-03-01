@@ -40,7 +40,7 @@ const agencySchema = Joi.object({
     description:Joi.string().required(),
     location: Joi.object({
       type: Joi.string().valid("Point").default("Point"),
-      coordinates: Joi.array().items(Joi.number()).length(2).required(),
+      coordinates: Joi.array().items(Joi.number()).length(2),
     }),
     workingHours: Joi.string().required(),
     wasteTypesHandled: Joi.array()

@@ -1,0 +1,49 @@
+*{
+    overflow-x: hidden;
+}
+
+.background{
+    background: url(/images/lines.png) no-repeat center center;
+    background-size: 100% 100%;
+    background-color: #1F643A;
+    height: auto;
+    width: 100vw;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.profile-container{
+    background-color: #FFF;
+    width: 45%;
+    margin: 5% auto;
+    padding: 40px;
+    border-radius: 25px;
+    box-shadow: 0 0 40px 40px rgba(0, 0, 0, 0.5);
+}
+
+.profile-container h2{
+    color: #1F643A;
+    font-family: 'Anek Latin';
+    font-size: xx-large;
+    font-weight: 600;
+}
+
+.text-center{
+    margin: 4% auto;
+}
+
+.details{
+    margin-left: 15%;
+    margin-right: 5%;
+    font-family: 'Poppins';
+    width: 100%;
+}
+
+.buttons{
+    display: flex;
+    justify-content: center;
+    gap: 50px;
+    margin-right: 25%;
+    margin-top: 10%;
+}

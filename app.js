@@ -654,6 +654,7 @@ app.post(
   ]),
   validateAgency,
   wrapAsync(async (req, res) => {
+    console.log("Agency registration route call");
     // Ensure agency logo is uploaded
     if (!req.files["agencyLogo"]) {
       throw new ExpressError("Agency logo is required", 400);
@@ -2006,14 +2007,18 @@ app.get(
 
     const receivedOrders = await Order.find({
       agency: req.params.id,
-      status: { $in: ["Pending", "Shipped"] },
+      status: { $in: ["Pending", "Shipped", "Accepted"] },
     }).populate("user product");
+    console.log("Received orders:",receivedOrders)
 
+    console.log("received order:",receivedOrders);
     const completedOrders = await Order.find({
       agency: req.params.id,
       status: "Delivered",
     }).populate("user product");
+  
 
+    console.log("Completed orders:",completedOrders);
     const allProducts = await Product.find({ agency: req.params.id });
 
     res.render("agency/order.ejs", {

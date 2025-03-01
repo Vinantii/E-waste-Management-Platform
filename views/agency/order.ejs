@@ -5,47 +5,101 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Agency Orders</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <style>
-        .container { margin-top: 50px; }
-        .card { border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); }
-        .form-control, .form-select { border-radius: 8px; }
-        .preview-img { max-width: 100%; height: auto; border-radius: 10px; display: none; }
-    </style>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Afacad:ital,wght@0,400..700;1,400..700&family=Albert+Sans:ital,wght@0,100..900;1,100..900&family=Anek+Latin:wght@100..800&family=Manrope:wght@200..800&family=Michroma&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto:ital,wght@0,100..900;1,100..900&family=Teachers:ital,wght@0,400..800;1,400..800&display=swap" rel="stylesheet">
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+      integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    />
+    <link rel="stylesheet" href="/styles/agency/order.css">
 </head>
 <body>
+    <div class="background">
     <div class="container">
-        <h2 class="text-center mb-4">Agency Orders & Products</h2>
+        <h1>Agency Orders & Products</h1>
         
         <!-- Tabs Navigation -->
         <ul class="nav nav-tabs" id="orderTabs" role="tablist">
             <li class="nav-item">
-                <button class="nav-link active" id="products-tab" data-bs-toggle="tab" data-bs-target="#products" type="button" role="tab">Products List</button>
+                <button class="nav-link active" id="received-tab" data-bs-toggle="tab" data-bs-target="#received" type="button" role="tab">Received Requests</button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" id="completed-tab" data-bs-toggle="tab" data-bs-target="#completed" type="button" role="tab">Completed Requests</button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" id="products-tab" data-bs-toggle="tab" data-bs-target="#products" type="button" role="tab">Products List</button>
             </li>
         </ul>
 
-        <!-- Product List -->
+        <!-- Tabs Content -->
         <div class="tab-content mt-3" id="orderTabsContent">
-            <div class="tab-pane fade show active" id="products" role="tabpanel">
+            <!-- Received Requests -->
+            <div class="tab-pane fade show active" id="received" role="tabpanel">
+                <div class="row">
+                    <% if(receivedOrders.length > 0) { %>
+                    <% receivedOrders.forEach(order => { %>
+                        <div class="col-md-6 mb-3">
+                            <div class="card p-3">
+                                <h5>Order ID: <%= order._id %></h5>
+                                <p>Product: <%= order.product.name %></p>
+                                <p>User: <%= order.user ? order.user.name : "undefined" %></p>
+                                <p>Status: <strong><%= order.status %></strong></p>
+                                <form action="/agency/order/<%= order._id %>/update-status" method="post">
+                                    <select name="status">
+                                        <option value="Accepted">Accept Order</option>
+                                        <option value="Rejected">Reject Order</option>
+                                        <option value="Shipped">Order shipped</option>
+                                        <option value="Delivered">Order Delivered</option>
+                                    </select>
+                                    <button type="submit">Update status</button>
+                                </form>
+                                
+                            </div>
+                        </div>
+                    <% }); %>
+                    <% }%>
+                </div>
+            </div>
+
+            <!-- Completed Requests -->
+            <div class="tab-pane fade" id="completed" role="tabpanel">
+                <div class="row">
+                    <% completedOrders.forEach(order => { %>
+                        <div class="col-md-6 mb-3">
+                            <div class="card p-3">
+                                <h5>Order ID: <%= order._id %></h5>
+                                <p>Product: <%= order.product.name %></p>
+                                <p>User: <%= order.user.name %></p>
+                                <p>Status: <strong><%= order.status %></strong></p>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+            </div>
+
+            <!-- Product List -->
+            <div class="tab-pane fade" id="products" role="tabpanel">
                 <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addProductModal">Add Product</button>
                 <div class="row">
                     <% allProducts.forEach(product => { %>
                         <div class="col-md-4 mb-4">
                             <div class="card p-3">
                                 <img src="<%= product.image.url %>" class="img-fluid mb-2" alt="<%= product.name %>">
-                                <h5><%= product.name %></h5>
-                                <p><%= product.description %></p>
-                                <p>Points Required: <%= product.pointsRequired %></p>
-                                <p>Stock Available: <strong><%= product.stock %></strong></p>
+                                <h5 class="pr-name"><%= product.name %></h5>
+                                <p class="desc"><%= product.description %></p>
+                                <p><b>Points Required:</b> <%= product.pointsRequired %></p>
+                                <p><b>Stock Available:</b> <%= product.stock %></p>
                                 
-                                <!-- Update Product Button -->
                                 <button class="btn btn-warning w-100 mb-2" data-bs-toggle="modal" data-bs-target="#updateProductModal-<%= product._id %>">Update Product</button>
-
-                                <!-- Delete Product Button -->
                                 <button class="btn btn-danger w-100" data-bs-toggle="modal" data-bs-target="#deleteProductModal-<%= product._id %>">Delete Product</button>
-                            </div>
-                        </div>
-
-                        <!-- Update Product Modal -->
+                                 <!-- Update Product Modal -->
                         <div class="modal fade" id="updateProductModal-<%= product._id %>" tabindex="-1" aria-labelledby="updateProductModalLabel" aria-hidden="true">
                             <div class="modal-dialog">
                                 <div class="modal-content">
@@ -102,7 +156,8 @@
                                 </div>
                             </div>
                         </div>
-
+                            </div>
+                        </div>
                     <% }); %>
                 </div>
             </div>
@@ -145,6 +200,7 @@
             </div>
         </div>
     </div>
+</div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>

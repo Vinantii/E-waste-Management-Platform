@@ -833,6 +833,7 @@ app.delete("/user/:id", async (req, res) => {
     }
 
     await Story.deleteMany({ "author.user": user._id });
+    await Feedback.deleteMany({user: user._id });
     await Order.deleteMany({ user: user._id });
 
     const requests = await Request.find({ user: user._id });
@@ -1183,8 +1184,8 @@ app.delete(
   })
 );
 
-// TODO: Agency Dashboard Route
-app.get(
+// TODO:Agency dashboard
+ app.get(
   "/agency/:id/dashboard",
   isAgencyLoggedIn,
   checkCertificationStatus,
@@ -2411,7 +2412,7 @@ const updateUserPointsOnCompletion = wrapAsync(async (request) => {
   });
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
   deleteExpiredEvents();

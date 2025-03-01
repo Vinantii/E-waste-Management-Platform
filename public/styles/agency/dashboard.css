@@ -7,7 +7,7 @@
     margin: 0;
     padding: 0;
     overflow-x: hidden;
-  }
+}
 
 /* Floating button to open chatbot */
 .chat-toggle-btn {
@@ -119,32 +119,36 @@
 
 /* Pulse effect for voice button when recording */
 @keyframes pulse {
-0% {
-transform: scale(1);
-box-shadow: 0 0 5px rgba(45, 90, 39, 0.8);
-}
-50% {
-transform: scale(1.1);
-box-shadow: 0 0 15px rgba(45, 90, 39, 0.9);
-}
-100% {
-transform: scale(1);
-box-shadow: 0 0 5px rgba(45, 90, 39, 0.8);
-}
+    0% {
+        transform: scale(1);
+        box-shadow: 0 0 5px rgba(45, 90, 39, 0.8);
+    }
+
+    50% {
+        transform: scale(1.1);
+        box-shadow: 0 0 15px rgba(45, 90, 39, 0.9);
+    }
+
+    100% {
+        transform: scale(1);
+        box-shadow: 0 0 5px rgba(45, 90, 39, 0.8);
+    }
 }
 
 /* Default voice button */
 #voice-btn {
-transition: background-color 0.3s ease, transform 0.2s ease;
+    transition: background-color 0.3s ease, transform 0.2s ease;
 }
 
 /* Active state when recording */
 #voice-btn.recording {
-background-color: rgb(255, 50, 50) !important; /* Red when active */
-animation: pulse 1s infinite; /* Pulsing effect */
+    background-color: rgb(255, 50, 50) !important;
+    /* Red when active */
+    animation: pulse 1s infinite;
+    /* Pulsing effect */
 }
 
-body img{
+body img {
     position: absolute;
     z-index: 1;
     height: 95%;
@@ -161,64 +165,68 @@ body img{
     width: 100vw;
     background-color: #1F643A;
     position: relative;
-  }
+}
 
-  .navbar {
+.navbar {
     width: 85%;
     margin-top: 3%;
     background-color: rgba(0, 0, 0, 0.25);
     padding: 15px 30px;
     border-radius: 25px;
-  }
-  
-  .navbar-brand{
-      color: white;
-      font-size: 20px;
-      font-family: 'Abril Fatface';
-  }
-  
-  .d-flex{
-      margin-right: 5px;
-      display: flex;
-      align-items: center;
-  }
-  
-  .d-flex a{
-      font-family: 'Michroma'; 
-      color: white;
-      font-size: 15px;
-      margin-left: 30px;
-      text-decoration: none;
-  }
-  
-  .butn {
-      padding-bottom: 5px;
-      text-decoration: none !important; /* Removes default underline */
-      text-underline-offset: 5px;
-      transition: all 0.5s ease !important;
-  }
-  
-  .butn:hover {
-      text-decoration: underline !important; /* Reapply underline */
-      text-decoration-thickness: 2px !important;
-      text-decoration-color: #102D16 !important; /* Change underline color */
-      text-underline-offset: 7px; /* Increase spacing on hover */
-  }
-  
-  .login{
-      background-color: #FFF;
-      color: #1F643A !important;
-      padding: 10px 15px;
-      border-radius: 10px;
-      transition: 0.3s all ease;
-  }
-  
-  .login:hover{
-      background-color: #1F643A;
-      color: white !important;
-  }
+}
 
-  .headline{
+.navbar-brand {
+    color: white;
+    font-size: 20px;
+    font-family: 'Abril Fatface';
+}
+
+.d-flex {
+    margin-right: 5px;
+    display: flex;
+    align-items: center;
+}
+
+.d-flex a {
+    font-family: 'Michroma';
+    color: white;
+    font-size: 15px;
+    margin-left: 30px;
+    text-decoration: none;
+}
+
+.butn {
+    padding-bottom: 5px;
+    text-decoration: none !important;
+    /* Removes default underline */
+    text-underline-offset: 5px;
+    transition: all 0.5s ease !important;
+}
+
+.butn:hover {
+    text-decoration: underline !important;
+    /* Reapply underline */
+    text-decoration-thickness: 2px !important;
+    text-decoration-color: #102D16 !important;
+    /* Change underline color */
+    text-underline-offset: 7px;
+    /* Increase spacing on hover */
+}
+
+.login {
+    background-color: #FFF;
+    color: #1F643A !important;
+    padding: 10px 15px;
+    border-radius: 10px;
+    transition: 0.3s all ease;
+}
+
+.login:hover {
+    background-color: #1F643A;
+    color: white !important;
+}
+
+.headline {
     margin: auto;
     margin-top: 12%;
     display: flex;
@@ -228,7 +236,7 @@ body img{
     overflow-y: hidden;
 }
 
-.headline h2{
+.headline h2 {
     font-family: 'Teachers';
     font-weight: bolder;
     color: #C8E171;
@@ -247,13 +255,13 @@ body img{
     text-transform: uppercase;
 }
 
-.container-1{
+.container-1 {
     background-color: #FFF;
     width: 100vw;
     height: auto;
 }
 
-.missions{
+.missions {
     width: 90%;
     margin: 7% auto;
     display: flex;
@@ -261,25 +269,25 @@ body img{
     align-items: center;
 }
 
-.mission{
+.mission {
     border-left: #1F643A 3px solid;
     padding: 10px 30px;
 }
 
-.mission span{
+.mission span {
     font-family: 'Albert Sans';
     color: #1F643A;
     font-weight: bold;
     font-size: 1rem;
 }
 
-.statistics{
+.statistics {
     height: auto;
     width: 100vw;
     background-color: #FFF;
 }
 
-.stats{
+.stats {
     width: 90%;
     margin: 6% auto;
     height: auto;
@@ -287,7 +295,7 @@ body img{
     box-shadow: 0 0 10px 10px rgba(31, 100, 58, 0.5)
 }
 
-.footer{
+.footer {
     height: auto;
     width: 100vw;
     background-color: #102D16;
@@ -296,7 +304,7 @@ body img{
     flex-direction: column;
 }
 
-.about{
+.about {
     padding-top: 2.5%;
     display: flex;
     justify-content: space-around;
@@ -304,53 +312,56 @@ body img{
     margin: auto;
 }
 
-.about-info{
+.about-info {
     width: 90%;
     font-family: 'Poppins';
     font-size: 1rem;
 }
 
-.about-us{
+.about-us {
     display: flex;
     flex-direction: column;
     width: 50%;
 }
 
-.links{
+.links {
     width: 50%;
 }
 
-.footer-logo{
+.footer-logo {
     display: flex;
     flex-direction: column;
     margin-bottom: 0.8%;
     align-items: center;
 }
 
-.footer-logo h1{
+.footer-logo h1 {
     font-family: 'Afacad';
     font-size: 10rem;
-    background: linear-gradient(to bottom, 
-    #A4AF76 0%,  /* Light green at the top */
-    #A4AF76 30%,  /* Light green at the top */
-    #102D16 100% /* Fades to dark at the bottom */
-  );
+    background: linear-gradient(to bottom,
+            #A4AF76 0%,
+            /* Light green at the top */
+            #A4AF76 30%,
+            /* Light green at the top */
+            #102D16 100%
+            /* Fades to dark at the bottom */
+        );
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
     overflow: hidden;
 }
 
-.footer-logo p{
+.footer-logo p {
     color: #D0E098;
     font-size: 1.2rem;
 }
 
-.footer-logo p span{
+.footer-logo p span {
     font-size: 1.8rem;
 }
 
-#feedback{
+#feedback {
     background-color: white;
     height: 200px;
     width: 400px;
@@ -358,28 +369,69 @@ body img{
     outline: none;
     resize: none;
     padding: 20px;
-    
+
 }
 
-.links{
+.links {
     display: flex;
     flex-direction: column;
     align-items: center;
 }
 
-.links h3{
+.links h3 {
     font-family: 'Poppins';
     font-weight: bold;
     overflow: hidden;
 }
 
-.about-feedback{
+.about-feedback {
     margin-top: 8%;
 }
 
-.about-feedback h5{
+.about-feedback h5 {
     font-weight: bold;
     margin-bottom: 2%;
     font-family: 'Poppins';
     overflow: hidden;
+}
+
+
+#map {
+    height: 500px !important;
+    /* Force height */
+    width: 100% !important;
+    margin: 0;
+    border-radius: 12px;
+    border: 2px solid #e9ecef;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    position: relative;
+    z-index: 10;
+    /* Increase z-index */
+}
+
+.card-body.p-0 {
+    position: relative;
+    z-index: 5;
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+/* Collection Intensity Legend */
+.info.legend {
+    background: white;
+    padding: 10px;
+    border-radius: 8px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+/* Map Controls */
+.leaflet-control-zoom {
+    border: none !important;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1) !important;
+}
+
+.leaflet-control-zoom a {
+    background: white !important;
+    color: #1F643A !important;
 }

@@ -1184,8 +1184,8 @@ app.delete(
   })
 );
 
-// TODO: Agency Dashboard Route
-app.get(
+// TODO:Agency dashboard
+ app.get(
   "/agency/:id/dashboard",
   isAgencyLoggedIn,
   checkCertificationStatus,
@@ -2414,7 +2414,7 @@ const updateUserPointsOnCompletion = wrapAsync(async (request) => {
   });
 });
 
-const PORT = process.env.PORT || 3000;
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
   deleteExpiredEvents();

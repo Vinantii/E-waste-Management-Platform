@@ -1731,6 +1731,55 @@ app.post(
     if (!agency) {
       return res.status(404).json({ error: "Agency not found" });
     }
+    const { title, description, registrationLink } = req.body.community;
+
+    // Verify event registration link using Gemini
+    const requestBody = {
+      model: "gemini-1.5-flash",
+      contents: [{
+        role: "user",
+        parts: [{
+          text: `Analyze the given community event registration link and classify it as:
+
+          Rules:
+          - **"VALID"** if it belongs to a trusted event platform (e.g., Eventbrite, Meetup, university/government domains).
+          - **"FAKE"** if it appears suspicious, contains random characters, or resembles phishing links.
+          - **"UNKNOWN"** if there is not enough information.
+          **RULES:**
+          - If the text contains random letters or meaningless words (e.g., "fdsg dfgdfg fdhgf"), return "FAKE".
+          - If the text promotes irrelevant or suspicious offers (e.g., "Win a free laptop now!"), return "FAKE".
+          - If the text is about **cleaning drives, e-waste drives, environmental awareness, or sustainability events**, return "VALID".
+          - If the text is **just a general personal story without relevance to cleaning or e-waste**, return "FAKE".
+
+          Return only: "VALID", "FAKE", or "UNKNOWN".
+
+          Event Title: "${title}"
+          Registration Link: "${registrationLink}"
+          Description:"${description}"`
+        }]
+      }]
+    };
+
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(requestBody),
+        }
+      );
+
+      const result = await response.json();
+      console.log("Raw AI Response:", JSON.stringify(result, null, 2));
+
+      const aiResponse = result?.candidates?.[0]?.content?.parts?.[0]?.text?.trim().toUpperCase() || "UNKNOWN";
+      console.log("Processed AI Response:", aiResponse);
+
+      if (aiResponse === "FAKE") {
+        throw new ExpressError("The provided data is spam.", 400);
+      }
+
+
     // Create new community with nested organizer structure
     const newCommunity = new Community({
       ...req.body.community,
@@ -1760,6 +1809,7 @@ app.post(
   "/agency/:id/story/add",
   isAgencyLoggedIn,
   checkCertificationStatus,
+  upload.single("media"),
   validateStory,
   wrapAsync(async (req, res) => {
     const agency = await Agency.findById(req.params.id);
@@ -1767,11 +1817,25 @@ app.post(
       return res.status(404).json({ error: "agency not found" });
     }
 
+      // console.log(req.file);
+      if (!req.file) {
+        throw new ExpressError("Media picture is required", 400);
+      }
+  
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: "Technothon",
+        resource_type: "auto",
+      });
+  
     const newStory = new Story({
       ...req.body.story,
       author: {
         user: null, // Set the user ID in the nested structure
         agency: req.params.id, // Set to null or the agency ID if available
+      },
+      media: {
+        url: result.secure_url,
+        filename: result.public_id,
       },
     });
     // Save the new community

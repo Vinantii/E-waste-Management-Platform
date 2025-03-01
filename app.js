@@ -989,6 +989,28 @@ app.post(
   })
 );
 
+
+// TODO: Request delete route user
+app.delete("/user/request/:id/delete",isLoggedIn, wrapAsync(async (req,res) =>{
+  const request = await Request.findById(req.params.id);
+  if(!request){
+    throw new ExpressError("Request is not available", 400);
+  }
+  const accpetedStatus = ["Pending","Accepted","Assigned"];
+  if(!accpetedStatus.includes(request.status) || request.trackingMilestones.pickupStarted.completed === "false"){
+    throw new ExpressError("You cannot cancel the requets as the request has already been processed.", 400);
+  }
+  
+  // Remove the request from the user's requests array
+  await User.findByIdAndUpdate(req.user._id, { $pull: { requests: request._id } });
+  await Volunteer.findByIdAndUpdate(request.volunteerAssigned, { $pull: { assignedRequests: request._id } });
+  await Agency.findByIdAndUpdate(request.agency, { $pull: { requests: request._id } });
+  await Request.findByIdAndDelete(request._id);
+  res.redirect(`/user/${req.user._id}/check-request`);
+
+}));
+
+
 // TODO: User Check Request Route
 app.get(
   "/user/:id/check-request",
@@ -1096,23 +1118,76 @@ app.post(
     if (!user) {
       return res.status(404).json({ error: "User not found" });
     }
-    // Create new community with nested organizer structure
-    const newCommunity = new Community({
-      ...req.body.community,
-      organizer: {
-        user: req.params.id,
-        agency: null,
-      },
-    });
-    // Save the new community
-    await newCommunity.save();
 
-    // Add 20 points to user for creating a community event
-    // await user.addCommunityPoints(20);
+    const { title, description, registrationLink } = req.body.community;
 
-    res.redirect(`/user/${user._id}/community`);
+    // Verify event registration link using Gemini
+    const requestBody = {
+      model: "gemini-1.5-flash",
+      contents: [{
+        role: "user",
+        parts: [{
+          text: `Analyze the given community event registration link and classify it as:
+
+          Rules:
+          - **"VALID"** if it belongs to a trusted event platform (e.g., Eventbrite, Meetup, university/government domains).
+          - **"FAKE"** if it appears suspicious, contains random characters, or resembles phishing links.
+          - **"UNKNOWN"** if there is not enough information.
+          **RULES:**
+          - If the text contains random letters or meaningless words (e.g., "fdsg dfgdfg fdhgf"), return "FAKE".
+          - If the text promotes irrelevant or suspicious offers (e.g., "Win a free laptop now!"), return "FAKE".
+          - If the text is about **cleaning drives, e-waste drives, environmental awareness, or sustainability events**, return "VALID".
+          - If the text is **just a general personal story without relevance to cleaning or e-waste**, return "FAKE".
+
+          Return only: "VALID", "FAKE", or "UNKNOWN".
+
+          Event Title: "${title}"
+          Registration Link: "${registrationLink}"
+          Description:"${description}"`
+        }]
+      }]
+    };
+
+    try {
+      const response = await fetch(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(requestBody),
+        }
+      );
+
+      const result = await response.json();
+      console.log("Raw AI Response:", JSON.stringify(result, null, 2));
+
+      const aiResponse = result?.candidates?.[0]?.content?.parts?.[0]?.text?.trim().toUpperCase() || "UNKNOWN";
+      console.log("Processed AI Response:", aiResponse);
+
+      if (aiResponse === "FAKE") {
+        throw new ExpressError("The provided data is spam.", 400);
+      }
+
+      // Create new community event with verified link
+      const newCommunity = new Community({
+        ...req.body.community,
+        organizer: {
+          user: req.params.id,
+          agency: null,
+        },
+      });
+
+      await newCommunity.save();
+
+      res.redirect(`/user/${user._id}/community`);
+
+    } catch (error) {
+      console.error("Error verifying event registration link:", error);
+      throw new ExpressError("Event registration link verification failed.", 500);
+    }
   })
 );
+
 
 // TODO: Add story button
 app.get(
@@ -1124,12 +1199,78 @@ app.get(
   })
 );
 
+// TASK: Spam checking
+
+app.post("/check-spam", isLoggedIn, wrapAsync(async (req, res) => {
+  const { title, content } = req.body;
+  console.log("Inside spam check");
+  console.log("Request Body:", title, content);
+
+  const requestBody = {
+      model: "gemini-1.5-flash",
+      contents: [{
+          role: "user",
+          parts: [{
+              text: `Analyze the provided text and strictly classify it as one of the following categories:
+
+                - "SPAM" if the text contains promotional, scam, misleading, or harmful content.
+                - "GIBBERISH" if the text consists of random characters, meaningless words, or lacks coherent sentence structure.
+                - "NOSPAM" if the text is a meaningful user-generated entry related to:
+                  E-waste experiences, recycling, awareness, or disposal.
+                  Environmental activities like cleaning drives, awareness events, and sustainability efforts.
+
+                Rules:
+                - If the text contains random letters or meaningless words (e.g., "fdsg dfgdfg fdhgf"), return "GIBBERISH".
+                - If the text promotes irrelevant or suspicious offers (e.g., "Win a free laptop now!"), return "SPAM".
+                - If the text is about **cleaning drives, e-waste drives, environmental awareness, or sustainability events**, return "NOSPAM".
+                - If the text is **just a general personal story without relevance to cleaning or e-waste**, return "SPAM".
+
+                Respond with only one word: "SPAM", "GIBBERISH", or "NOSPAM". No explanations, formatting, or extra text.
+
+              Title: "${title}" 
+              Content: "${content}"`
+          }]
+      }]
+  };
+
+  try {
+      const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${process.env.GEMINI_API_KEY}`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(requestBody),
+      });
+
+      const result = await response.json();
+      console.log("Raw AI Response:", JSON.stringify(result, null, 2));
+
+      const aiResponse = result?.candidates?.[0]?.content?.parts?.[0]?.text?.trim().toUpperCase() || "UNKNOWN";
+      console.log("Processed AI Response:", aiResponse);
+
+      if (!["SPAM", "GIBBERISH", "NOSPAM"].includes(aiResponse)) {
+          console.warn("Unexpected AI response format. Defaulting to NOSPAM.");
+      }
+
+      res.json({ 
+          isSpam: aiResponse === "SPAM" || aiResponse === "GIBBERISH", 
+          category: aiResponse 
+      });
+
+  } catch (error) {
+      console.error("Spam check error:", error);
+      res.status(500).json({ error: "Spam detection failed" });
+  }
+}));
+
+
+
+
 app.post(
   "/user/:id/story/add",
   isLoggedIn,
   upload.single("media"),
   validateStory,
   wrapAsync(async (req, res) => {
+    console.log("in route");
     const user = await User.findById(req.params.id);
     if (!user) {
       return res.status(404).json({ error: "User not found" });
@@ -2412,7 +2553,7 @@ const updateUserPointsOnCompletion = wrapAsync(async (request) => {
   });
 });
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
   deleteExpiredEvents();

@@ -28,7 +28,7 @@
     <div class="background">
    <div class="story-container">
        <h2>Create New Story</h2>
-       <form action="/user/<%=user._id%>/story/add" method="POST" class="needs-validation"  enctype="multipart/form-data" novalidate>
+       <form class="needs-validation"  enctype="multipart/form-data" novalidate onsubmit="detectSpamAndSubmit(event, '<%= user._id %>')">
            <div class="mb-3">
                <label for="title" class="form-label">Story Title*</label>
                <input 
@@ -101,7 +101,8 @@
    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
    <!-- Form validation script -->
-   <script>
+  <!-- <script src="../../public/js/script.js"></script> -->
+   <script >
    (() => {
        'use strict';
 
@@ -117,6 +118,108 @@
            });
        });
    })();
+
+   // Spam detection
+//    const detectSpamAndSubmit = async (event, userId) => {
+//         event.preventDefault(); // Prevent default form submission
+//         console.log("Checking spam before submission...");
+
+//         // Extract form data
+//         const formData = new FormData(event.target);
+//         const title = formData.get("story[title]");
+//         const content = formData.get("story[content]");
+
+//         try {
+//             // Step 1: Check for spam using the backend
+//             const spamCheckResponse = await fetch("/check-spam", {
+//                 method: "POST",
+//                 headers: { "Content-Type": "application/json" },
+//                 body: JSON.stringify({ title, content }),
+//             });
+
+//             const spamCheckResult = await spamCheckResponse.json();
+//             console.log("Spam check result:", spamCheckResult);
+
+//             if (spamCheckResult.isSpam) {
+//                 alert("Your story appears to be spam. Please modify your content.");
+//                 return; // Stop submission
+//             }
+
+//             console.log("Submitting story...");
+            
+//             // Step 2: If not spam, send form data as POST request
+//             const response = await fetch(`/user/${userId}/story/add`, {
+//                 method: "POST",
+//                 body: formData // Send form data directly (includes file uploads)
+//             });
+
+//             if (response.redirected) {
+//                 // If server sends a redirect, follow it
+//                 window.location.href = response.url;
+//             } else if (response.ok) {
+//                 // If manually redirecting
+//                 window.location.href = `/user/${userId}/community`;
+//             } else {
+//                 const result = await response.json();
+//                 alert(`Error: ${result.error || "Failed to submit the story"}`);
+//             }
+
+//         } catch (error) {
+//             console.error("Error:", error);
+//             alert("Something went wrong. Please try again.");
+//         }
+//     };
+
+const detectSpamAndSubmit = async (event, userId) => {
+    event.preventDefault(); // Prevent default form submission
+
+    const formData = new FormData(event.target);
+    const title = formData.get("story[title]");
+    const content = formData.get("story[content]");
+
+    try {
+        const spamCheckResponse = await fetch("/check-spam", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ title, content }),
+        });
+
+        const spamCheckResult = await spamCheckResponse.json();
+        console.log("Spam Check Response:", spamCheckResult);
+
+        if (spamCheckResult.isSpam) {
+            if (spamCheckResult.category === "SPAM") {
+                alert("Your story appears to be spam. Please modify your content.");
+            } else if (spamCheckResult.category === "GIBBERISH") {
+                alert("Your story contains random or meaningless text. Please enter meaningful content.");
+            }
+            return; // Stop submission
+        }
+
+        console.log("Before submitting the actual story...");
+
+        const response = await fetch(`/user/${userId}/story/add`, {
+            method: "POST",
+            body: formData // Send form data directly (includes file uploads)
+        });
+        if (response.redirected) {
+            // If server sends a redirect, follow it
+            window.location.href = response.url;
+        } else if (response.ok) {
+             // If manually redirecting
+            window.location.href = `/user/${userId}/community`;
+        } else {
+            const result = await response.json();
+            alert(`Error: ${result.error || "Failed to submit the story"}`);
+        }
+
+    } catch (error) {
+        console.error("Error:", error);
+        alert("Something went wrong. Please try again.");
+    }
+};
+   
+
    </script>
 </body>
 </html>

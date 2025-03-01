@@ -2010,12 +2010,12 @@ app.get(
     }).populate("user product");
     console.log("Received orders:",receivedOrders)
 
-    console.log("received order:",receivedOrders);
+   
     const completedOrders = await Order.find({
       agency: req.params.id,
       status: "Delivered",
     }).populate("user product");
-  
+    console.log("received order:",receivedOrders);
 
     console.log("Completed orders:",completedOrders);
     const allProducts = await Product.find({ agency: req.params.id });

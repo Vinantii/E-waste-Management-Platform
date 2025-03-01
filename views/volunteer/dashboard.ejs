@@ -102,6 +102,20 @@
                                                             <option value="pickupCompleted">Complete Pickup</option>
                                                         <% } %>
                                                     </select>
+                                                    <% if(request.trackingMilestones.pickupStarted?.completed && !request.trackingMilestones.pickupCompleted?.completed){ %>
+                                                        <div class="mb-3">
+                                                            <label for="otp" class="form-label">OTP</label>
+                                                            <input
+                                                              type="number"
+                                                              class="form-control"
+                                                              id="otp"
+                                                              name="otp"
+                                                              placeholder="Enter Your OTP"
+                                                              required
+                                                            />
+                                                            <div class="invalid-feedback">Please enter your OTP</div>
+                                                          </div>
+                                                    <% } %>
                                                 </div>
                                                 <div class="mb-3">
                                                     <label class="form-label">Notes (optional)</label>

@@ -2008,9 +2008,7 @@ app.get(
       agency: req.params.id,
       status: { $in: ["Pending", "Shipped", "Accepted"] },
     }).populate("user product");
-    console.log("Received orders:",receivedOrders)
 
-    console.log("received order:",receivedOrders);
     const completedOrders = await Order.find({
       agency: req.params.id,
       status: "Delivered",

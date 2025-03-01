@@ -2006,15 +2006,16 @@ app.get(
 
     const receivedOrders = await Order.find({
       agency: req.params.id,
-      status: { $in: ["Pending", "Shipped"] },
+      status: { $in: ["Pending", "Shipped", "Accepted"] },
     }).populate("user product");
+    console.log("Received orders:",receivedOrders)
 
     const completedOrders = await Order.find({
       agency: req.params.id,
       status: "Delivered",
     }).populate("user product");
 
-    console.log(completedOrders);
+    console.log("Completed orders:",completedOrders);
     const allProducts = await Product.find({ agency: req.params.id });
 
     res.render("agency/order.ejs", {

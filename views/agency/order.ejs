@@ -53,6 +53,16 @@
                                 <p>Product: <%= order.product.name %></p>
                                 <p>User: <%= order.user.name %></p>
                                 <p>Status: <strong><%= order.status %></strong></p>
+                                <form action="/agency/order/<%= order._id %>/update-status" method="post">
+                                    <select name="status">
+                                        <option value="Accepted">Accept Order</option>
+                                        <option value="Rejected">Reject Order</option>
+                                        <option value="Shipped">Order shipped</option>
+                                        <option value="Delivered">Order Delivered</option>
+                                    </select>
+                                    <button type="submit">Update status</button>
+                                </form>
+                                
                             </div>
                         </div>
                     <% }); %>

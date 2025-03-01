@@ -19,6 +19,7 @@ body {
     position: relative;
     margin-top: 30px;
     padding-top: 40px;
+    box-shadow: 0 0 40px 40px rgba(0, 0, 0, 0.5);
 }
 
 /* Header Section */
@@ -48,13 +49,13 @@ body {
 /* Tab Navigation */
 .nav-tabs {
     border: none;
-    display: inline-flex;
-    padding: 0;
-    margin: 0;
-    border: 1px solid #E8E8E8;
-    border-radius: 25px;
-    padding: 3px;
     background: white;
+    border-radius: 15px !important;
+    padding: 7px;
+    display: inline-flex;
+    margin-bottom: 2rem;
+    margin-left: 1rem;
+    border: 3px solid #B0D247 !important;
 }
 
 .nav-tabs .nav-item {
@@ -63,9 +64,8 @@ body {
 
 .nav-tabs .nav-link {
     border: none;
-    border-radius: 20px;
     padding: 8px 20px;
-    font-size: 0.9rem;
+    font-size: 1.2rem;
     font-weight: 500;
     color: #333;
     margin: 0;
@@ -73,9 +73,10 @@ body {
 }
 
 .nav-tabs .nav-link.active {
-    background: #9DC88D;
+    background-color: #9DC88D !important;
     color: white;
     border: none;
+    border-radius: 15px !important;
 }
 
 .nav-tabs .nav-link:hover:not(.active) {

@@ -833,6 +833,7 @@ app.delete("/user/:id", async (req, res) => {
     }
 
     await Story.deleteMany({ "author.user": user._id });
+    await Feedback.deleteMany({user: user._id });
     await Order.deleteMany({ user: user._id });
 
     const requests = await Request.find({ user: user._id });
@@ -1183,8 +1184,8 @@ app.delete(
   })
 );
 
-// TODO: Agency Dashboard Route
-app.get(
+// TODO:Agency dashboard
+ app.get(
   "/agency/:id/dashboard",
   isAgencyLoggedIn,
   checkCertificationStatus,

@@ -1,122 +1,112 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Agency Registration</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
-    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Afacad:ital,wght@0,400..700;1,400..700&family=Anek+Latin:wght@100..800&family=Manrope:wght@200..800&family=Michroma&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap"
-      rel="stylesheet"
-    />
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
-      integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
-      crossorigin="anonymous"
-      referrerpolicy="no-referrer"
-    />
-    <link rel="stylesheet" href="/styles/agency/signup.css">
-  </head>
-  <body>
-    <div class="background">
-      <div class="container">
-        <h2>Agency Registration</h2>
-        
-        <form action="/register/agency" method="POST" enctype="multipart/form-data" onsubmit="return checkCoordinates();">
-          <!-- Agency Logo -->
-          <div class="file-input-container">
-            <label class="file-input-label">Agency Logo</label>
-            <div class="file-input-box">
-              <span>Choose File</span>
-              <span class="file-status" id="logoStatus">No File Chosen</span>
-            </div>
-            <input type="file" name="agencyLogo" accept="image/*" onchange="updateFileStatus(this, 'logoStatus')">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agency Registration</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+  <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Afacad:ital,wght@0,400..700;1,400..700&family=Anek+Latin:wght@100..800&family=Manrope:wght@200..800&family=Michroma&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap"
+    rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+    integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
+    crossorigin="anonymous" referrerpolicy="no-referrer" />
+  <link rel="stylesheet" href="/styles/agency/signup.css">
+</head>
+
+<body>
+  <div class="background">
+    <div class="container">
+      <h2>Agency Registration</h2>
+
+      <form action="/register/agency" method="POST" enctype="multipart/form-data" onsubmit="return checkCoordinates();">
+        <!-- Agency Logo -->
+        <div class="file-input-container">
+          <label class="file-input-label">Agency Logo</label>
+          <div class="file-input-box">
+            <span>Choose File</span>
+            <span class="file-status" id="logoStatus">No File Chosen</span>
           </div>
+          <input type="file" name="agencyLogo" accept="image/*" onchange="updateFileStatus(this, 'logoStatus')">
+        </div>
 
-          <div class="form-row">
-            <!-- Agency Name -->
-            <div class="form-group">
-              <label class="form-label">Agency Name</label>
-              <input type="text" class="form-control" name="agency[name]" placeholder="Agency Name" required>
-            </div>
-
-            <!-- Password -->
-            <div class="form-group">
-              <label class="form-label">Password</label>
-              <input type="password" class="form-control" name="agency[password]" placeholder="Password" required>
-            </div>
-          </div>
-
-          <div class="form-row">
-            <!-- Email -->
-            <div class="form-group">
-              <label class="form-label">Email</label>
-              <input type="email" class="form-control" name="agency[email]" placeholder="Email" required>
-            </div>
-
-            <!-- Agency Type -->
-            <div class="form-group">
-              <label class="form-label">Select Agency Type</label>
-              <select class="form-select" name="agency[agencyType]" required>
-                <option value="" disabled selected>Select Agency Type</option>
-                <option value="Recycler">Recycler</option>
-                <option value="Collector">Collector</option>
-                <option value="Disposal">Disposal</option>
-                <option value="Aggregator">Aggregator</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- Address -->
+        <div class="form-row">
+          <!-- Agency Name -->
           <div class="form-group">
-            <label class="form-label">Address</label>
-            <textarea class="form-control" name="agency[address]" placeholder="Address" required></textarea>
+            <label class="form-label">Agency Name</label>
+            <input type="text" class="form-control" name="agency[name]" placeholder="Agency Name" required>
           </div>
 
-          <div class="form-row">
-            <!-- Region -->
-            <div class="form-group">
-              <label class="form-label">Region</label>
-              <input type="text" class="form-control" name="agency[region]" placeholder="Region" required>
-            </div>
+          <!-- Password -->
+          <div class="form-group">
+            <label class="form-label">Password</label>
+            <input type="password" class="form-control" name="agency[password]" placeholder="Password" required>
+          </div>
+        </div>
 
-            <!-- Phone -->
-            <div class="form-group">
-              <label class="form-label">Phone No.</label>
-              <input type="tel" class="form-control" name="agency[phone]" placeholder="Phone No." required>
+        <div class="form-row">
+          <!-- Email -->
+          <div class="form-group">
+            <label class="form-label">Email</label>
+            <input type="email" class="form-control" name="agency[email]" placeholder="Email" required>
+          </div>
+
+          <!-- Agency Type -->
+          <div class="form-group">
+            <label class="form-label">Select Agency Type</label>
+            <select class="form-select" name="agency[agencyType]" required>
+              <option value="" disabled selected>Select Agency Type</option>
+              <option value="Recycler">Recycler</option>
+              <option value="Collector">Collector</option>
+              <option value="Disposal">Disposal</option>
+              <option value="Aggregator">Aggregator</option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Address -->
+        <div class="form-group">
+          <label class="form-label">Address</label>
+          <textarea class="form-control" name="agency[address]" placeholder="Address" required></textarea>
+        </div>
+
+        <div class="form-row">
+          <!-- Region -->
+          <div class="form-group">
+            <label class="form-label">Region</label>
+            <input type="text" class="form-control" name="agency[region]" placeholder="Region" required>
+          </div>
+
+          <!-- Phone -->
+          <div class="form-group">
+            <label class="form-label">Phone No.</label>
+            <input type="tel" class="form-control" name="agency[phone]" placeholder="Phone No." required>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <!-- Contact Person -->
+          <div class="form-group">
+            <label class="form-label">Contact Person</label>
+            <input type="text" class="form-control" name="agency[contactPerson]" placeholder="Contact Person" required>
+          </div>
+
+          <!-- Agency Description -->
+          <div class="col-md-6">
+            <label for="description" class="form-label">Description:</label>
+            <textarea class="form-control" id="description" name="agency[description]" required></textarea>
+            <div class="invalid-feedback">
+              Please provide a description.
             </div>
           </div>
 
-          <div class="form-row">
-            <!-- Contact Person -->
-            <div class="form-group">
-              <label class="form-label">Contact Person</label>
-              <input type="text" class="form-control" name="agency[contactPerson]" placeholder="Contact Person" required>
-            </div>
-
-            <!--Description-->
-            <div class="col-md-6">
-              <label for="description" class="form-label"
-                >Description:</label
-              >
-              <textarea
-                class="form-control"
-                id="description"
-                name="agency[description]"
-                required
-              ></textarea>
-              <div class="invalid-feedback">
-                Please provide a description.
-              </div>
-            </div>
-
-            <!-- Location Type -->
-            <!-- <div class="form-group">
+          <!-- Location Type -->
+          <!-- <div class="form-group">
               <label class="form-label">Location Type</label>
               <input type="text" class="form-control" name="agency[location][type]" placeholder="Location Type" required>
             </div>
@@ -126,11 +116,13 @@
             <!-- Coordinates -->
             <div class="form-group">
               <label class="form-label">Latitude</label>
-              <input type="number" class="form-control hidden-field" name="agency[location][coordinates][]" placeholder="Latitude (Hidden Field)" step="any" >
+              <input type="number" class="form-control hidden-field" name="agency[location][coordinates][]"
+                placeholder="Latitude (Hidden Field)" step="any">
             </div>
             <div class="form-group">
               <label class="form-label">Longitude</label>
-              <input type="number" class="form-control hidden-field" name="agency[location][coordinates][]" placeholder="Longitude (Hidden Field)" step="any" >
+              <input type="number" class="form-control hidden-field" name="agency[location][coordinates][]"
+                placeholder="Longitude (Hidden Field)" step="any">
             </div>
           </div>
 
@@ -144,7 +136,8 @@
             <!-- Waste Types -->
             <div class="form-group">
               <label class="form-label">Waste Type Handled</label>
-              <small class="text-muted d-block mb-2">Hold Ctrl (Windows) or Command (Mac) to select multiple options</small>
+              <small class="text-muted d-block mb-2">Hold Ctrl (Windows) or Command (Mac) to select multiple
+                options</small>
               <select class="form-select" name="agency[wasteTypesHandled]" multiple required>
                 <option value="mobile">Mobile</option>
                 <option value="laptop">Laptop</option>
@@ -155,6 +148,7 @@
             </div>
           </div>
 
+          <!-- Move Trade License and PCB Authorization below -->
           <div class="form-row">
             <!-- Trade License -->
             <div class="file-input-container">
@@ -163,7 +157,8 @@
                 <span>Choose File</span>
                 <span class="file-status" id="tradeStatus">No File Chosen</span>
               </div>
-              <input type="file" name="tradeLicense" accept="application/pdf" onchange="updateFileStatus(this, 'tradeStatus')">
+              <input type="file" name="tradeLicense" accept="application/pdf"
+                onchange="updateFileStatus(this, 'tradeStatus')">
             </div>
 
             <!-- PCB Authorization -->
@@ -178,55 +173,56 @@
           </div>
 
           <button type="submit" class="btn-register">Register Agency</button>
-        </form>
-      </div>
+      </form>
     </div>
+  </div>
 
-    <script>
-      function updateFileStatus(input, statusId) {
-        const status = document.getElementById(statusId);
-        status.textContent = input.files[0] ? input.files[0].name : 'No File Chosen';
-      }
+  <script>
+    function updateFileStatus(input, statusId) {
+      const status = document.getElementById(statusId);
+      status.textContent = input.files[0] ? input.files[0].name : 'No File Chosen';
+    }
 
-  // Function to get user's location and update the hidden fields
-  function getUserLocation() {
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(
-      function (position) {
-        
-        // Get all hidden coordinate fields by name
-        const coordinateFields = document.getElementsByName("agency[location][coordinates][]");
-        
-        if (coordinateFields.length >= 2) {
-          coordinateFields[0].value = position.coords.latitude;  // Latitude
-          coordinateFields[1].value = position.coords.longitude; // Longitude
-        }
-      },
-      function (error) {
-        console.error("Error getting location:", error);
-      }
-    );
-  } else {
-    console.error("Geolocation is not supported by this browser.");
-  }
-}
+    // Function to get user's location and update the hidden fields
+    function getUserLocation() {
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          function (position) {
 
-// Call function on page load
-document.addEventListener("DOMContentLoaded", getUserLocation);
+            // Get all hidden coordinate fields by name
+            const coordinateFields = document.getElementsByName("agency[location][coordinates][]");
 
-
-            function checkCoordinates() {
-                let coordInputs = document.querySelectorAll("input[name='agency[location][coordinates][]']");
-                if (coordInputs.length < 2 || !coordInputs[0].value || !coordInputs[1].value) {
-                    alert("Location coordinates are required. Please enable location services.");
-                    return false;
-                }
-                return true;
+            if (coordinateFields.length >= 2) {
+              coordinateFields[0].value = position.coords.latitude;  // Latitude
+              coordinateFields[1].value = position.coords.longitude; // Longitude
             }
+          },
+          function (error) {
+            console.error("Error getting location:", error);
+          }
+        );
+      } else {
+        console.error("Geolocation is not supported by this browser.");
+      }
+    }
+
+    // Call function on page load
+    document.addEventListener("DOMContentLoaded", getUserLocation);
 
 
-      // Call the function when the page loads
-      window.onload = getUserLocation;
-    </script>
-  </body>
+    function checkCoordinates() {
+      let coordInputs = document.querySelectorAll("input[name='agency[location][coordinates][]']");
+      if (coordInputs.length < 2 || !coordInputs[0].value || !coordInputs[1].value) {
+        alert("Location coordinates are required. Please enable location services.");
+        return false;
+      }
+      return true;
+    }
+
+
+    // Call the function when the page loads
+    window.onload = getUserLocation;
+  </script>
+</body>
+
 </html>

@@ -622,3 +622,52 @@ img {
     display: none;
 }
 
+.links{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.links h3{
+    font-family: 'Poppins';
+    font-weight: bold;
+    overflow: hidden;
+    margin-left: -80%;
+    position: relative;
+    margin-top: 2%;
+}
+
+.links span{
+    margin-left: 15%;
+    /* margin-right: 5%; */
+    margin-top: 5%;
+}
+
+#text2{
+    margin-left: -24%;
+}
+
+#text3{
+    margin-left: -16%;
+}
+.links span a{
+    color: #FFF;
+}
+
+.contacts{
+    width: 33%;
+    display: flex;
+    flex-direction: column;
+}
+
+.contacts h3{
+    overflow-y: hidden;
+    margin-bottom: 8%;
+}
+
+.contacts span{
+    margin-left: 10%;
+    margin-bottom: 4%;
+}
+
+

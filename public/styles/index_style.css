@@ -108,6 +108,7 @@
   background-color: rgba(0, 0, 0, 0.25);
   padding: 15px 30px;
   border-radius: 25px;
+  overflow: hidden;
 }
 
 .navbar-brand{
@@ -431,7 +432,8 @@
     background-color: white;
     display: flex;
     flex-direction: column;
-    justify-content: center;
+    padding-top: 2% !important;
+    /* justify-content: center; */
     border-radius: 25px;
     padding: 10px 20px;
     box-shadow: 0 0 10px 5px rgba(0, 0, 0, 0.15);
@@ -518,11 +520,39 @@
 .about-us{
     display: flex;
     flex-direction: column;
-    width: 50%;
+    width: 33%;
 }
 
 .links{
-    width: 50%;
+    width: 33%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
+}
+
+.links h3{
+    text-align: left;
+}
+
+.links span{
+    text-align: left;
+}
+
+.contacts{
+    width: 33%;
+    display: flex;
+    flex-direction: column;
+}
+
+.contacts h3{
+    overflow-y: hidden;
+    margin-bottom: 8%;
+}
+
+.contacts span{
+    margin-left: 10%;
+    margin-bottom: 4%;
 }
 
 .footer-logo{
@@ -576,6 +606,27 @@
     font-family: 'Poppins';
     font-weight: bold;
     overflow: hidden;
+    margin-left: -80%;
+    position: relative;
+    margin-top: 2%;
+}
+
+.links span{
+    margin-left: 15%;
+    /* margin-right: 5%; */
+    margin-top: 5%;
+}
+
+#text2{
+    margin-left: -24%;
+}
+
+#text3{
+    margin-left: -16%;
+}
+
+.links span a{
+    color: #FFF;
 }
 
 .about-feedback{

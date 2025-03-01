@@ -312,21 +312,52 @@ body img {
     margin: auto;
 }
 
-.about-info {
-    width: 90%;
-    font-family: 'Poppins';
-    font-size: 1rem;
-}
-
-.about-us {
+.about-us{
     display: flex;
     flex-direction: column;
-    width: 50%;
+    width: 33%;
 }
 
-.links {
-    width: 50%;
+.links{
+    width: 33%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
 }
+
+.links h3{
+    text-align: left;
+}
+
+.links span{
+    text-align: left;
+}
+
+.contacts{
+    width: 33%;
+    display: flex;
+    flex-direction: column;
+}
+
+.contacts h3{
+    overflow-y: hidden;
+    margin-bottom: 8%;
+}
+
+.contacts span{
+    margin-left: 10%;
+    margin-bottom: 4%;
+}
+
+#text2{
+    margin-left: -24%;
+}
+
+#text3{
+    margin-left: -16%;
+}
+
 
 .footer-logo {
     display: flex;
@@ -372,16 +403,41 @@ body img {
 
 }
 
-.links {
+.links{
     display: flex;
     flex-direction: column;
     align-items: center;
 }
 
-.links h3 {
+.links h3{
     font-family: 'Poppins';
     font-weight: bold;
     overflow: hidden;
+    margin-left: -80%;
+    position: relative;
+    margin-top: 2%;
+}
+
+.links span{
+    margin-left: 15%;
+    /* margin-right: 5%; */
+    margin-top: 5%;
+}
+
+#text2{
+    margin-left: -24%;
+}
+
+#text3{
+    margin-left: -16%;
+}
+
+.links span a{
+    color: #FFF;
+}
+
+.about-feedback{
+    margin-top: 8%;
 }
 
 .about-feedback {
@@ -434,4 +490,8 @@ body img {
 .leaflet-control-zoom a {
     background: white !important;
     color: #1F643A !important;
+}
+
+.about-info{
+    width: 90%;
 }

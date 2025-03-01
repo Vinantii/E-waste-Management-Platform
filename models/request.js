@@ -257,10 +257,14 @@ const requestSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Volunteer"
     },
+    otp: {
+      type:Number,
+    },
   },
   {
     timestamps: true, // This will automatically update the updatedAt timestamp
   }
+
 );
 
 // Add middleware to update User and Agency models when a request is created

@@ -2134,7 +2134,7 @@ app.post(
   isVolunteerLoggedIn,
   wrapAsync(async (req, res) => {
     const { id } = req.params;
-    const { milestone, notes, latitude, longitude } = req.body;
+    const { milestone, notes, latitude, longitude} = req.body;
 
     // Define allowed milestones for volunteers
     const allowedVolunteerMilestones = [
@@ -2163,6 +2163,12 @@ app.post(
     if (request.volunteerAssigned.toString() !== req.user._id.toString()) {
       throw new ExpressError("Unauthorized", 403);
     }
+    if (milestone === "pickupCompleted") {
+      if (req.body.otp != request.otp) {  // Proper OTP comparison
+        throw new ExpressError("OTP didn't match!", 400);
+      }
+    }
+
 
     // Set the milestone status with location
     if (request.trackingMilestones && request.trackingMilestones[milestone]) {
@@ -2180,18 +2186,21 @@ app.post(
           address: address,
         },
       };
-      await request.save();
+      
 
       // twilio notifications
       if ( milestone === "pickupScheduled" && request.trackingMilestones[milestone].completed) {
         // sendNotification(`Your e-waste product pickup has been scheduled by ${request.agency.name}.`,request.user.phone);
        }
       if ( milestone === "pickupStarted" && request.trackingMilestones[milestone].completed) {
-        // sendNotification(`Your e-waste product pickup has started with ${request.agency.name}.`,request.user.phone);
+        const otp = Math.floor(100000 + Math.random() * 900000).toString();
+        request.otp = otp;
+        sendNotification(`Your e-waste product pickup has started with ${request.agency.name} and your verification OTP is ${otp}.`,request.user.phone);
       }
       if ( milestone === "pickupCompleted" && request.trackingMilestones[milestone].completed) {
         // sendNotification(`Your e-waste product pickup has been completed by ${request.agency.name}.`,request.user.phone);
       }
+      await request.save();
 
       res.redirect(`/volunteer/${req.user._id}/dashboard`);
     } else {

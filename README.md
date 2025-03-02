@@ -3,6 +3,15 @@
 A web-based platform connecting users with certified e-waste collection agencies to facilitate responsible electronic waste disposal and promote environmental sustainability.
 
 ## 🕒 Latest Updates (February, 2025)
+### Features on 1st and 2nd March
+  - **Community Features**
+    - Spam and invalid community event adding and story adding is prevented using spam detection
+  - **Volunter verification**
+    - Volunteer varifies the request using OTP with Twilio 
+  - **MarketPlace** 
+    - Marketplace for users to sell display there 2nd hand electornic items so that interested users can contact the owner.
+    
+
 ### New Features Added
   - **26/02/2024**
   - **Redeemption System Enhancements**

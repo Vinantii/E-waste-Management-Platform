@@ -103,18 +103,35 @@
 }
 
 .navbar {
-  width: 75%;
-  margin-top: 3%;
-  background-color: rgba(0, 0, 0, 0.25);
-  padding: 15px 30px;
-  border-radius: 25px;
-  overflow: hidden;
+  width: 75% !important;
+  margin: auto !important;
+  margin-top: 3% !important;
+  background-color: rgba(0, 0, 0, 0.25) !important;
+  padding: 15px 30px !important;
+  border-radius: 25px !important;
+  overflow: visible !important;  /* Changed from hidden to visible */
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
 }
 
-.navbar-brand{
-    color: white;
-    font-size: 20px;
-    font-family: 'Abril Fatface';
+.navbar-brand {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    color: white !important;
+    font-size: 20px !important;
+    font-family: 'Abril Fatface' !important;
+}
+
+.navbar-brand img {
+    height: 40px !important;
+    width: auto !important;
+    object-fit: contain !important;
+    display: block !important;
+    opacity: 1 !important;
+    position: static !important;
+    overflow: visible !important;
 }
 
 .d-flex{

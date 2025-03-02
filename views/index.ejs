@@ -29,8 +29,15 @@
   <body>
     <div class="landing">
       <div class="navbar">
-        <div class="navbar-brand">
-          <img src="/images/logo.png" alt="logo">
+        <div class="nav-left">
+          <div class="navbar-brand">
+            <img src="/images/logo.png" alt="logo">
+          </div>
+          <div class="hamburger">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
         </div>
         <div class="d-flex">
           <a href="/register/agency" class="butn">Register Agency</a>
@@ -101,7 +108,8 @@
       <h2>Facts</h2>
       <div class="facts-container">
         <div class="wrapper">
-          <i id="left" class="fa-solid fa-arrow-left left"></i>
+          <i class="fa-solid fa-arrow-left left"></i>
+          <i class="fa-solid fa-arrow-right right"></i>
           <ul class="carousel">
             <% facts.forEach(fact => { %>
             <li class="fcard">
@@ -109,17 +117,16 @@
             </li>
             <% }); %>
           </ul>
-          <i id="right" class="fa-solid fa-arrow-right right"></i>
         </div>
       </div>
     </div>
-
 
     <div class="feedbacks">
       <h2>Feedback</h2>
       <div class="fb-container">
         <div class="fb-wrapper">
-          <i id="left" class="fa-solid fa-arrow-left left"></i>
+          <i class="fa-solid fa-arrow-left left"></i>
+          <i class="fa-solid fa-arrow-right right"></i>
           <div class="fb-carousel">
             <% feedbacks.forEach(feedback => { %>
             <div class="fbcard">
@@ -141,7 +148,6 @@
             </div>
             <% }); %>
           </div>
-          <i id="right" class="fa-solid fa-arrow-right right"></i>
         </div>
       </div>
     </div>
@@ -174,6 +180,20 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+      const hamburger = document.querySelector(".hamburger");
+      const navMenu = document.querySelector(".d-flex");
+
+      hamburger.addEventListener("click", () => {
+        hamburger.classList.toggle("active");
+        navMenu.classList.toggle("active");
+      });
+
+      document.querySelectorAll(".d-flex a").forEach(n => n.addEventListener("click", () => {
+        hamburger.classList.remove("active");
+        navMenu.classList.remove("active");
+      }));
+    </script>
   </body>
   <script src="/js/index.js"></script>
   <script src="/js/scroll-animations.js"></script>

@@ -4,30 +4,53 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Marketplace</title>
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+   <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+   <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
+   <link rel="preconnect" href="https://fonts.googleapis.com" />
+   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+   <link
+     href="https://fonts.googleapis.com/css2?family=Abril+Fatface&family=Afacad:ital,wght@0,400..700;1,400..700&family=Anek+Latin:wght@100..800&family=Manrope:wght@200..800&family=Michroma&family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&family=Roboto:ital,wght@0,100..900;1,100..900&display=swap"
+     rel="stylesheet"
+   />
+   <link
+     rel="stylesheet"
+     href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css"
+     integrity="sha512-Evv84Mr4kqVGRNSgIGL/F/aIDqQb7xQ2vcrdIwxfjThSH8CSR7PBEakCr51Ck+w+/U6swU2Im1vVX0SVk9ABhg=="
+     crossorigin="anonymous"
+     referrerpolicy="no-referrer"
+   />
+   <link rel="stylesheet" href="/styles/user/marketplace.css">
 </head>
-<body class="container mt-4">
+<body>
+    <div class="background">
+        <div class="container mt-4">
+            <h1 class="text-center">Marketplace</h1>
 
-    <h1 class="text-center">Marketplace</h1>
-
-    <!-- Button to Open Modal -->
-    <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addItemModal">Add Item</button>
-
-    <!-- Tabs Navigation -->
-    <ul class="nav nav-tabs" id="itemTabs" role="tablist">
-        <li class="nav-item">
-            <button class="nav-link active" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button" role="tab">Pending</button>
-        </li>
-        <li class="nav-item">
-            <button class="nav-link" id="approved-tab" data-bs-toggle="tab" data-bs-target="#approved" type="button" role="tab">Approved</button>
-        </li>
-        <li class="nav-item">
-            <button class="nav-link" id="rejected-tab" data-bs-toggle="tab" data-bs-target="#rejected" type="button" role="tab">Rejected</button>
-        </li>
-        <li class="nav-item">
-            <button class="nav-link" id="rejected-tab" data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab">All</button>
-        </li>
-    </ul>
+    <!-- Navigation Container -->
+    <div class="nav-container">
+        <!-- Tabs Navigation -->
+        <ul class="nav nav-tabs" id="itemTabs" role="tablist">
+            <li class="nav-item">
+                <button class="nav-link active" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button" role="tab">Pending</button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" id="approved-tab" data-bs-toggle="tab" data-bs-target="#approved" type="button" role="tab">Approved</button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" id="rejected-tab" data-bs-toggle="tab" data-bs-target="#rejected" type="button" role="tab">Rejected</button>
+            </li>
+            <li class="nav-item">
+                <button class="nav-link" id="rejected-tab" data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab">All</button>
+            </li>
+        </ul>
+        
+        <!-- Button to Open Modal -->
+        <div class="button-container">
+            <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addItemModal">Add Item</button>
+        </div>
+    </div>
 
     <!-- Tab Content -->
     <div class="tab-content mt-3">
@@ -184,6 +207,8 @@
             </div>
         </div>
     </div>
+    </div>
+</div>
 
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>

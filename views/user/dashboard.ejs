@@ -74,19 +74,26 @@
             </div>
         </div>
         <div class="navbar">
-            <div class="navbar-brand">
-                <img src="/images/logo.png" alt="logo">
+            <div class="nav-left">
+                <div class="navbar-brand">
+                    <img src="/images/logo.png" alt="logo">
+                </div>
+                <div class="hamburger">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </div>
             </div>
             <div class="d-flex">
-              <a href="/user/<%= user._id %>/check-request" class="butn">Check Request</a>
-              <a href="/user/<%= user._id %>/apply-request" class="butn">Apply Request</a>
-              <a href="/user/<%= user._id %>/reward" class="butn">Reward</a>
-              <a href="/user/<%= user._id %>/community" class="butn">Community</a>
-              <a href="/user/<%= user._id %>/store" class="butn">Store</a>
-              <a href="/user/<%= user._id %>/order" class="butn">Your Orders</a>
-              <a href="/user/<%= user._id %>/profile" class="butn">Profile</a>
-              <a href="/user/<%= user._id %>/marketplace" class="butn">Marketplace</a>
-              <a href="/logout" class="login">Logout</a>
+                <a href="/user/<%= user._id %>/check-request" class="butn">Check Request</a>
+                <a href="/user/<%= user._id %>/apply-request" class="butn">Apply Request</a>
+                <a href="/user/<%= user._id %>/reward" class="butn">Reward</a>
+                <a href="/user/<%= user._id %>/community" class="butn">Community</a>
+                <a href="/user/<%= user._id %>/store" class="butn">Store</a>
+                <a href="/user/<%= user._id %>/order" class="butn">Your Orders</a>
+                <a href="/user/<%= user._id %>/profile" class="butn">Profile</a>
+                <a href="/user/<%= user._id %>/marketplace" class="butn">Marketplace</a>
+                <a href="/logout" class="login">Logout</a>
             </div>
         </div>
           <div class="headline">
@@ -340,6 +347,20 @@
     function removeEmojis(text) {
         return text.replace(/[\u{1F300}-\u{1F6FF}\u{1F900}-\u{1F9FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, '');
     }
+
+    // Add this before your existing scripts
+    const hamburger = document.querySelector(".hamburger");
+    const navMenu = document.querySelector(".d-flex");
+
+    hamburger.addEventListener("click", () => {
+        hamburger.classList.toggle("active");
+        navMenu.classList.toggle("active");
+    });
+
+    document.querySelectorAll(".d-flex a").forEach(n => n.addEventListener("click", () => {
+        hamburger.classList.remove("active");
+        navMenu.classList.remove("active");
+    }));
 
 </script>
  

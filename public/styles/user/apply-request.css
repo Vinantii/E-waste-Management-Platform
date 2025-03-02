@@ -14,6 +14,15 @@
     justify-content: center;
     align-items: center;
 }
+
+#logo {
+  position: absolute;
+  top: 10px;
+  right: 60px;
+  width: 250px;
+  height: auto;
+}
+
   .form-container {
     width: 50%;
     margin: 7% auto;

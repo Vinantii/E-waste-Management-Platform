@@ -17,6 +17,14 @@
     padding: 40px 0;
 }
 
+#logo {
+    position: absolute;
+    top: 10px;
+    right: 60px;
+    width: 250px;
+    height: auto;
+}
+
 .container {
     position: relative;
     width: 90%;
@@ -24,8 +32,9 @@
     background: white;
     border-radius: 30px;
     padding: 40px;
-    margin: 20px auto;
+    margin: 7% auto;
     overflow: visible;
+    box-shadow: 0 0 40px 40px rgba(0, 0, 0, 0.5);
 }
 
 h2.inventory-title {

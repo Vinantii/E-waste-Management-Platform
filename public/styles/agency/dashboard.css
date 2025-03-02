@@ -168,18 +168,37 @@ body img {
 }
 
 .navbar {
-    width: 85%;
-    margin-top: 3%;
-    background-color: rgba(0, 0, 0, 0.25);
-    padding: 15px 30px;
-    border-radius: 25px;
-}
+    width: 85% !important;
+    margin: auto !important;
+    margin-top: 3% !important;
+    background-color: rgba(0, 0, 0, 0.5) !important;
+    padding: 15px 30px !important;
+    border-radius: 25px !important;
+    overflow: visible !important;  /* Changed from hidden to visible */
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+  }
+  
+  .navbar-brand {
+      display: flex !important;
+      align-items: center !important;
+      gap: 10px !important;
+      color: white !important;
+      font-size: 20px !important;
+      font-family: 'Abril Fatface' !important;
+  }
+  
+  .navbar-brand img {
+      height: 40px !important;
+      width: auto !important;
+      object-fit: contain !important;
+      display: block !important;
+      opacity: 1 !important;
+      position: static !important;
+      overflow: visible !important;
+  }
 
-.navbar-brand {
-    color: white;
-    font-size: 20px;
-    font-family: 'Abril Fatface';
-}
 
 .d-flex {
     margin-right: 5px;
@@ -228,7 +247,7 @@ body img {
 
 .headline {
     margin: auto;
-    margin-top: 12%;
+    margin-top: -6%;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -312,21 +331,52 @@ body img {
     margin: auto;
 }
 
-.about-info {
-    width: 90%;
-    font-family: 'Poppins';
-    font-size: 1rem;
-}
-
-.about-us {
+.about-us{
     display: flex;
     flex-direction: column;
-    width: 50%;
+    width: 33%;
 }
 
-.links {
-    width: 50%;
+.links{
+    width: 33%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    justify-content: flex-start;
 }
+
+.links h3{
+    text-align: left;
+}
+
+.links span{
+    text-align: left;
+}
+
+.contacts{
+    width: 33%;
+    display: flex;
+    flex-direction: column;
+}
+
+.contacts h3{
+    overflow-y: hidden;
+    margin-bottom: 8%;
+}
+
+.contacts span{
+    margin-left: 10%;
+    margin-bottom: 4%;
+}
+
+#text2{
+    margin-left: -24%;
+}
+
+#text3{
+    margin-left: -16%;
+}
+
 
 .footer-logo {
     display: flex;
@@ -372,16 +422,41 @@ body img {
 
 }
 
-.links {
+.links{
     display: flex;
     flex-direction: column;
     align-items: center;
 }
 
-.links h3 {
+.links h3{
     font-family: 'Poppins';
     font-weight: bold;
     overflow: hidden;
+    margin-left: -80%;
+    position: relative;
+    margin-top: 2%;
+}
+
+.links span{
+    margin-left: 15%;
+    /* margin-right: 5%; */
+    margin-top: 5%;
+}
+
+#text2{
+    margin-left: -24%;
+}
+
+#text3{
+    margin-left: -16%;
+}
+
+.links span a{
+    color: #FFF;
+}
+
+.about-feedback{
+    margin-top: 8%;
 }
 
 .about-feedback {
@@ -434,4 +509,8 @@ body img {
 .leaflet-control-zoom a {
     background: white !important;
     color: #1F643A !important;
+}
+
+.about-info{
+    width: 90%;
 }

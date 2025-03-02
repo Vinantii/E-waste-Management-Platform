@@ -13,13 +13,21 @@ body {
     padding: 2rem;
 }
 
+#logo {
+    position: absolute;
+    top: 10px;
+    right: 60px;
+    width: 250px;
+    height: auto;
+}
+
 .container {
     background: white;
     border-radius: 25px;
     padding: 40px;
     position: relative;
     box-shadow: 0 0 40px 40px rgba(0, 0, 0, 0.5);
-    margin-top: 50px;
+    margin-top: 7% !important;
 }
 
 h2 {

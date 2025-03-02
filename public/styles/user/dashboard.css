@@ -266,20 +266,36 @@ img {
 }
 
 .navbar {
-    width: 85%;
-    margin: 3% auto 0; /* Adjust margin if needed */
-    background-color: rgba(0, 0, 0, 0.52);
-    padding: 15px 30px;
-    border-radius: 25px;
-    position: relative; /* Ensure navbar is positioned */
-    z-index: 2; /* Set a higher z-index than overlay */
-}
-
-.navbar-brand{
-    color: white;
-    font-size: 20px;
-    font-family: 'Abril Fatface';
-}
+    width: 85% !important;
+    margin: auto !important;
+    margin-top: 3% !important;
+    background-color: rgba(0, 0, 0, 0.5) !important;
+    padding: 15px 30px !important;
+    border-radius: 25px !important;
+    overflow: visible !important;  /* Changed from hidden to visible */
+    display: flex !important;
+    justify-content: space-between !important;
+    align-items: center !important;
+  }
+  
+  .navbar-brand {
+      display: flex !important;
+      align-items: center !important;
+      gap: 10px !important;
+      color: white !important;
+      font-size: 20px !important;
+      font-family: 'Abril Fatface' !important;
+  }
+  
+  .navbar-brand img {
+      height: 40px !important;
+      width: auto !important;
+      object-fit: contain !important;
+      display: block !important;
+      opacity: 1 !important;
+      position: static !important;
+      overflow: visible !important;
+  }
 
 .d-flex{
     margin-right: 5px;
@@ -621,4 +637,53 @@ img {
 .headline h2 span {
     display: none;
 }
+
+.links{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.links h3{
+    font-family: 'Poppins';
+    font-weight: bold;
+    overflow: hidden;
+    margin-left: -80%;
+    position: relative;
+    margin-top: 2%;
+}
+
+.links span{
+    margin-left: 15%;
+    /* margin-right: 5%; */
+    margin-top: 5%;
+}
+
+#text2{
+    margin-left: -24%;
+}
+
+#text3{
+    margin-left: -16%;
+}
+.links span a{
+    color: #FFF;
+}
+
+.contacts{
+    width: 33%;
+    display: flex;
+    flex-direction: column;
+}
+
+.contacts h3{
+    overflow-y: hidden;
+    margin-bottom: 8%;
+}
+
+.contacts span{
+    margin-left: 10%;
+    margin-bottom: 4%;
+}
+
 

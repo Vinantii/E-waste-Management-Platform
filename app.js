@@ -28,6 +28,7 @@ const Product = require("./models/product");
 const Order = require("./models/order");
 const Facts = require("./models/facts");
 const Feedback = require("./models/feedback");
+const Item = require("./models/item");
 
 const cors = require("cors");
 const OpenAI = require("openai");
@@ -1325,14 +1326,201 @@ app.delete(
   })
 );
 
+//TODO: User side Marketplace
+app.get("/user/:id/marketplace",isLoggedIn, wrapAsync(async(req,res) =>{
+  const userId = req.params.id;
+
+  const pendingItems = await Item.find({ status: "pending", user: userId }).populate("user", "name email phone");
+  const approvedItems = await Item.find({ status: "approved", user: userId }).populate("user", "name email phone");
+  const rejectedItems = await Item.find({ status: "rejected", user: userId }).populate("user", "name email phone");
+  const allItems = await await Item.find({ status: "approved" }).populate("user", "name email phone");
+  res.render('user/marketplace.ejs',{id:req.params.id, pendingItems, approvedItems, rejectedItems, allItems});
+})
+);
+
+
+app.post("/user/:id/marketplace/add",isLoggedIn, upload.fields([{ name: "itemImage" }, { name: "billImage" }]), wrapAsync(async (req, res) => {
+
+    const { itemName, brandName, price, numberOfMonthsUsed } = req.body;
+    const userId = req.params.id;
+
+    let itemImageData = { url: "", filename: "" };
+    let billImageData = { url: "", filename: "" };
+
+    // Upload item image to Cloudinary
+    if (req.files["itemImage"]) {
+      const itemImageResult = await cloudinary.uploader.upload(req.files["itemImage"][0].path, {
+        folder: "Technothon",
+        resource_type: "image",
+      });
+      itemImageData = {
+        url: itemImageResult.secure_url,
+        filename: itemImageResult.public_id,
+      };
+    }
+
+    // Upload bill image to Cloudinary
+    if (req.files["billImage"]) {
+      const billImageResult = await cloudinary.uploader.upload(req.files["billImage"][0].path, {
+        folder: "Technothon",
+        resource_type: "image",
+      });
+      billImageData = {
+        url: billImageResult.secure_url,
+        filename: billImageResult.public_id,
+      };
+    }
+
+    // Check if both uploads were successful
+    if (!itemImageData.url || !billImageData.url) {
+      throw new ExpressError("Image upload failed", 400);
+    }
+
+    // Create a new marketplace item and store image details
+    const newItem = new Item({
+      user:userId,
+      itemName,
+      brandName,
+      price,
+      numberOfMonthsUsed,
+      itemImage: itemImageData,
+      billImage: billImageData,
+    });
+
+    await newItem.save();
+    res.redirect(`/user/${userId}/marketplace`)
+
+}));
+
+
+
 // TODO:Agency dashboard
  app.get(
   "/agency/:id/dashboard",
   isAgencyLoggedIn,
   checkCertificationStatus,
   wrapAsync(async (req, res) => {
+    const agencyId = new mongoose.Types.ObjectId(req.params.id);
     const agency = await Agency.findById(req.params.id);
-    res.render("agency/dashboard.ejs", { agency });
+    // Fetch completed requests with location and weight
+    const requests = await Request.find(
+      {
+        agency: agencyId,
+        status: "Completed",
+        pickupLocation: { $exists: true }, // Ensure location exists
+        weight: { $exists: true }, // Ensure weight exists
+      },
+      "pickupLocation weight"
+    );
+
+    // Transform data for heatmap with validation
+    // const heatmapData = requests
+    //   .filter(
+    //     (request) =>
+    //       request.pickupLocation &&
+    //       request.pickupLocation.coordinates &&
+    //       request.pickupLocation.coordinates.length === 2 &&
+    //       request.weight
+    //   )
+    //   .map((request) => ({
+    //     lat: request.pickupLocation.coordinates[1],
+    //     lng: request.pickupLocation.coordinates[0],
+    //     intensity: request.weight || 1, // Default to 1 if weight is missing
+    //   }));
+
+    // Volunteers statistics
+    const totalVolunteers = await Volunteer.countDocuments({
+      agency: agencyId,
+    });
+    const assignedVolunteers = await Volunteer.countDocuments({
+      agency: agencyId,
+      assignedRequests: { $exists: true, $not: { $size: 0 } },
+    });
+    const freeVolunteers = await Volunteer.countDocuments({
+      agency: agencyId,
+      assignedRequests: { $size: 0 },
+    });
+
+    // Monthly E-Waste Processed - Last 6 months
+    const sixMonthsAgo = new Date();
+    sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 5);
+    sixMonthsAgo.setDate(1);
+    sixMonthsAgo.setHours(0, 0, 0, 0);
+
+    // Generate array of last 6 months
+    const monthsArray = Array.from({ length: 6 }, (_, i) => {
+      const date = new Date();
+      date.setMonth(date.getMonth() - i);
+      return {
+        year: date.getFullYear(),
+        month: date.getMonth() + 1,
+      };
+    }).reverse();
+
+    const monthlyEwasteData = await Request.aggregate([
+      {
+        $match: {
+          agency: agencyId,
+          status: "Completed",
+          pickupDate: { $gte: sixMonthsAgo },
+        },
+      },
+      {
+        $group: {
+          _id: {
+            year: { $year: "$pickupDate" },
+            month: { $month: "$pickupDate" },
+          },
+          totalWeight: { $sum: "$weight" },
+        },
+      },
+      { $sort: { "_id.year": 1, "_id.month": 1 } },
+    ]);
+
+    // Fill in missing months with zero values
+    const filledMonthlyData = monthsArray.map((monthYear) => {
+      const existingData = monthlyEwasteData.find(
+        (d) => d._id.year === monthYear.year && d._id.month === monthYear.month
+      );
+      return {
+        _id: {
+          year: monthYear.year,
+          month: monthYear.month,
+        },
+        totalWeight: existingData ? existingData.totalWeight : 0,
+      };
+    });
+
+    // Format the monthly data
+    const monthlyEwaste =
+      monthlyEwasteData.length > 0 ? monthlyEwasteData[0].totalWeight : 0;
+
+    // E-Waste Categorization
+    const ewasteCategories = await Request.aggregate([
+      { $match: { agency: agencyId } },
+      { $unwind: "$wasteType" }, // Ensuring wasteType is an array
+      {
+        $group: {
+          _id: "$wasteType",
+          totalQuantity: { $sum: { $ifNull: [{ $sum: "$quantities" }, 0] } },
+        },
+      },
+      { $sort: { totalQuantity: -1 } },
+    ]);
+
+    res.render("agency/dashboard.ejs", {
+      totalVolunteers,
+      assignedVolunteers,
+      freeVolunteers,
+      monthlyEwaste,
+      monthlyEwasteData: filledMonthlyData, // Use the filled data
+      ewasteCategories,
+      // heatmapData,
+      agencyId,
+      agency
+    });
+    
+    // res.render("agency/dashboard.ejs", { agency });
   })
 );
 
@@ -2123,10 +2311,26 @@ app.get(
     if (!volunteer) {
       throw new ExpressError("Volunteer not found", 404);
     }
+    // Fetch Approved and Not Approved Items
+    const pendingItems = await Item.find({ status: "pending" }).populate("user", "name email phone");
+    const approvedItems = await Item.find({ status: "approved" }).populate("user", "name email phone");
+    const rejectedItems = await Item.find({ status: "rejected" }).populate("user", "name email phone");
 
-    res.render("volunteer/dashboard.ejs", { volunteer });
+    res.render("volunteer/dashboard.ejs", { volunteer, pendingItems,approvedItems,rejectedItems });
   })
 );
+
+
+//TASK: marketplace route 
+app.put("/volunteer/approve-item/:id", isVolunteerLoggedIn, wrapAsync(async(req,res) =>{
+  await Item.findByIdAndUpdate(req.params.id,{$set:{status:"approved"}});
+  res.redirect(`/volunteer/${req.user._id}/dashboard`)
+}));
+
+app.delete("/volunteer/reject-item/:id", isVolunteerLoggedIn, wrapAsync(async(req,res) =>{
+  await Item.findByIdAndUpdate(req.params.id,{$set:{status:"rejected"}});
+  res.redirect(`/volunteer/${req.user._id}/dashboard`)
+}));
 
 // Add this route for volunteer status updates
 app.post(

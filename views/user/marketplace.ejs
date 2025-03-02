@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marketplace</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+</head>
+<body class="container mt-4">
+
+    <h1 class="text-center">Marketplace</h1>
+
+    <!-- Button to Open Modal -->
+    <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addItemModal">Add Item</button>
+
+    <!-- Tabs Navigation -->
+    <ul class="nav nav-tabs" id="itemTabs" role="tablist">
+        <li class="nav-item">
+            <button class="nav-link active" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button" role="tab">Pending</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" id="approved-tab" data-bs-toggle="tab" data-bs-target="#approved" type="button" role="tab">Approved</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" id="rejected-tab" data-bs-toggle="tab" data-bs-target="#rejected" type="button" role="tab">Rejected</button>
+        </li>
+        <li class="nav-item">
+            <button class="nav-link" id="rejected-tab" data-bs-toggle="tab" data-bs-target="#all" type="button" role="tab">All</button>
+        </li>
+    </ul>
+
+    <!-- Tab Content -->
+    <div class="tab-content mt-3">
+        
+        <!-- Pending Items -->
+        <div class="tab-pane fade show active" id="pending" role="tabpanel">
+            <% if(pendingItems.length > 0){ %>
+                <div class="row">
+                    <% pendingItems.forEach((item) => { %>
+                        <div class="col-md-4 mb-4">
+                            <div class="card shadow-sm">
+                                <img src="<%= item.itemImage.url %>" class="card-img-top" alt="<%= item.itemName %>">
+                                <div class="card-body">
+                                    <h5 class="card-title"><%= item.itemName %></h5>
+                                    <p class="card-text"><strong>Brand:</strong> <%= item.brandName %></p>
+                                    <p class="card-text"><strong>Price:</strong> $<%= item.price %></p>
+                                    <p class="card-text"><strong>Used for:</strong> <%= item.numberOfMonthsUsed %> months</p>
+                                    <p class="card-text"><strong>Contact:</strong></p>
+                                    <li><b>Name:</b> <%= item.user.name %></li>
+                                    <li><b>Mail:</b> <%= item.user.email %></li>
+                                    <li><b>Phone:</b> <%= item.user.phone %></li>
+                                    <a href="<%= item.billImage.url %>" target="_blank" class="btn btn-primary btn-sm">View Bill</a>
+                                </div>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+            <% } else { %>
+                <h3 class="text-center">No Pending Items</h3>
+            <% } %>
+        </div>
+
+        <!-- Approved Items -->
+        <div class="tab-pane fade" id="approved" role="tabpanel">
+            <% if(approvedItems.length > 0){ %>
+                <div class="row">
+                    <% approvedItems.forEach((item) => { %>
+                        <div class="col-md-4 mb-4">
+                            <div class="card shadow-sm">
+                                <img src="<%= item.itemImage.url %>" class="card-img-top" alt="<%= item.itemName %>">
+                                <div class="card-body">
+                                    <h5 class="card-title"><%= item.itemName %></h5>
+                                    <p class="card-text"><strong>Brand:</strong> <%= item.brandName %></p>
+                                    <p class="card-text"><strong>Price:</strong> $<%= item.price %></p>
+                                    <p class="card-text"><strong>Used for:</strong> <%= item.numberOfMonthsUsed %> months</p>
+                                    <p class="card-text"><strong>Contact:</strong></p>
+                                    <li><b>Name:</b> <%= item.user.name %></li>
+                                    <li><b>Mail:</b> <%= item.user.email %></li>
+                                    <li><b>Phone:</b> <%= item.user.phone %></li>
+                                    <a href="<%= item.billImage.url %>" target="_blank" class="btn btn-primary btn-sm">View Bill</a>
+                                </div>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+            <% } else { %>
+                <h3 class="text-center">No Approved Items</h3>
+            <% } %>
+        </div>
+
+        <!-- Rejected Items -->
+        <div class="tab-pane fade" id="rejected" role="tabpanel">
+            <% if(rejectedItems.length > 0){ %>
+                <div class="row">
+                    <% rejectedItems.forEach((item) => { %>
+                        <div class="col-md-4 mb-4">
+                            <div class="card shadow-sm">
+                                <img src="<%= item.itemImage.url %>" class="card-img-top" alt="<%= item.itemName %>">
+                                <div class="card-body">
+                                    <h5 class="card-title"><%= item.itemName %></h5>
+                                    <p class="card-text"><strong>Brand:</strong> <%= item.brandName %></p>
+                                    <p class="card-text"><strong>Price:</strong> $<%= item.price %></p>
+                                    <p class="card-text"><strong>Used for:</strong> <%= item.numberOfMonthsUsed %> months</p>
+                                    <p class="card-text"><strong>Contact:</strong></p>
+                                    <li><b>Name:</b> <%= item.user.name %></li>
+                                    <li><b>Mail:</b> <%= item.user.email %></li>
+                                    <li><b>Phone:</b> <%= item.user.phone %></li>
+                                    <a href="<%= item.billImage.url %>" target="_blank" class="btn btn-primary btn-sm">View Bill</a>
+                                </div>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+            <% } else { %>
+                <h3 class="text-center">No Rejected Items</h3>
+            <% } %>
+        </div>
+        <div class="tab-pane fade" id="all" role="tabpanel">
+            <% if(allItems.length > 0){ %>
+                <div class="row">
+                    <% allItems.forEach((item) => { %>
+                        <div class="col-md-4 mb-4">
+                            <div class="card shadow-sm">
+                                <img src="<%= item.itemImage.url %>" class="card-img-top" alt="<%= item.itemName %>">
+                                <div class="card-body">
+                                    <h5 class="card-title"><%= item.itemName %></h5>
+                                    <p class="card-text"><strong>Brand:</strong> <%= item.brandName %></p>
+                                    <p class="card-text"><strong>Price:</strong> $<%= item.price %></p>
+                                    <p class="card-text"><strong>Used for:</strong> <%= item.numberOfMonthsUsed %> months</p>
+                                    <p class="card-text"><strong>Contact:</strong></p>
+                                    <li><b>Name:</b> <%= item.user.name %></li>
+                                    <li><b>Mail:</b> <%= item.user.email %></li>
+                                    <li><b>Phone:</b> <%= item.user.phone %></li>
+                                    <a href="<%= item.billImage.url %>" target="_blank" class="btn btn-primary btn-sm">View Bill</a>
+                                </div>
+                            </div>
+                        </div>
+                    <% }); %>
+                </div>
+            <% } else { %>
+                <h3 class="text-center">No Items</h3>
+            <% } %>
+        </div>
+
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="addItemModal" tabindex="-1" aria-labelledby="modalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalLabel">Add New Item</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form action="/user/<%= id %>/marketplace/add" method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
+                        <div class="mb-3">
+                            <label for="itemName" class="form-label">Item Name</label>
+                            <input type="text" class="form-control" id="itemName" name="itemName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="brandName" class="form-label">Brand Name</label>
+                            <input type="text" class="form-control" id="brandName" name="brandName" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="itemPrice" class="form-label">Price</label>
+                            <input type="number" class="form-control" id="itemPrice" name="price" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="numberOfMonthsUsed" class="form-label">Number of Months Used</label>
+                            <input type="number" class="form-control" id="numberOfMonthsUsed" name="numberOfMonthsUsed" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="itemImage" class="form-label">Item Image</label>
+                            <input type="file" class="form-control" id="itemImage" name="itemImage" accept="image/*" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="billImage" class="form-label">Bill Image</label>
+                            <input type="file" class="form-control" id="billImage" name="billImage" accept="image/*" required>
+                        </div>
+                        <button type="submit" class="btn btn-success">Add Item</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

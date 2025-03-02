@@ -42,6 +42,7 @@
         <div class="tab-content mt-3" id="orderTabsContent">
             <!-- Received Requests -->
             <div class="tab-pane fade show active" id="received" role="tabpanel">
+                <% if (receivedOrders && receivedOrders.length > 0) { %>
                 <div class="row">
                     <% if(receivedOrders.length > 0) { %>
                     <% receivedOrders.forEach(order => { %>
@@ -66,10 +67,14 @@
                     <% }); %>
                     <% }%>
                 </div>
+                <%} else { %>
+                    <p>No orders have been received yet.</p>
+                    <% } %>
             </div>
 
             <!-- Completed Requests -->
             <div class="tab-pane fade" id="completed" role="tabpanel">
+                <% if (completedOrders && completedOrders.length > 0) { %>
                 <div class="row">
                     <% completedOrders.forEach(order => { %>
                         <div class="col-md-6 mb-3">
@@ -82,11 +87,15 @@
                         </div>
                     <% }); %>
                 </div>
+                <%} else { %>
+                    <p>No orders have been completed yet.</p>
+                    <% } %>
             </div>
 
             <!-- Product List -->
             <div class="tab-pane fade" id="products" role="tabpanel">
                 <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#addProductModal">Add Product</button>
+                <% if (allProducts && allProducts.length > 0) { %>
                 <div class="row">
                     <% allProducts.forEach(product => { %>
                         <div class="col-md-4 mb-4">
@@ -160,6 +169,9 @@
                         </div>
                     <% }); %>
                 </div>
+                <% }else{ %>
+                    <p></p>No products Available.</p>
+                <% } %>
             </div>
         </div>
     </div>

@@ -71,6 +71,15 @@
                             Completed
                         </button>
                     </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link " id="approved-tab" data-bs-toggle="tab" data-bs-target="#pendingItem" type="button" role="tab">Pending Items</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="not-approved-tab" data-bs-toggle="tab" data-bs-target="#approvedItem" type="button" role="tab">Approved Items</button>
+                    </li>
+                    <li class="nav-item" role="presentation">
+                        <button class="nav-link" id="not-approved-tab" data-bs-toggle="tab" data-bs-target="#rejectedItem" type="button" role="tab">Rejected Items</button>
+                    </li>
                 </ul>
 
                 <div class="tab-content">
@@ -160,6 +169,82 @@
                             <p>No completed requests yet.</p>
                         <% } %>
                     </div>
+                    <div class="tab-pane fade" id="pendingItem">
+                        <div class="row">
+                            <% if(pendingItems.length > 0){ %>
+                            <% pendingItems.forEach((item) => { %>
+                                <div class="col-md-4 mb-4">
+                                    <div class="card shadow-sm">
+                                        <img src="<%= item.itemImage.url %>" class="card-img-top" alt="<%= item.itemName %>">
+                                        <div class="card-body">
+                                            <h5 class="card-title"><%= item.itemName %></h5>
+                                            <p class="card-text"><strong>Brand:</strong> <%= item.brandName %></p>
+                                            <p class="card-text"><strong>Price:</strong> $<%= item.price %></p>
+                                            <p class="card-text"><strong>Used for:</strong> <%= item.numberOfMonthsUsed %> months</p>
+                                            <p class="card-text"><strong>Owner:</strong> <%= item.user.name %> (<%= item.user.email %>)</p>
+                                            <a href="<%= item.billImage.url %>" target="_blank" class="btn btn-primary btn-sm">View Bill</a>
+                                            <form action="/volunteer/approve-item/<%= item._id %>?_method=PUT" method="post">
+                                                <button class="btn btn-success">Approve Item</button>
+                                            </form>
+                                            <form action="/volunteer/reject-item/<%= item._id %>?_method=DELETE" method="post">
+                                                <button class="btn btn-danger">Reject Item</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            <% }); %>
+                            <% }else{ %>
+                                <p class="card-title">No pending Items</p>
+                            <% } %> 
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="approvedItem">
+                        <div class="row">
+                            <% if(approvedItems.length > 0){ %>
+                            <% approvedItems.forEach((item) => { %>
+                                <div class="col-md-4 mb-4">
+                                    <div class="card shadow-sm">
+                                        <img src="<%= item.itemImage.url %>" class="card-img-top" alt="<%= item.itemName %>">
+                                        <div class="card-body">
+                                            <h5 class="card-title"><%= item.itemName %></h5>
+                                            <p class="card-text"><strong>Brand:</strong> <%= item.brandName %></p>
+                                            <p class="card-text"><strong>Price:</strong> $<%= item.price %></p>
+                                            <p class="card-text"><strong>Used for:</strong> <%= item.numberOfMonthsUsed %> months</p>
+                                            <p class="card-text"><strong>Owner:</strong> <%= item.user.name %> (<%= item.user.email %>)</p>
+                                            <a href="<%= item.billImage.url %>" target="_blank" class="btn btn-primary btn-sm">View Bill</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            <% }); %>
+                            <% }else{ %>
+                                <p class="card-title">No approved Items</p>
+                            <% } %> 
+                        </div>
+                    </div>
+                    <div class="tab-pane fade" id="rejectedItem">
+                        <div class="row">
+                            <% if(rejectedItems.length > 0){ %>
+                            <% rejectedItems.forEach((item) => { %>
+                                <div class="col-md-4 mb-4">
+                                    <div class="card shadow-sm">
+                                        <img src="<%= item.itemImage.url %>" class="card-img-top" alt="<%= item.itemName %>">
+                                        <div class="card-body">
+                                            <h5 class="card-title"><%= item.itemName %></h5>
+                                            <p class="card-text"><strong>Brand:</strong> <%= item.brandName %></p>
+                                            <p class="card-text"><strong>Price:</strong> $<%= item.price %></p>
+                                            <p class="card-text"><strong>Used for:</strong> <%= item.numberOfMonthsUsed %> months</p>
+                                            <p class="card-text"><strong>Owner:</strong> <%= item.user.name %> (<%= item.user.email %>)</p>
+                                            <a href="<%= item.billImage.url %>" target="_blank" class="btn btn-primary btn-sm">View Bill</a>
+                                        </div>
+                                    </div>
+                                </div>
+                            <% }); %>
+                            <% }else{ %>
+                                <p class="card-title">No rejected Items</p>
+                            <% } %> 
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>

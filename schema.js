@@ -253,6 +253,12 @@ const feedbackSchema = Joi.object({
   }).required()
 })
 
+// const itemSchema = Joi.object({
+//   item: Joi.object({
+    
+//   }).required(),
+// }).unknown(true);
+
 // Validation middlewares
 const validateUser = (req, res, next) => {
   const { error } = userSchema.validate(req.body);

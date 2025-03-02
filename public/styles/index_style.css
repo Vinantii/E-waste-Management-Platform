@@ -109,7 +109,7 @@
   background-color: rgba(0, 0, 0, 0.25) !important;
   padding: 15px 30px !important;
   border-radius: 25px !important;
-  overflow: visible !important;  /* Changed from hidden to visible */
+  overflow: visible !important;
   display: flex !important;
   justify-content: space-between !important;
   align-items: center !important;
@@ -122,6 +122,13 @@
     color: white !important;
     font-size: 20px !important;
     font-family: 'Abril Fatface' !important;
+}
+
+/* Add left container for logo and hamburger */
+.nav-left {
+    display: flex !important;
+    align-items: center !important;
+    gap: 15px !important;
 }
 
 .navbar-brand img {
@@ -376,6 +383,7 @@
     width: 100vw;
     min-height: 80vh;
     margin-top: -4%;
+    overflow: hidden !important;
 }
 .fb-wrapper,.wrapper{
     width: 90%;
@@ -385,28 +393,45 @@
 }
 
 .right,.left{
-    height: 50px;
-    width: 50px;
-    background-color: #102D16;
-    color: white;
-    border-radius: 50%;
-    text-align: center;
-    line-height: 50px;
-    border-radius: 50%;
-    cursor: pointer;
-    position: absolute;
-    bottom: 0%;
-    transform: translateY(-50%);
-    font-size: 1.25rem;
-    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.23);
+    height: 40px !important;
+    width: 40px !important;
+    background-color: #102D16 !important;
+    color: white !important;
+    border-radius: 50% !important;
+    text-align: center !important;
+    line-height: 40px !important;
+    cursor: pointer !important;
+    position: absolute !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    font-size: 1rem !important;
+    box-shadow: 0 3px 6px rgba(0, 0, 0, 0.23) !important;
+    z-index: 10 !important;
+    opacity: 1 !important;
 }
 
 .right:first-child,.left:first-child{
-    left: 45%;
+    left: -50px !important;
 }
 
 .right:last-child,.left:last-child{
-    right: 45%;
+    right: -50px !important;
+}
+
+/* Add hover effect */
+.right:hover, .left:hover {
+    background-color: #1F643A !important;
+    transform: translateY(-50%) scale(1.1) !important;
+    transition: all 0.3s ease !important;
+}
+
+/* Ensure wrapper has proper positioning */
+.wrapper, .fb-wrapper {
+    position: relative !important;
+    width: 90% !important;
+    max-width: 1200px !important;
+    margin: 0 auto !important;
+    overflow: visible !important;
 }
 
 .carousel::-webkit-scrollbar{
@@ -634,6 +659,11 @@
     margin-top: 5%;
 }
 
+#text1{
+    margin-left: 10%;
+    text-align: left;
+}
+
 #text2{
     margin-left: -24%;
 }
@@ -678,6 +708,25 @@
         padding: 10px 20px;
     }
 
+    #img1{
+        top: 30%;
+        left: -15%;
+    }
+
+    #img2{
+        top: 40%;
+        right: -15%;
+    }
+
+    #img3{
+        bottom: 5%;
+        left: -15%;
+    }
+
+    #img4{
+        display: none;
+    }
+
     .navbar-brand {
         font-size: 18px;
     }
@@ -697,6 +746,10 @@
 
     .headline a {
         font-size: 18px;
+    }
+
+    .service-container{
+        overflow-y: scroll;
     }
 
     .service-card {
@@ -729,6 +782,28 @@
     #feedback {
         width: 100%;
         max-width: 400px;
+    }
+
+    .right,.left {
+        height: 35px !important;
+        width: 35px !important;
+        line-height: 35px !important;
+    }
+
+    .right:first-child,.left:first-child {
+        left: -30px !important;
+    }
+
+    .right:last-child,.left:last-child {
+        right: -30px !important;
+    }
+
+    .wrapper, .fb-wrapper {
+        padding: 0 40px !important;
+    }
+
+    .facts-container, .fb-container {
+        padding-bottom: 50px !important;
     }
 }
 
@@ -788,6 +863,24 @@
 
     #leaf, #light {
         width: 100px; /* Adjust size of floating images for mobile */
+    }
+
+    .right,.left {
+        height: 30px !important;
+        width: 30px !important;
+        line-height: 30px !important;
+    }
+
+    .right:first-child,.left:first-child {
+        left: -20px !important;
+    }
+
+    .right:last-child,.left:last-child {
+        right: -20px !important;
+    }
+
+    .wrapper, .fb-wrapper {
+        padding: 0 30px !important;
     }
 }
 
@@ -863,3 +956,497 @@
     font-size: 1.2em;
     color:#FCEF02;
   }
+
+/* Add these media queries at the end of your file */
+
+/* Large devices (desktops, less than 1200px) */
+@media screen and (max-width: 1200px) {
+    .navbar {
+        width: 85% !important;
+    }
+
+    .d-flex a {
+        margin-left: 20px !important;
+        font-size: 14px !important;
+    }
+
+    .headline h2 {
+        font-size: 40px !important;
+    }
+
+    .headline h2 span {
+        font-size: 65px !important;
+    }
+}
+
+/* Medium devices (tablets, less than 992px) */
+@media screen and (max-width: 992px) {
+    .navbar {
+        width: 90% !important;
+        padding: 12px 20px !important;
+    }
+
+    .navbar-brand {
+        font-size: 18px !important;
+    }
+
+    .navbar-brand img {
+        height: 35px !important;
+    }
+
+    .d-flex a {
+        margin-left: 15px !important;
+        font-size: 13px !important;
+    }
+
+    .headline {
+        margin-top: 12% !important;
+        text-align: center !important;
+    }
+
+    .headline h2 {
+        font-size: 35px !important;
+    }
+
+    .headline h2 span {
+        font-size: 55px !important;
+    }
+
+    .headline a {
+        font-size: 18px !important;
+    }
+}
+
+/* Small devices (landscape phones, less than 768px) */
+@media screen and (max-width: 768px) {
+    .navbar {
+        width: 95% !important;
+        padding: 10px 15px !important;
+        margin-top: 5% !important;
+    }
+
+    .navbar-brand {
+        font-size: 16px !important;
+    }
+
+    .navbar-brand img {
+        height: 30px !important;
+    }
+
+    .d-flex {
+        flex-wrap: wrap !important;
+        justify-content: flex-end !important;
+        gap: 10px !important;
+    }
+
+    .d-flex a {
+        margin-left: 10px !important;
+        font-size: 12px !important;
+    }
+
+    .headline {
+        margin-top: 15% !important;
+    }
+
+    .headline h2 {
+        font-size: 30px !important;
+        padding: 0 20px !important;
+    }
+
+    .headline h2 span {
+        font-size: 45px !important;
+    }
+
+    .headline a {
+        font-size: 16px !important;
+    }
+
+    #img1, #img2, #img3, #img4 {
+        width: 45% !important;
+    }
+}
+
+/* Extra small devices (phones, less than 576px) */
+@media screen and (max-width: 576px) {
+    .navbar {
+        width: 98% !important;
+        padding: 8px 12px !important;
+        margin-top: 8% !important;
+        flex-direction: column !important;
+        gap: 10px !important;
+    }
+
+    .d-flex {
+        width: 100% !important;
+        justify-content: center !important;
+        flex-wrap: wrap !important;
+        gap: 8px !important;
+    }
+
+    .d-flex a {
+        margin: 5px !important;
+        font-size: 11px !important;
+        padding: 8px 12px !important;
+    }
+
+    .headline {
+        margin-top: 25% !important;
+    }
+
+    .headline h2 {
+        font-size: 25px !important;
+        padding: 0 15px !important;
+    }
+
+    .headline h2 span {
+        font-size: 35px !important;
+    }
+
+    .headline a {
+        font-size: 14px !important;
+        padding: 8px 12px !important;
+    }
+
+    #img1, #img2, #img3, #img4 {
+        width: 50% !important;
+    }
+}
+
+/* Handle very small devices */
+@media screen and (max-width: 360px) {
+    .navbar {
+        margin-top: 10% !important;
+    }
+
+    .navbar-brand {
+        font-size: 14px !important;
+    }
+
+    .navbar-brand img {
+        height: 25px !important;
+    }
+
+    .d-flex a {
+        font-size: 10px !important;
+        padding: 6px 10px !important;
+    }
+
+    .headline h2 {
+        font-size: 20px !important;
+    }
+
+    .headline h2 span {
+        font-size: 30px !important;
+    }
+
+    .headline a {
+        font-size: 12px !important;
+    }
+}
+
+/* Handle height responsiveness */
+@media screen and (max-height: 700px) {
+    .headline {
+        margin-top: 10% !important;
+    }
+
+    .headline h2 {
+        margin-bottom: 4% !important;
+    }
+}
+
+/* Ensure images are responsive */
+.landing img {
+    max-width: 100% !important;
+    height: auto !important;
+}
+
+/* Add hamburger menu styles */
+.hamburger {
+    display: none !important;
+    cursor: pointer !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    z-index: 100 !important;
+}
+
+.hamburger span {
+    display: block !important;
+    width: 25px !important;
+    height: 3px !important;
+    margin: 5px !important;
+    background-color: white !important;
+    transition: all 0.3s ease !important;
+}
+
+/* Update media queries for responsive navbar */
+@media screen and (max-width: 992px) {
+    .nav-left {
+        display: flex !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        gap: 15px !important;
+        width: auto !important;
+    }
+
+    .navbar-brand {
+        margin: 0 !important;
+    }
+
+    .hamburger {
+        display: block !important;
+        cursor: pointer !important;
+        margin-left: 10px !important;
+    }
+
+    .hamburger span {
+        display: block !important;
+        width: 25px !important;
+        height: 3px !important;
+        margin: 5px !important;
+        background-color: white !important;
+        transition: all 0.3s ease !important;
+    }
+
+    .d-flex {
+        position: fixed !important;
+        left: -100% !important;
+        top: 0 !important;
+        gap: 0 !important;
+        flex-direction: column !important;
+        background-color: rgba(0, 0, 0, 0.9) !important;
+        width: 100% !important;
+        height: 100vh !important;
+        text-align: center !important;
+        transition: 0.3s !important;
+        padding-top: 80px !important;
+        z-index: 99 !important;
+    }
+
+    .d-flex.active {
+        left: 0 !important;
+    }
+
+    .d-flex a {
+        margin: 16px 0 !important;
+        font-size: 16px !important;
+        width: 100% !important;
+        text-align: center !important;
+    }
+
+    .navbar {
+        position: relative !important;
+        z-index: 100 !important;
+    }
+}
+
+@media screen and (max-width: 576px) {
+    .nav-left {
+        gap: 10px !important;
+    }
+
+    .navbar-brand img {
+        height: 35px !important;
+    }
+
+    .hamburger span {
+        width: 22px !important;
+        height: 2px !important;
+        margin: 4px !important;
+    }
+}
+
+/* Update footer styles for better mobile responsiveness */
+@media screen and (max-width: 768px) {
+    .about {
+        flex-direction: column !important;
+        align-items: center !important;
+        gap: 30px !important;
+        padding: 20px !important;
+    }
+
+    .about-us, .links, .contacts {
+        width: 100% !important;
+        text-align: center !important;
+        align-items: center !important;
+    }
+
+    .about-info {
+        width: 100% !important;
+        text-align: center !important;
+        margin-bottom: 20px !important;
+    }
+
+    .links h3, .contacts h3 {
+        margin-left: 0 !important;
+        text-align: center !important;
+        margin-bottom: 15px !important;
+    }
+
+    .links span {
+        margin-left: 0 !important;
+        text-align: center !important;
+        width: 100% !important;
+    }
+
+    #text1, #text2, #text3 {
+        margin-left: 0 !important;
+        margin-bottom: 15px !important;
+    }
+
+    .contacts span {
+        margin-left: 0 !important;
+        text-align: center !important;
+        margin-bottom: 10px !important;
+    }
+
+    .footer-logo h1 {
+        font-size: 5rem !important;
+        text-align: center !important;
+    }
+
+    .footer-logo p {
+        text-align: center !important;
+        font-size: 1rem !important;
+        padding: 0 20px !important;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .about {
+        padding: 15px !important;
+    }
+
+    .footer-logo h1 {
+        font-size: 3.5rem !important;
+    }
+
+    .footer-logo p {
+        font-size: 0.9rem !important;
+    }
+
+    .footer-logo p span {
+        font-size: 1.2rem !important;
+    }
+
+    .about-info {
+        font-size: 0.9rem !important;
+    }
+
+    .links span a {
+        font-size: 0.9rem !important;
+    }
+
+    .contacts span {
+        font-size: 0.9rem !important;
+    }
+}
+
+/* Add these styles to ensure proper spacing and alignment */
+.footer {
+    padding-bottom: 20px !important;
+}
+
+.about {
+    width: 100% !important;
+    max-width: 1200px !important;
+    margin: 0 auto !important;
+    padding: 30px 20px !important;
+}
+
+.links span a {
+    display: inline-block !important;
+    width: 100% !important;
+    text-align: center !important;
+    margin-bottom: 10px !important;
+}
+
+.wrapper,.fb-wrapper{
+    overflow: hidden !important;
+}
+
+.facts-container, .fb-container {
+    position: relative !important;
+    width: 100% !important;
+    padding: 20px 0 !important;
+    overflow: visible !important;
+}
+
+.wrapper, .fb-wrapper {
+    position: relative !important;
+    width: 90% !important;
+    max-width: 1200px !important;
+    margin: 0 auto !important;
+    overflow: visible !important;
+}
+
+.carousel, .fb-carousel {
+    position: relative !important;
+    display: flex !important;
+    overflow-x: hidden !important;
+    scroll-behavior: smooth !important;
+    padding: 20px 0 !important;
+}
+
+/* Remove the nav-buttons class styles */
+.right, .left {
+    height: 40px !important;
+    width: 40px !important;
+    background-color: #102D16 !important;
+    color: white !important;
+    border-radius: 50% !important;
+    text-align: center !important;
+    line-height: 40px !important;
+    cursor: pointer !important;
+    position: absolute !important;
+    top: 50% !important;
+    transform: translateY(-50%) !important;
+    z-index: 10 !important;
+    transition: all 0.3s ease !important;
+}
+
+.left {
+    left: -20px !important;
+}
+
+.right {
+    right: -20px !important;
+}
+
+.right:hover, .left:hover {
+    background-color: #1F643A !important;
+    transform: translateY(-50%) scale(1.1) !important;
+}
+
+/* Responsive adjustments */
+@media screen and (max-width: 768px) {
+    .right, .left {
+        height: 35px !important;
+        width: 35px !important;
+        line-height: 35px !important;
+    }
+    
+    .left {
+        left: -15px !important;
+    }
+    
+    .right {
+        right: -15px !important;
+    }
+}
+
+@media screen and (max-width: 480px) {
+    .right, .left {
+        height: 30px !important;
+        width: 30px !important;
+        line-height: 30px !important;
+    }
+    
+    .left {
+        left: -10px !important;
+    }
+    
+    .right {
+        right: -10px !important;
+    }
+}

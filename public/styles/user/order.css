@@ -18,9 +18,17 @@ body {
     padding: 2rem;
 }
 
+#logo {
+    position: absolute;
+    top: 10px;
+    right: 60px;
+    width: 250px;
+    height: auto;
+}
+
 .container {
     max-width: 1200px;
-    margin: 5% auto 0 !important;
+    margin: 7% auto 0 !important;
     background-color: #fff;
     border-radius: 25px;
     box-shadow: 0 0 40px 40px rgba(0, 0, 0, 0.4);

@@ -15,6 +15,14 @@
     padding: 40px 0;
 }
 
+#logo {
+    position: absolute;
+    top: 10px;
+    right: 60px;
+    width: 250px;
+    height: auto;
+}
+
 .container {
     position: relative;
     width: 90%;
@@ -23,7 +31,7 @@
     background: white;
     border-radius: 30px;
     padding: 40px;
-    margin: 20px auto;
+    margin: 7% auto;
 }
 
 .header {

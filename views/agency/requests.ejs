@@ -78,7 +78,6 @@
       <div class="tab-content" id="requestTabsContent">
        <!-- New Requests Tab -->
         <div class="tab-pane fade show active" id="new" role="tabpanel">
-          <%if(requests && requests.status=="Pending"){%>
           <% const pendingRequests = requests.filter(request => request.status === 'Pending'); %>
           <% pendingRequests.forEach(function(request) { %>
             <div class="card request-card p-3">
@@ -122,16 +121,12 @@
               </div>
            </div>
           <% }); %>
-          <% } else{ %>
-            <p>No requests available.</p>
-            <% } %>
         </div>
       
 
 
         <!-- Approved Requests Tab -->
         <div class="tab-pane fade" id="Accepted" role="tabpanel">
-          <%if(requests && requests.status=="Accepted"){%>
           <% const approvedRequests = requests.filter(request => request.status === 'Accepted'); %>
           <% approvedRequests.forEach(function(request) { %>
             <div class="card request-card">
@@ -168,9 +163,6 @@
               </div>
             </div>
           <% }); %>
-          <% } else{ %>
-            <p>No accepted requests available.</p>
-            <% } %>
         </div>
       
 

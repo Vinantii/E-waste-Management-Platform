@@ -869,56 +869,56 @@ app.delete("/user/:id", async (req, res) => {
 });
 
 // // TODO: User Apply Request Route
-// app.get(
-//   "/user/:id/apply-request",
-//   isLoggedIn,
-//   wrapAsync(async (req, res) => {
-//     const user = await User.findById(req.params.id);
-//     if (!user) {
-//       throw new ExpressError("User not found", 404);
-//     }
-
-//     // Fetch all certified agencies
-//     const agencies = await Agency.find({
-//       certificationStatus: "Certified",
-//     }).select("name region wasteTypesHandled");
-
-//     res.render("user/apply-request.ejs", {
-//       currentUser: user,
-//       agencies: agencies,
-//     });
-//   })
-// );
-
-
-app.get("/user/:id/apply-request", isLoggedIn, wrapAsync(async (req, res) => {
-  const user = await User.findById(req.params.id);
-  if (!user) throw new ExpressError("User not found", 404);
-  if (!user.location || !user.location.coordinates) 
-      throw new ExpressError("User location is missing or invalid", 400);
-
-  const [userLon, userLat] = user.location.coordinates;
-
-  // Get all certified agencies
-  const agencies = await Agency.find({ certificationStatus: "Certified" });
-  console.log(agencies);
-
-
-  const nearbyAgencies = await Agency.aggregate([
-    {
-        $geoNear: {
-            near: { type: "Point", coordinates: [userLon, userLat] },
-            distanceField: "distance",
-            maxDistance: 150 * 1000, // 150 km in meters
-            spherical: true
-        }
+app.get(
+  "/user/:id/apply-request",
+  isLoggedIn,
+  wrapAsync(async (req, res) => {
+    const user = await User.findById(req.params.id);
+    if (!user) {
+      throw new ExpressError("User not found", 404);
     }
-]);
 
-  console.log(nearbyAgencies);
+    // Fetch all certified agencies
+    const agencies = await Agency.find({
+      certificationStatus: "Certified",
+    }).select("name region wasteTypesHandled");
 
-  res.render("user/apply-request.ejs", { currentUser: user, agencies: nearbyAgencies });
-}));
+    res.render("user/apply-request.ejs", {
+      currentUser: user,
+      agencies: agencies,
+    });
+  })
+);
+
+
+// app.get("/user/:id/apply-request", isLoggedIn, wrapAsync(async (req, res) => {
+//   const user = await User.findById(req.params.id);
+//   if (!user) throw new ExpressError("User not found", 404);
+//   if (!user.location || !user.location.coordinates) 
+//       throw new ExpressError("User location is missing or invalid", 400);
+
+//   const [userLon, userLat] = user.location.coordinates;
+
+//   // Get all certified agencies
+//   const agencies = await Agency.find({ certificationStatus: "Certified" });
+//   console.log(agencies);
+
+
+//   const nearbyAgencies = await Agency.aggregate([
+//     {
+//         $geoNear: {
+//             near: { type: "Point", coordinates: [userLon, userLat] },
+//             distanceField: "distance",
+//             maxDistance: 150 * 1000, // 150 km in meters
+//             spherical: true
+//         }
+//     }
+// ]);
+
+//   console.log(nearbyAgencies);
+
+//   res.render("user/apply-request.ejs", { currentUser: user, agencies: nearbyAgencies });
+// }));
 
 
 app.post(
@@ -1717,10 +1717,10 @@ app.post(
     }
 
     request.status = "Accepted";
-    // sendNotification(
-    //  `${request.agency.name} Agency Accepted your ewaste collection request`,
-    //   request.user.phone
-    // );
+    sendNotification(
+     `${request.agency.name} Agency Accepted your ewaste collection request`,
+      request.user.phone
+    );
 
     // Important: Only update the specific milestone, not the entire trackingMilestones object
     request.trackingMilestones.agencyAccepted = {
@@ -1766,10 +1766,10 @@ app.post(
       rejectedAt: new Date(),
     });
 
-    // sendNotification(
-    //   `${request.agency.name} Agency Rejected your ewaste collection request`,
-    //   request.user.phone
-    // );
+    sendNotification(
+      `${request.agency.name} Agency Rejected your ewaste collection request`,
+      request.user.phone
+    );
     res.redirect(`/agency/${req.user._id}/requests`);
   })
 );
@@ -1794,10 +1794,10 @@ app.post(
     request.volunteerAssigned = volunteerId;
     request.volunteerName = volunteer.name;
     request.status = "Assigned";
-    // sendNotification(
-    //   `Volunteer ${volunteer.name} assigned to handle the request`,
-    //   request.user.phone
-    // );
+    sendNotification(
+      `Volunteer ${volunteer.name} assigned to handle the request`,
+      request.user.phone
+    );
 
     // Important: Only update the specific milestone
     request.trackingMilestones.volunteerAssigned = {
@@ -1866,13 +1866,13 @@ app.post(
       };
 
       if(milestone === "wasteSegregated" && request.trackingMilestones[milestone].completed) {
-        // sendNotification(`Your e-waste product has been segregated by ${request.agency.name}.`, request.user.phone);
+        sendNotification(`Your e-waste product has been segregated by ${request.agency.name}.`, request.user.phone);
       }
       if(milestone === "processingStarted" && request.trackingMilestones[milestone].completed){
-        //  sendNotification( `The processing of your e-waste product has started by ${request.agency.name}.`, request.user.phone);
+         sendNotification( `The processing of your e-waste product has started by ${request.agency.name}.`, request.user.phone);
       }
       if (milestone === "processingCompleted" && request.trackingMilestones[milestone].completed) {
-        // sendNotification(`The processing of your e-waste product has been successfully completed by ${request.agency.name}.`,request.user.phone);
+        sendNotification(`The processing of your e-waste product has been successfully completed by ${request.agency.name}.`,request.user.phone);
       }
 
       if (milestone === "wasteSegregated") {
@@ -2427,7 +2427,7 @@ app.post(
 
       // twilio notifications
       if ( milestone === "pickupScheduled" && request.trackingMilestones[milestone].completed) {
-        // sendNotification(`Your e-waste product pickup has been scheduled by ${request.agency.name}.`,request.user.phone);
+        sendNotification(`Your e-waste product pickup has been scheduled by ${request.agency.name}.`,request.user.phone);
        }
       if ( milestone === "pickupStarted" && request.trackingMilestones[milestone].completed) {
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
@@ -2435,7 +2435,7 @@ app.post(
         sendNotification(`Your e-waste product pickup has started with ${request.agency.name} and your verification OTP is ${otp}.`,request.user.phone);
       }
       if ( milestone === "pickupCompleted" && request.trackingMilestones[milestone].completed) {
-        // sendNotification(`Your e-waste product pickup has been completed by ${request.agency.name}.`,request.user.phone);
+        sendNotification(`Your e-waste product pickup has been completed by ${request.agency.name}.`,request.user.phone);
       }
       await request.save();
 

@@ -15,6 +15,7 @@ const { google } = require("googleapis");
 const stream = require("stream");
 const uploadDrive = multer({ storage: multer.memoryStorage() });
 const twilio = require("twilio");
+const flash = require('connect-flash');
 
 const User = require("./models/user");
 const Agency = require("./models/agency");
@@ -166,6 +167,7 @@ app.use(
     },
   })
 );
+
 app.use(passport.initialize());
 app.use(passport.session());
 
@@ -866,27 +868,58 @@ app.delete("/user/:id", async (req, res) => {
   }
 });
 
-// TODO: User Apply Request Route
-app.get(
-  "/user/:id/apply-request",
-  isLoggedIn,
-  wrapAsync(async (req, res) => {
-    const user = await User.findById(req.params.id);
-    if (!user) {
-      throw new ExpressError("User not found", 404);
+// // TODO: User Apply Request Route
+// app.get(
+//   "/user/:id/apply-request",
+//   isLoggedIn,
+//   wrapAsync(async (req, res) => {
+//     const user = await User.findById(req.params.id);
+//     if (!user) {
+//       throw new ExpressError("User not found", 404);
+//     }
+
+//     // Fetch all certified agencies
+//     const agencies = await Agency.find({
+//       certificationStatus: "Certified",
+//     }).select("name region wasteTypesHandled");
+
+//     res.render("user/apply-request.ejs", {
+//       currentUser: user,
+//       agencies: agencies,
+//     });
+//   })
+// );
+
+
+app.get("/user/:id/apply-request", isLoggedIn, wrapAsync(async (req, res) => {
+  const user = await User.findById(req.params.id);
+  if (!user) throw new ExpressError("User not found", 404);
+  if (!user.location || !user.location.coordinates) 
+      throw new ExpressError("User location is missing or invalid", 400);
+
+  const [userLon, userLat] = user.location.coordinates;
+
+  // Get all certified agencies
+  const agencies = await Agency.find({ certificationStatus: "Certified" });
+  console.log(agencies);
+
+
+  const nearbyAgencies = await Agency.aggregate([
+    {
+        $geoNear: {
+            near: { type: "Point", coordinates: [userLon, userLat] },
+            distanceField: "distance",
+            maxDistance: 150 * 1000, // 150 km in meters
+            spherical: true
+        }
     }
+]);
 
-    // Fetch all certified agencies
-    const agencies = await Agency.find({
-      certificationStatus: "Certified",
-    }).select("name region wasteTypesHandled");
+  console.log(nearbyAgencies);
 
-    res.render("user/apply-request.ejs", {
-      currentUser: user,
-      agencies: agencies,
-    });
-  })
-);
+  res.render("user/apply-request.ejs", { currentUser: user, agencies: nearbyAgencies });
+}));
+
 
 app.post(
   "/user/:id/apply-request",

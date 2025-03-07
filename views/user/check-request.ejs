@@ -66,6 +66,7 @@
                     <span class="info-value"><%= request.agency.name %></span>
                   </div>
                 </div>
+              <div class="flex">
                 <div class="request-actions">
                   <a href="/user/request/<%= request._id %>/track" class="view-details-btn">View Details</a>
                 </div>
@@ -73,7 +74,8 @@
                   <% if(request.status === "Pending" || request.status === "Accepted" || request.status === "Assigned" && request.trackingMilestones.pickupStarted.completed === false){ %>
                     <form action="/user/request/<%= request._id %>/delete?_method=DELETE" method="post"><button class="btn btn-danger">Delete request</button></form>
                   <% } %>
-                </div>
+              </div>
+              </div>
               </div>
             <% }); %>
           <% }else{ %>

@@ -211,3 +211,45 @@ h5{
     background-color: #D32F2F;
     color: white;
 }
+
+
+@media (max-width: 768px)
+{
+    .request-card {
+        background: white;
+        border-radius: 20px;
+        border: none;
+        padding: 20px;
+        margin: 15px;
+        box-shadow: 0 0 10px 10px rgba(0,0,0,0.5);
+        width: 95%;
+    }
+    .container {
+        max-width: 80vw;
+        margin:  15px 0px!important;
+        padding: 0px;
+    }
+
+    .flex{
+        display: flex;
+        gap: 15px;
+    }
+
+    .tab-content>.active {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+    }
+    .tab-content {
+        margin:0%;
+    }
+    /* Hide scrollbar but allow scrolling */
+::-webkit-scrollbar {
+    display: none;
+  }
+  .nav-tabs .nav-link {
+    padding:10px;
+  }
+}
+
+  

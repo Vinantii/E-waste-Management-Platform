@@ -220,14 +220,20 @@ h1 {
 }
 
 @media screen and (max-width: 768px) {
-    body {
-        padding: 1rem;
-    }
-
+    ::-webkit-scrollbar {
+        display: none;
+      }
     .container {
         padding: 1rem !important;
     }
 
+    .nav-tabs .nav-link 
+    {
+        padding: 5px 5px !important;
+        min-width: 87px !important;
+        font-size: 1rem !important;
+    }
+    
     h1 {
         font-size: 2rem !important;
     }

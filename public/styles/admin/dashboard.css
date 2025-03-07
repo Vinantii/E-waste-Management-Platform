@@ -204,3 +204,20 @@ h1 {
     align-items: center;
     gap: 5px;
 }
+
+@media (max-width: 768px)
+{
+    .row>* {
+        flex-shrink: 0;
+        width: 63%;
+        max-width: 100%;
+        padding-right: calc(var(--bs-gutter-x)* .5);
+        padding-left: calc(var(--bs-gutter-x)* .5);
+        margin-top: var(--bs-gutter-y);
+    }
+    .btn-secondary {
+        background-color: #1F643A;
+        border: none;
+        margin-top: 10px;
+    }
+}

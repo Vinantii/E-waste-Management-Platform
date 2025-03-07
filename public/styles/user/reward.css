@@ -93,3 +93,36 @@ h4{
     border-radius: 25px;
     margin-bottom: 5%;
 }
+
+
+@media (max-width: 768px)
+{
+
+
+  ::-webkit-scrollbar {
+    display: none;
+  }
+  
+
+
+  #logo {
+    position: absolute;
+    top: 16px;
+    right: 139px;
+    width: 215px;
+    height: auto;
+}
+
+.card-body {
+   
+   margin: 20px;
+}
+
+.row>* {
+  
+    margin-bottom: 20px;
+}
+.row {
+    margin-top: 17% !important;
+}
+}

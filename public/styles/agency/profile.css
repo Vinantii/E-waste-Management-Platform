@@ -55,3 +55,32 @@
     margin-right: 25%;
     margin-top: 10%;
 }
+
+
+@media (max-width: 768px) {
+    ::-webkit-scrollbar {
+        display: none;
+      }
+      .profile-container {
+        background-color: #FFF;
+        width: 80%;
+        margin: 6% auto;
+        padding: 40px;
+        border-radius: 25px;
+        box-shadow: 0 0 40px 40px rgba(0, 0, 0, 0.5);
+    }
+    #logo{
+        display: none;
+    }
+
+    .details{
+        margin-left: 0px;
+    }
+    .buttons {
+        display: flex;
+        justify-content: center;
+        gap: 28px;
+        margin-right: 25%;
+        margin-top: 10%;
+    }
+    }

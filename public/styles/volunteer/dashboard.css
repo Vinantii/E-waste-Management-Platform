@@ -212,3 +212,20 @@ body {
 .progress-step.completed {
     background: #2ECC71;
 }
+
+@media (max-width: 768px) {
+    ::-webkit-scrollbar {
+        display: none;
+      }
+.nav-tabs {
+    border: none;
+    background: white;
+    border-radius: 15px;
+    padding: 7px;
+    display: inline-flex
+;
+    margin-bottom: 2rem;
+    border: 3px solid #B0D247;
+    justify-content: space-around;
+}
+}

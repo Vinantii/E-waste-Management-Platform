@@ -155,3 +155,24 @@
   .add-btn{
     margin-top: -2% !important;
   } */
+
+
+  
+@media (max-width: 768px)
+{
+  .form-container{
+    width: 90%;
+  }
+  .waste-item .form-control {
+    width: 95% !important;
+    margin-left: -2.2% !important;
+}
+
+  ::-webkit-scrollbar {
+    display: none;
+  }
+  #logo{
+    display: none;
+  }
+  
+}

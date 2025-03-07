@@ -79,48 +79,51 @@
        <!-- New Requests Tab -->
         <div class="tab-pane fade show active" id="new" role="tabpanel">
           <% const pendingRequests = requests.filter(request => request.status === 'Pending'); %>
-          <% pendingRequests.forEach(function(request) { %>
-            <div class="card request-card p-3">
-              <div class="card-body d-flex align-items-center">
-                <div class="flex-grow-1">
-                  <span class="badge bg-primary status-badge">New</span>
-                  <h5 class="card-title">
-                    Request #<%= request._id.toString().slice(-6) %>
-                  </h5>
-                  <p class="card-text">
-                    <strong>User:</strong> <%= request.user.name %><br>
-                    <strong>Waste Types:</strong> <%= request.wasteType.join(', ') %><br>
-                    <strong>Quantity:</strong> <%= request.quantities %><br>
-                    <strong>Pickup Address:</strong> <%= request.pickupAddress %><br>
-                    <strong>Contact:</strong> <%= request.contactNumber %>
-                  </p>
+          <% if(pendingRequests.length > 0){ %>
+            <% pendingRequests.forEach(function(request) { %>
+                <div class="card request-card p-3">
+                  <div class="card-body d-flex align-items-center">
+                    <div class="flex-grow-1">
+                      <span class="badge bg-primary status-badge">New</span>
+                      <h5 class="card-title">
+                        Request #<%= request._id.toString().slice(-6) %>
+                      </h5>
+                      <p class="card-text">
+                        <strong>User:</strong> <%= request.user.name %><br>
+                        <strong>Waste Types:</strong> <%= request.wasteType.join(', ') %><br>
+                        <strong>Quantity:</strong> <%= request.quantities %><br>
+                        <strong>Pickup Address:</strong> <%= request.pickupAddress %><br>
+                        <strong>Contact:</strong> <%= request.contactNumber %>
+                      </p>
 
-                  <div class="d-flex gap-2">
-                    <form action="/agency/requests/<%= request._id %>/approve" method="POST" class="d-inline">
-                      <button type="submit" class="btn btn-success">
-                        <i class="bi bi-check-circle"></i> Accept
-                      </button>
-                    </form>
-                    <form action="/agency/request/<%= request._id %>/reject" method="POST" class="d-inline">
-                      <button type="submit" class="btn btn-danger">Reject</button>
-                    </form>
+                      <div class="d-flex gap-2">
+                        <form action="/agency/requests/<%= request._id %>/approve" method="POST" class="d-inline">
+                          <button type="submit" class="btn btn-success">
+                            <i class="bi bi-check-circle"></i> Accept
+                          </button>
+                        </form>
+                        <form action="/agency/request/<%= request._id %>/reject" method="POST" class="d-inline">
+                          <button type="submit" class="btn btn-danger">Reject</button>
+                        </form>
+                      </div>
+                    </div>
+
+                    <!-- Image Section -->
+                    <div class="ms-3">
+                      <% if (request.wasteImages.length > 0) { %>
+                        <% request.wasteImages.forEach((img) =>{ %>
+                          <a href="<%= img.url %>" target="_blank">
+                            <img src="<%= img.url %>" alt="Waste Image" class="img-fluid rounded" style="width: 150px; height: auto;">
+                          </a>
+                        <% });%>
+                      <% } %>
+                    </div>
                   </div>
-                </div>
-
-                <!-- Image Section -->
-                <div class="ms-3">
-
-                  <% if (request.wasteImages.length > 0) { %>
-                    <% request.wasteImages.forEach((img) =>{ %>
-                      <a href="<%= img.url %>" target="_blank">
-                        <img src="<%= img.url %>" alt="Waste Image" class="img-fluid rounded" style="width: 150px; height: auto;">
-                      </a>
-                    <% });%>
-                  <% } %>
-                </div>
               </div>
-           </div>
-          <% }); %>
+            <% }); %>
+          <% } else{ %>
+              <p class="card-title">No new requests found.</p>
+          <% } %>
         </div>
       
 
@@ -128,6 +131,7 @@
         <!-- Approved Requests Tab -->
         <div class="tab-pane fade" id="Accepted" role="tabpanel">
           <% const approvedRequests = requests.filter(request => request.status === 'Accepted'); %>
+          <% if(approvedRequests.length > 0){ %>
           <% approvedRequests.forEach(function(request) { %>
             <div class="card request-card">
               <div class="card-body">
@@ -163,12 +167,16 @@
               </div>
             </div>
           <% }); %>
+          <% }else{ %>
+              <p class="card-title">No requests has been accepted yet.</p>
+            <% } %>
         </div>
       
 
         <!-- In Progress Requests Tab -->
         <div class="tab-pane fade" id="Assigned" role="tabpanel">
           <% const inProgressRequests = requests.filter(request => request.status === 'Processing' || request.status === 'Assigned'); %>
+          <% if(inProgressRequests.length > 0){ %>
           <% inProgressRequests.forEach(function(request) { %>
             <div class="card request-card">
               <div class="card-body">
@@ -214,6 +222,9 @@
               </div>
             </div>
           <% }); %>
+          <% }else{ %>
+              <p class="card-title">No requests has been assigned yet.</p>
+          <% } %>
         </div>
       </div>
     </div>

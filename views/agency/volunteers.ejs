@@ -153,7 +153,9 @@
                                 </div>
                                 
                                 <div class="row">
-                                    <div class="col">
+                                    <input type="hidden" id="latitude" name="pickupArea[coordinates][coordinates][1]">
+                                    <input type="hidden" id="longitude" name="pickupArea[coordinates][coordinates][0]">
+                                    <!-- <div class="col">
                                         <div class="form-group">
                                             <label class="form-label">Latitude</label>
                                             <input type="number" 
@@ -174,7 +176,7 @@
                                                    step="any" 
                                                    required>
                                         </div>
-                                    </div>
+                                    </div> -->
                                 </div>
 
                                 <div class="form-group">
@@ -224,6 +226,24 @@
                 }).then(() => window.location.reload());
             }
         }
+    </script>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            if ("geolocation" in navigator) {
+                navigator.geolocation.getCurrentPosition(
+                    (position) => {
+                        document.getElementById("latitude").value = position.coords.latitude;
+                        document.getElementById("longitude").value = position.coords.longitude;
+                        console.log(" Latitude: ", position.coords.latitude, " Longitude: ", position.coords.longitude);
+                    },
+                    (error) => {
+                        console.error("Geolocation error:", error);
+                    }
+                );
+            } else {
+                console.error("Geolocation error:", error);
+            }
+        });
     </script>
 </body>
 </html> 

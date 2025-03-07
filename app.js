@@ -62,7 +62,6 @@ const client = new twilio(process.env.ACCOUNT_SID, process.env.AUTH_TOKEN);
 
 // Send SMS
 const sendNotification = wrapAsync(async (msg, recipient) => {
-  try {
     const message = await client.messages.create({
       body: msg.concat("\n~Avakara"),
       from: process.env.TWILIO_PHONE_NUMBER, // Ensure this is in E.164 format
@@ -70,10 +69,6 @@ const sendNotification = wrapAsync(async (msg, recipient) => {
     });
     console.log(`Message sent with SID: ${message.sid}`);
     return message.sid; // Return message SID for tracking
-  } catch (error) {
-    console.error(`Error sending message: ${error.message}`);
-    throw error; // Rethrow for wrapAsync to handle
-  }
 });
 
 // MIDDLEWARE: to protect routes
@@ -347,6 +342,39 @@ const getLocationAddress = async (coordinates) => {
   }
 };
 
+const updateUserPointsOnCompletion = wrapAsync(async (request) => {
+  if (request.status !== "Completed") return;
+
+  const WASTE_TYPE_POINTS = {
+    mobile: 50,
+    phones: 50,
+    computers: 150,
+    laptop: 100,
+    Batteries: 20,
+  };
+
+  const user = await User.findById(request.user);
+  if (!user) {
+    console.error("User not found for request:", request._id);
+    return;
+  }
+
+  let points = user.points;
+  let monthlyPoints = user.monthlyPoints;
+
+  request.wasteType.forEach((type, index) => {
+    let perUnitPoints = WASTE_TYPE_POINTS[type] || 0;
+    points += perUnitPoints * request.quantities[index];
+    monthlyPoints += perUnitPoints * request.quantities[index];
+  });
+
+  await User.findByIdAndUpdate(user._id, {
+    points,
+    monthlyPoints,
+    $inc: { completedRequests: 1 },
+  });
+});
+
 //TODO Root  route
 app.get(
   "/",
@@ -528,6 +556,14 @@ app.post(
       resource_type: "auto",
     });
 
+   // Ensure location coordinates are properly formatted
+   const coordinates = req.body.user.location?.coordinates;
+   if (!Array.isArray(coordinates) || coordinates.length !== 2) {
+     throw new ExpressError("Invalid location coordinates", 400);
+   }
+
+   // Convert coordinates to numbers
+   const formattedCoordinates = coordinates.map((coord) => Number(coord));
     await User.findByIdAndUpdate(id, {
       phone: req.body.phone,
       address: req.body.address,
@@ -536,6 +572,10 @@ app.post(
       profilePic: {
         url: result.secure_url,
         filename: result.public_id,
+      },
+      location: {
+        type: "Point",
+        coordinates: formattedCoordinates,
       },
     });
 
@@ -657,7 +697,6 @@ app.post(
   ]),
   validateAgency,
   wrapAsync(async (req, res) => {
-    console.log("Agency registration route call");
     // Ensure agency logo is uploaded
     if (!req.files["agencyLogo"]) {
       throw new ExpressError("Agency logo is required", 400);
@@ -838,6 +877,7 @@ app.delete("/user/:id", async (req, res) => {
     await Story.deleteMany({ "author.user": user._id });
     await Feedback.deleteMany({user: user._id });
     await Order.deleteMany({ user: user._id });
+    await Item.deleteMany({ user: user._id });
 
     const requests = await Request.find({ user: user._id });
 
@@ -869,6 +909,27 @@ app.delete("/user/:id", async (req, res) => {
 });
 
 // // TODO: User Apply Request Route
+// app.get(
+//   "/user/:id/apply-request",
+//   isLoggedIn,
+//   wrapAsync(async (req, res) => {
+//     const user = await User.findById(req.params.id);
+//     if (!user) {
+//       throw new ExpressError("User not found", 404);
+//     }
+
+//     // Fetch all certified agencies
+//     const agencies = await Agency.find({
+//       certificationStatus: "Certified",
+//     }).select("name region wasteTypesHandled");
+
+//     res.render("user/apply-request.ejs", {
+//       currentUser: user,
+//       agencies: agencies,
+//     });
+//   })
+// );
+
 app.get(
   "/user/:id/apply-request",
   isLoggedIn,
@@ -878,48 +939,44 @@ app.get(
       throw new ExpressError("User not found", 404);
     }
 
-    // Fetch all certified agencies
-    const agencies = await Agency.find({
-      certificationStatus: "Certified",
-    }).select("name region wasteTypesHandled");
+    // Ensure user has valid coordinates
+    if (!user.location || !user.location.coordinates || user.location.coordinates.length !== 2) {
+      throw new ExpressError("User location is missing or invalid", 400);
+    }
+
+    const userCoordinates = user.location.coordinates; // [longitude, latitude]
+
+    // Fetch certified agencies within 10 km using geoNear
+    const agencies = await Agency.aggregate([
+      {
+        $geoNear: {
+          near: { type: "Point", coordinates: userCoordinates },
+          distanceField: "distance",
+          maxDistance: 50000,
+          spherical: true
+        }
+      },
+      { $match: { certificationStatus: "Certified" } }, // Only certified agencies
+      { 
+        $project: { 
+          name: 1, 
+          region: 1, 
+          wasteTypesHandled: 1, 
+          location: 1, 
+          distance: 1 // Include distance in the results
+        } 
+      },
+      { $sort: { distance: 1 } } // Sorting agencies by distance (closest first)
+    ]);
+    
+    console.log(agencies);
 
     res.render("user/apply-request.ejs", {
       currentUser: user,
-      agencies: agencies,
+      agencies: agencies
     });
   })
 );
-
-
-// app.get("/user/:id/apply-request", isLoggedIn, wrapAsync(async (req, res) => {
-//   const user = await User.findById(req.params.id);
-//   if (!user) throw new ExpressError("User not found", 404);
-//   if (!user.location || !user.location.coordinates) 
-//       throw new ExpressError("User location is missing or invalid", 400);
-
-//   const [userLon, userLat] = user.location.coordinates;
-
-//   // Get all certified agencies
-//   const agencies = await Agency.find({ certificationStatus: "Certified" });
-//   console.log(agencies);
-
-
-//   const nearbyAgencies = await Agency.aggregate([
-//     {
-//         $geoNear: {
-//             near: { type: "Point", coordinates: [userLon, userLat] },
-//             distanceField: "distance",
-//             maxDistance: 150 * 1000, // 150 km in meters
-//             spherical: true
-//         }
-//     }
-// ]);
-
-//   console.log(nearbyAgencies);
-
-//   res.render("user/apply-request.ejs", { currentUser: user, agencies: nearbyAgencies });
-// }));
-
 
 app.post(
   "/user/:id/apply-request",
@@ -1193,11 +1250,8 @@ app.post(
       );
 
       const result = await response.json();
-      console.log("Raw AI Response:", JSON.stringify(result, null, 2));
 
       const aiResponse = result?.candidates?.[0]?.content?.parts?.[0]?.text?.trim().toUpperCase() || "UNKNOWN";
-      console.log("Processed AI Response:", aiResponse);
-
       if (aiResponse === "FAKE") {
         throw new ExpressError("The provided data is spam.", 400);
       }
@@ -1237,8 +1291,6 @@ app.get(
 
 app.post("/check-spam", isLoggedIn, wrapAsync(async (req, res) => {
   const { title, content } = req.body;
-  console.log("Inside spam check");
-  console.log("Request Body:", title, content);
 
   const requestBody = {
       model: "gemini-1.5-flash",
@@ -1275,10 +1327,8 @@ app.post("/check-spam", isLoggedIn, wrapAsync(async (req, res) => {
       });
 
       const result = await response.json();
-      console.log("Raw AI Response:", JSON.stringify(result, null, 2));
 
       const aiResponse = result?.candidates?.[0]?.content?.parts?.[0]?.text?.trim().toUpperCase() || "UNKNOWN";
-      console.log("Processed AI Response:", aiResponse);
 
       if (!["SPAM", "GIBBERISH", "NOSPAM"].includes(aiResponse)) {
           console.warn("Unexpected AI response format. Defaulting to NOSPAM.");
@@ -1304,7 +1354,6 @@ app.post(
   upload.single("media"),
   validateStory,
   wrapAsync(async (req, res) => {
-    console.log("in route");
     const user = await User.findById(req.params.id);
     if (!user) {
       return res.status(404).json({ error: "User not found" });
@@ -1717,10 +1766,10 @@ app.post(
     }
 
     request.status = "Accepted";
-    sendNotification(
-     `${request.agency.name} Agency Accepted your ewaste collection request`,
-      request.user.phone
-    );
+    // sendNotification(
+    //  `${request.agency.name} Agency Accepted your ewaste collection request`,
+    //   request.user.phone
+    // );
 
     // Important: Only update the specific milestone, not the entire trackingMilestones object
     request.trackingMilestones.agencyAccepted = {
@@ -1766,10 +1815,10 @@ app.post(
       rejectedAt: new Date(),
     });
 
-    sendNotification(
-      `${request.agency.name} Agency Rejected your ewaste collection request`,
-      request.user.phone
-    );
+    // sendNotification(
+    //   `${request.agency.name} Agency Rejected your ewaste collection request`,
+    //   request.user.phone
+    // );
     res.redirect(`/agency/${req.user._id}/requests`);
   })
 );
@@ -1794,10 +1843,10 @@ app.post(
     request.volunteerAssigned = volunteerId;
     request.volunteerName = volunteer.name;
     request.status = "Assigned";
-    sendNotification(
-      `Volunteer ${volunteer.name} assigned to handle the request`,
-      request.user.phone
-    );
+    // sendNotification(
+    //   `Volunteer ${volunteer.name} assigned to handle the request`,
+    //   request.user.phone
+    // );
 
     // Important: Only update the specific milestone
     request.trackingMilestones.volunteerAssigned = {
@@ -1866,13 +1915,13 @@ app.post(
       };
 
       if(milestone === "wasteSegregated" && request.trackingMilestones[milestone].completed) {
-        sendNotification(`Your e-waste product has been segregated by ${request.agency.name}.`, request.user.phone);
+        // sendNotification(`Your e-waste product has been segregated by ${request.agency.name}.`, request.user.phone);
       }
       if(milestone === "processingStarted" && request.trackingMilestones[milestone].completed){
-         sendNotification( `The processing of your e-waste product has started by ${request.agency.name}.`, request.user.phone);
+        //  sendNotification( `The processing of your e-waste product has started by ${request.agency.name}.`, request.user.phone);
       }
       if (milestone === "processingCompleted" && request.trackingMilestones[milestone].completed) {
-        sendNotification(`The processing of your e-waste product has been successfully completed by ${request.agency.name}.`,request.user.phone);
+        // sendNotification(`The processing of your e-waste product has been successfully completed by ${request.agency.name}.`,request.user.phone);
       }
 
       if (milestone === "wasteSegregated") {
@@ -1991,10 +2040,8 @@ app.post(
       );
 
       const result = await response.json();
-      console.log("Raw AI Response:", JSON.stringify(result, null, 2));
 
       const aiResponse = result?.candidates?.[0]?.content?.parts?.[0]?.text?.trim().toUpperCase() || "UNKNOWN";
-      console.log("Processed AI Response:", aiResponse);
 
       if (aiResponse === "FAKE") {
         throw new ExpressError("The provided data is spam.", 400);
@@ -2411,7 +2458,6 @@ app.post(
     if (request.trackingMilestones && request.trackingMilestones[milestone]) {
       const coordinates = [parseFloat(longitude), parseFloat(latitude)];
       const address = await getLocationAddress(coordinates);
-      console.log("Address:", address);
 
       request.trackingMilestones[milestone] = {
         completed: true,
@@ -2427,7 +2473,7 @@ app.post(
 
       // twilio notifications
       if ( milestone === "pickupScheduled" && request.trackingMilestones[milestone].completed) {
-        sendNotification(`Your e-waste product pickup has been scheduled by ${request.agency.name}.`,request.user.phone);
+        // sendNotification(`Your e-waste product pickup has been scheduled by ${request.agency.name}.`,request.user.phone);
        }
       if ( milestone === "pickupStarted" && request.trackingMilestones[milestone].completed) {
         const otp = Math.floor(100000 + Math.random() * 900000).toString();
@@ -2435,7 +2481,7 @@ app.post(
         sendNotification(`Your e-waste product pickup has started with ${request.agency.name} and your verification OTP is ${otp}.`,request.user.phone);
       }
       if ( milestone === "pickupCompleted" && request.trackingMilestones[milestone].completed) {
-        sendNotification(`Your e-waste product pickup has been completed by ${request.agency.name}.`,request.user.phone);
+        // sendNotification(`Your e-waste product pickup has been completed by ${request.agency.name}.`,request.user.phone);
       }
       await request.save();
 
@@ -2465,9 +2511,7 @@ app.get(
       agency: req.params.id,
       status: "Delivered",
     }).populate("user product");
-    console.log("received order:",receivedOrders);
 
-    console.log("Completed orders:",completedOrders);
     const allProducts = await Product.find({ agency: req.params.id });
 
     res.render("agency/order.ejs", {
@@ -2580,23 +2624,28 @@ app.get(
   isLoggedIn,
   wrapAsync(async (req, res) => {
     const allProducts = await Product.find();
-    res.render("user/store.ejs", { allProducts });
+    let {id} = req.params;
+    res.render("user/store.ejs", { allProducts,id });
   })
 );
 
 //TASK: Product redemption process
 app.post(
-  "/user/redeem/:id",
+  "/user/:id/redeem/:productId",
   isLoggedIn,
   wrapAsync(async (req, res) => {
-    const user = await User.findById(req.user._id);
-    const product = await Product.findById(req.params.id);
+    const user = await User.findById(req.params.id);
+    const product = await Product.findById(req.params.productId);
 
     if (!product || product.stock <= 0) {
       throw new ExpressError("Product not available", 400);
     }
 
-    if (!user || user.points < product.pointsRequired) {
+    if (!user) {
+      throw new ExpressError("User not found", 400);
+    }
+
+    if (user.points < product.pointsRequired) {
       throw new ExpressError("Not enough points", 400);
     }
 
@@ -2830,38 +2879,7 @@ const resetMonthlyPointsAndAwardBonuses = wrapAsync(async () => {
   console.log("🔄 Monthly points reset for all users!");
 });
 
-const updateUserPointsOnCompletion = wrapAsync(async (request) => {
-  if (request.status !== "Completed") return;
 
-  const WASTE_TYPE_POINTS = {
-    mobile: 50,
-    phones: 50,
-    computers: 150,
-    laptop: 100,
-    Batteries: 20,
-  };
-
-  const user = await User.findById(request.user);
-  if (!user) {
-    console.error("User not found for request:", request._id);
-    return;
-  }
-
-  let points = user.points;
-  let monthlyPoints = user.monthlyPoints;
-
-  request.wasteType.forEach((type, index) => {
-    let perUnitPoints = WASTE_TYPE_POINTS[type] || 0;
-    points += perUnitPoints * request.quantities[index];
-    monthlyPoints += perUnitPoints * request.quantities[index];
-  });
-
-  await User.findByIdAndUpdate(user._id, {
-    points,
-    monthlyPoints,
-    $inc: { completedRequests: 1 },
-  });
-});
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {

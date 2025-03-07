@@ -31,30 +31,18 @@
         <!-- Tabs Navigation -->
         <ul class="nav nav-tabs" id="communityTabs" role="tablist">
             <li class="nav-item" role="presentation">
-                <button class="nav-link active" id="events-tab" data-bs-toggle="tab" 
-                        data-bs-target="#events" type="button" role="tab" 
-                        aria-controls="events" aria-selected="true">
-                    Community Events
-                </button>
+                <button class="nav-link active" id="events-tab" data-bs-toggle="tab" data-bs-target="#events" type="button" role="tab" aria-controls="events" aria-selected="true"> Community Events </button>
             </li>
             <li class="nav-item" role="presentation">
-                <button class="nav-link" id="stories-tab" data-bs-toggle="tab" 
-                        data-bs-target="#stories" type="button" role="tab" 
-                        aria-controls="stories" aria-selected="false">
-                    Community Stories
-                </button>
+                <button class="nav-link" id="stories-tab" data-bs-toggle="tab" data-bs-target="#stories" type="button" role="tab" aria-controls="stories" aria-selected="false"> Community Stories </button>
             </li>
         </ul>
         <!-- Header Section -->
         <div class="d-flex justify-content-between align-items-center mb-4">
             <h1>Community Hub</h1>
             <div>
-                <a href="/user/<%= user._id %>/community/add" class="btn btn-primary me-2">
-                    Add Event
-                </a>
-                <a href="/user/<%= user._id %>/story/add" class="btn btn-primary">
-                    Add Story
-                </a>
+                <a href="/user/<%= user._id %>/community/add" class="btn btn-primary me-2"> Add Event </a>
+                <a href="/user/<%= user._id %>/story/add" class="btn btn-primary"> Add Story </a>
             </div>
         </div>
 
@@ -64,8 +52,8 @@
         <div class="tab-content" id="communityTabsContent">
             <!-- Events Tab -->
             <div class="tab-pane fade show active" id="events" role="tabpanel" aria-labelledby="events-tab">
-                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-                    <% if (allCommunity && allCommunity.length > 0) { %>
+                <% if (allCommunity && allCommunity.length > 0) { %>
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
                         <% allCommunity.forEach(event => { %>
                             <div class="col">
                                 <div class="card h-100">
@@ -73,10 +61,8 @@
                                         <div class="d-flex justify-content-between">
                                             <h5 class="card-title"><%= event.title %></h5>
                                             <span class="badge bg-primary"><%= event.eventType %></span>
-                                        </div>
-                                        
-                                        <p class="card-text"><%= event.description %></p>
-                                        
+                                        </div>                  
+                                        <p class="card-text"><%= event.description %></p>  
                                         <div class="mb-2">
                                             <strong>Date:</strong>
                                             <% const startDate = new Date(event.startDate).toLocaleDateString() %>
@@ -87,47 +73,37 @@
                                                 <%= startDate %> - <%= endDate %>
                                             <% } %>
                                         </div>
-
                                         <div class="mb-2">
                                             <strong>Time:</strong> <%= event.time %>
                                         </div>
-
                                         <% if (event.eventType !== 'Online Webinar') { %>
                                             <div class="mb-2">
                                                 <strong>Location:</strong> <%= event.location %>
                                             </div>
                                         <% } %>
-
                                         <div class="mb-2">
                                             <strong>Contact:</strong><br>
                                             Name: <%= event.contactInfo.name %><br>
                                             Email: <%= event.contactInfo.email %><br>
                                             Phone: <%= event.contactInfo.phone %>
-                                        </div>
-                                        
+                                        </div>     
                                     </div>
                                     <div class="card-footer">
-                                        <a href="<%= event.registrationLink %>" class="btn btn-primary w-100" target="_blank">
-                                            Register Now
-                                        </a>
+                                        <a href="<%= event.registrationLink %>" class="btn btn-primary w-100" target="_blank">Register Now</a>
                                     </div>
                                 </div>
                             </div>
-                        <% }) %>
-                    <% } else { %>
-                        <div class="col-12">
-                            <div class="alert alert-info" role="alert">
-                                No community events found. Be the first to create one!
-                            </div>
-                        </div>
-                    <% } %>
-                </div>
+                        <% }); %>
+                    </div>
+                <% } else { %>
+                    <p class="card-title">No community events found. Be the first to create one!</p>         
+                <% } %>
             </div>
 
             <!-- Stories Tab -->
             <div class="tab-pane fade" id="stories" role="tabpanel" aria-labelledby="stories-tab">
-                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-                    <% if (allStories && allStories.length > 0) { %>
+                <% if (allStories && allStories.length > 0) { %>
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
                         <% allStories.forEach(story => { %>
                             <div class="col">
                                 <div class="card h-100">
@@ -147,10 +123,7 @@
                                         </div>
                                     </div>
                                     <div class="card-footer">
-                                        <button class="btn btn-outline-primary w-100 read-more-btn" 
-                                                data-title="<%= story.title %>" 
-                                                data-content="<%= story.content %>"
-                                                data-image="<%= story.media.url %>">
+                                        <button class="btn btn-outline-primary w-100 read-more-btn" data-title="<%= story.title %>" data-content="<%= story.content %>"data-image="<%= story.media.url %>">
                                             Read More
                                         </button>
                                     </div>
@@ -163,15 +136,11 @@
                                     <% } %>
                                 </div>
                             </div>
-                        <% }) %>
-                    <% } else { %>
-                        <div class="col-12">
-                            <div class="alert alert-info" role="alert">
-                                No stories found. Share your story with the community!
-                            </div>
-                        </div>
-                    <% } %>
-                </div>
+                        <% }); %>  
+                    </div>
+                <% } else { %>
+                    <p class="card-title">No stories found. Share your story with the community!</p>
+                <% } %>
             </div>
         </div>
 

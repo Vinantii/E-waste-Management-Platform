@@ -173,34 +173,70 @@
       const agencySelect = document.getElementById("agency");
       const agencies = JSON.parse(document.querySelector("form").dataset.agencies);
 
+      // function updateAgencyOptions() {
+      //   const wasteTypeSelects = document.querySelectorAll('select[name="request[wasteType][]"]');
+      //   const selectedWasteTypes = Array.from(wasteTypeSelects).map(select => select.value).filter(value => value);
+
+      //   agencySelect.disabled = selectedWasteTypes.length === 0;
+
+      //   let matchingAgencies = agencies.filter(agency =>
+      //     selectedWasteTypes.some(wasteType => agency.wasteTypesHandled.includes(wasteType))
+      //   );
+
+      //   matchingAgencies.sort((a, b) => a.distance - b.distance);
+      //   agencySelect.innerHTML = '<option value="">Choose an agency...</option>';
+
+      //   matchingAgencies.forEach(agency => {
+      //     const option = document.createElement("option");
+      //     option.value = agency._id;
+      //     const handledTypes = selectedWasteTypes
+      //       .filter(type => agency.wasteTypesHandled.includes(type))
+      //       .join(", ");
+      //     option.textContent = `${agency.name} (${agency.region}) - Handles: ${handledTypes}`;
+      //     agencySelect.appendChild(option);
+      //   });
+      // }
+
+      // document.querySelector('.waste-items').addEventListener('change', function(e) {
+      //   if (e.target.matches('select[name="request[wasteType][]"]')) {
+      //     updateAgencyOptions();
+      //   }
+      // });
       function updateAgencyOptions() {
-        const wasteTypeSelects = document.querySelectorAll('select[name="request[wasteType][]"]');
-        const selectedWasteTypes = Array.from(wasteTypeSelects).map(select => select.value).filter(value => value);
+    const wasteTypeSelects = document.querySelectorAll('select[name="request[wasteType][]"]');
+    const selectedWasteTypes = Array.from(wasteTypeSelects)
+        .map(select => select.value)
+        .filter(value => value);
 
-        agencySelect.disabled = selectedWasteTypes.length === 0;
+    agencySelect.disabled = selectedWasteTypes.length === 0;
 
-        const matchingAgencies = agencies.filter(agency =>
-          selectedWasteTypes.some(wasteType => agency.wasteTypesHandled.includes(wasteType))
-        );
+    let matchingAgencies = agencies.filter(agency =>
+        selectedWasteTypes.some(wasteType => agency.wasteTypesHandled.includes(wasteType))
+    );
 
-        agencySelect.innerHTML = '<option value="">Choose an agency...</option>';
+    matchingAgencies.sort((a, b) => a.distance - b.distance);
+    agencySelect.innerHTML = '<option value="">Choose an agency...</option>';
 
-        matchingAgencies.forEach(agency => {
-          const option = document.createElement("option");
-          option.value = agency._id;
-          const handledTypes = selectedWasteTypes
+    matchingAgencies.forEach(agency => {
+        const option = document.createElement("option");
+        option.value = agency._id;
+        const handledTypes = selectedWasteTypes
             .filter(type => agency.wasteTypesHandled.includes(type))
             .join(", ");
-          option.textContent = `${agency.name} (${agency.region}) - Handles: ${handledTypes}`;
-          agencySelect.appendChild(option);
-        });
-      }
+        
+        // Formatting distance in km with 2 decimal places
+        const formattedDistance = (agency.distance / 1000).toFixed(2);
 
-      document.querySelector('.waste-items').addEventListener('change', function(e) {
-        if (e.target.matches('select[name="request[wasteType][]"]')) {
-          updateAgencyOptions();
-        }
-      });
+        option.textContent = `${agency.name} (${agency.region}) - ${formattedDistance} km away - Handles: ${handledTypes}`;
+        agencySelect.appendChild(option);
+    });
+}
+
+document.querySelector('.waste-items').addEventListener('change', function (e) {
+    if (e.target.matches('select[name="request[wasteType][]"]')) {
+        updateAgencyOptions();
+    }
+});
 
       function addWasteItem() {
         const container = document.querySelector('.waste-items');

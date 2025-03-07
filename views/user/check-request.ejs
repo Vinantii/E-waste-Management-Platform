@@ -43,81 +43,84 @@
         <!-- Current Requests Tab -->
         <div class="tab-pane fade show active" id="current">
           <% const currentRequests = requests.filter(req => !req.status.includes('Completed') && !req.status.includes('Rejected')); %>
-          <% currentRequests.forEach(request => { %>
-            <div class="request-card">
-              <div class="d-flex justify-content-between align-items-start mb-3">
-                <div>
-                  <h5 class="mb-2">Request #<%= request._id.toString().slice(-6) %></h5>
+          <% if(currentRequests.length > 0){ %>
+            <% currentRequests.forEach(request => { %>
+              <div class="request-card">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                  <div>
+                    <h5 class="mb-2">Request #<%= request._id.toString().slice(-6) %></h5>
+                  </div>
+                  <span class="status-badge <%= request.status === 'Pending' ? 'pending' : request.status === 'Processing' ? 'processing' : 'completed' %>"><%= request.status %> </span>
                 </div>
-                <span class="status-badge <%= 
-                  request.status === 'Pending' ? 'pending' : 
-                  request.status === 'Processing' ? 'processing' : 
-                  'completed' %>">
-                  <%= request.status %>
-                </span>
-              </div>
-              <div class="request-info">
-                <div class="info-item">
-                  <span class="info-label">Waste Type :</span>
-                  <span class="info-value"><%= request.wasteType.join(', ') %></span>
+                <div class="request-info">
+                  <div class="info-item">
+                    <span class="info-label">Waste Type :</span>
+                    <span class="info-value"><%= request.wasteType.join(', ') %></span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">Quantity :</span>
+                    <span class="info-value"><%= request.quantities %></span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">Agency :</span>
+                    <span class="info-value"><%= request.agency.name %></span>
+                  </div>
                 </div>
-                <div class="info-item">
-                  <span class="info-label">Quantity :</span>
-                  <span class="info-value"><%= request.quantities %></span>
+                <div class="request-actions">
+                  <a href="/user/request/<%= request._id %>/track" class="view-details-btn">View Details</a>
                 </div>
-                <div class="info-item">
-                  <span class="info-label">Agency :</span>
-                  <span class="info-value"><%= request.agency.name %></span>
+                <div class="request-actions">
+                  <% if(request.status === "Pending" || request.status === "Accepted" || request.status === "Assigned" && request.trackingMilestones.pickupStarted.completed === false){ %>
+                    <form action="/user/request/<%= request._id %>/delete?_method=DELETE" method="post"><button class="btn btn-danger">Delete request</button></form>
+                  <% } %>
                 </div>
               </div>
-              <div class="request-actions">
-                <a href="/user/request/<%= request._id %>/track" class="view-details-btn">View Details</a>
-              </div>
-              <div class="request-actions">
-                <% if(request.status === "Pending" || request.status === "Accepted" || request.status === "Assigned" && request.trackingMilestones.pickupStarted.completed === false){ %>
-                  <form action="/user/request/<%= request._id %>/delete?_method=DELETE" method="post"><button class="btn btn-danger">Delete request</button></form>
-                <% } %>
-              </div>
-            </div>
-          <% }); %>
+            <% }); %>
+          <% }else{ %>
+            <p class="card-title"> No requests currently available.</p>
+          <% } %>
         </div>
 
         <!-- Old Requests Tab -->
         <div class="tab-pane fade" id="old">
           <% const oldRequests = requests.filter(req => req.status.includes('Completed') || req.status.includes('Rejected')); %>
-          <% oldRequests.forEach(request => { %>
-            <div class="request-card">
-              <div class="d-flex justify-content-between align-items-start mb-3">
-                <div>
-                  <h5 class="mb-2">Request #<%= request._id.toString().slice(-6) %></h5>
+          <% if(oldRequests.length > 0){ %>
+            <% oldRequests.forEach(request => { %>
+              <div class="request-card">
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                  <div>
+                    <h5 class="mb-2">Request #<%= request._id.toString().slice(-6) %></h5>
+                  </div>
+                  <span class="status-badge <%= request.status === 'Completed' ? 'completed' : 'rejected' %>">
+                    <%= request.status %>
+                  </span>
                 </div>
-                <span class="status-badge <%= request.status === 'Completed' ? 'completed' : 'rejected' %>">
-                  <%= request.status %>
-                </span>
+                <div class="request-info">
+                  <div class="info-item">
+                    <span class="info-label">Waste Type :</span>
+                    <span class="info-value"><%= request.wasteType.join(', ') %></span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">Quantity :</span>
+                    <span class="info-value"><%= request.quantities %></span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">Agency :</span>
+                    <span class="info-value"><%= request.agency.name %></span>
+                  </div>
+                  <div class="info-item">
+                    <span class="info-label">Completed On :</span>
+                    <span class="info-value"><%= new Date(request.updatedAt).toLocaleDateString() %></span>
+                  </div>
+                </div>
+                <div class="request-actions">
+                  <a href="/user/request/<%= request._id %>/track" class="view-details-btn">View Details</a>
+                </div>
               </div>
-              <div class="request-info">
-                <div class="info-item">
-                  <span class="info-label">Waste Type :</span>
-                  <span class="info-value"><%= request.wasteType.join(', ') %></span>
-                </div>
-                <div class="info-item">
-                  <span class="info-label">Quantity :</span>
-                  <span class="info-value"><%= request.quantities %></span>
-                </div>
-                <div class="info-item">
-                  <span class="info-label">Agency :</span>
-                  <span class="info-value"><%= request.agency.name %></span>
-                </div>
-                <div class="info-item">
-                  <span class="info-label">Completed On :</span>
-                  <span class="info-value"><%= new Date(request.updatedAt).toLocaleDateString() %></span>
-                </div>
-              </div>
-              <div class="request-actions">
-                <a href="/user/request/<%= request._id %>/track" class="view-details-btn">View Details</a>
-              </div>
-            </div>
-          <% }); %>
+            <% }); %>
+            <% }else{ %>
+              <p class="card-title"> No old requests available.</p>
+            <% } %>
         </div>
 
       </div>

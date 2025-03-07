@@ -26,32 +26,26 @@
             <h2 class="text-center mb-4">Available Products</h2>
             <div class="row">
                 <% if(allProducts.length > 0){ %>
-                <% allProducts.forEach(product=> { %>
-                    <div class="col-md-4 mb-4">
-                        <div class="card h-100">
-                            <% if (product.image && product.image.url) { %>
-                                <img src="<%= product.image.url %>" class="card-img-top" alt="<%= product.name %>">
+                    <% allProducts.forEach(product=> { %>
+                        <div class="col-md-4 mb-4">
+                            <div class="card h-100">
+                                <% if (product.image && product.image.url) { %>
+                                    <img src="<%= product.image.url %>" class="card-img-top" alt="<%= product.name %>">
                                 <% } %>
-                                    <div class="card-body">
-                                        <h5 class="card-title">
-                                            <%= product.name %>
-                                        </h5>
-                                        <p class="card-text">
-                                            <%= product.description %>
-                                        </p>
-                                        <p class="fw-bold">Points Required: <%= product.pointsRequired %>
-                                        </p>
-                                        <p class="text-muted">Stock: <%= product.stock %>
-                                        </p>
-                                        <form action="/user/redeem/<%= product._id %>" method="post">
-                                            <button class="btn btn-primary">Redeem</button>
-                                        </form>
-                                    </div>
+                                <div class="card-body">
+                                    <h5 class="card-title"><%= product.name %></h5>
+                                    <p class="card-text"><%= product.description %></p>
+                                    <p class="fw-bold">Points Required: <%= product.pointsRequired %></p>
+                                    <p class="text-muted">Stock: <%= product.stock %></p>
+                                    <form action="/user/<%= id %>/redeem/<%= product._id %>" method="post">
+                                        <button class="btn btn-primary">Redeem</button>
+                                    </form>
+                                </div>
+                            </div>
                         </div>
-                    </div>
                     <% }); %>
                 <% }else{ %>
-                    <p>No products available</p>
+                    <p class="card-title">No products available</p>
                  <% } %>
             </div>
         </div>

@@ -26,16 +26,10 @@
         <div class="tab-btn-container">
             <ul class="nav nav-tabs" id="communityTabs" role="tablist">
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link active" id="events-tab" data-bs-toggle="tab" data-bs-target="#events"
-                        type="button" role="tab" aria-controls="events" aria-selected="true">
-                        Community Events
-                    </button>
+                    <button class="nav-link active" id="events-tab" data-bs-toggle="tab" data-bs-target="#events" type="button" role="tab" aria-controls="events" aria-selected="true"> Community Events </button>
                 </li>
                 <li class="nav-item" role="presentation">
-                    <button class="nav-link" id="stories-tab" data-bs-toggle="tab" data-bs-target="#stories" type="button"
-                        role="tab" aria-controls="stories" aria-selected="false">
-                        Community Stories
-                    </button>
+                    <button class="nav-link" id="stories-tab" data-bs-toggle="tab" data-bs-target="#stories" type="button" role="tab" aria-controls="stories" aria-selected="false"> Community Stories </button>
                 </li>
             </ul>
         <!-- Header Section -->
@@ -56,12 +50,10 @@
 
         <!-- Tabs Content -->
         <div class="tab-content" id="communityTabsContent">
-            <%if(allCommunity && allCommunity.length>0){%>
-            
             <!-- Events Tab -->
             <div class="tab-pane fade show active" id="events" role="tabpanel" aria-labelledby="events-tab">
-                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-                    <% if (allCommunity && allCommunity.length> 0) { %>
+                <% if (allCommunity.length > 0) { %>
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
                         <% allCommunity.forEach(event=> { %>
                             <div class="col">
                                 <div class="card h-100">
@@ -74,20 +66,16 @@
                                                 <%= event.eventType %>
                                             </span>
                                         </div>
-
-                                        <p class="card-text">
-                                            <%= event.description %>
-                                        </p>
-
+                                        <p class="card-text"><%= event.description %></p>
                                         <div class="mb-2">
                                             <strong>Date:</strong>
                                             <% const startDate=new Date(event.startDate).toLocaleDateString() %>
-                                                <% const endDate=new Date(event.endDate).toLocaleDateString() %>
-                                                    <% if (startDate===endDate) { %>
-                                                        <%= startDate %>
-                                                            <% } else { %>
-                                                                <%= startDate %> - <%= endDate %>
-                                                                        <% } %>
+                                            <% const endDate=new Date(event.endDate).toLocaleDateString() %>
+                                            <% if (startDate===endDate) { %>
+                                                <%= startDate %>
+                                            <% } else { %>
+                                                <%= startDate %> - <%= endDate %>
+                                            <% } %>
                                         </div>
 
                                         <div class="mb-2">
@@ -97,91 +85,60 @@
 
                                         <% if (event.eventType !=='Online Webinar' ) { %>
                                             <div class="mb-2">
-                                                <strong>Location:</strong>
-                                                <%= event.location %>
+                                                <strong>Location:</strong><%= event.location %>
                                             </div>
-                                            <% } %>
+                                        <% } %>
 
-                                                <div class="mb-2">
-                                                    <strong>Contact:</strong><br>
-                                                    Name: <%= event.contactInfo.name %><br>
-                                                        Email: <%= event.contactInfo.email %><br>
-                                                            Phone: <%= event.contactInfo.phone %>
-                                                </div>
+                                        <div class="mb-2">
+                                            <strong>Contact:</strong><br>
+                                            Name: <%= event.contactInfo.name %><br>
+                                            Email: <%= event.contactInfo.email %><br>
+                                            Phone: <%= event.contactInfo.phone %>
+                                        </div>
                                     </div>
                                     <div class="card-footer">
-                                        <a href="<%= event.registrationLink %>" class="btn btn-primary w-100"
-                                            target="_blank">
-                                            Register Now
-                                        </a>
+                                        <a href="<%= event.registrationLink %>" class="btn btn-primary w-100" target="_blank"> Register Now </a>
                                     </div>
                                 </div>
                             </div>
-                            <% }) %>
-                                <% } else { %>
-                                    <div class="col-12">
-                                        <div class="alert alert-info" role="alert">
-                                            No community events found. Be the first to create one!
-                                        </div>
-                                    </div>
-                                    <% } %>
-                </div>
-                <% } else{ %>
-                    <p>No communities available.</p>
-                    <% } %>
+                        <% }); %>              
+                    </div>
+                <% } else { %>
+                        <p class="card-title">No community events found. Be the first to create one!</p>
+                <% } %>
             </div>
 
             <!-- Stories Tab -->
-           
             <div class="tab-pane fade" id="stories" role="tabpanel" aria-labelledby="stories-tab">
-                <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
-                    <% if (allStories && allStories.length> 0) { %>
+                <% if(allStories.length > 0){ %>
+                    <div class="row row-cols-1 row-cols-md-2 row-cols-lg-3 g-4">
                         <% allStories.forEach(story=> { %>
                             <div class="col">
                                 <div class="card h-100">
                                     <% if (story.media && story.media.url) { %>
                                         <img src="<%= story.media.url %>" alt="Story Image" class="story-img">
-                                        <% } %>
-                                            <div class="card-body">
-                                                <h5 class="card-title mb-3">
-                                                    <%= story.title %>
-                                                </h5>
-                                                <p class="card-text">
-                                                    <%= story.content.substring(0, 150) %>...
-                                                </p>
-                                                <div class="text-muted mb-3">
-                                                    <small>Published: <%= new
-                                                            Date(story.publishedAt).toLocaleDateString() %></small>
-                                                </div>
-                                                <div class="mb-2">
-                                                    <strong>Author:</strong><br>
-                                                    <%= story.contactInfo.name %><br>
-                                                        <small class="text-muted">
-                                                            <%= story.contactInfo.email %>
-                                                        </small>
-                                                </div>
-                                            </div>
-                                            <div class="card-footer">
-                                                <button class="btn btn-outline-primary w-100 read-more-btn"
-                                                    data-title="<%= story.title %>" data-content="<%= story.content %>"
-                                                    data-image="<%= story.media.url %>">
-                                                    Read More
-                                                </button>
-                                            </div>
-                                </div>
-                            </div>
-                            <% }) %>
-                                <% } else { %>
-                                    <div class="col-12">
-                                        <div class="alert alert-info" role="alert">
-                                            No stories found. Share your story with the community!
+                                    <% } %>
+                                    <div class="card-body">
+                                        <h5 class="card-title mb-3"><%= story.title %></h5>
+                                        <p class="card-text"><%= story.content.substring(0, 150) %>...</p>
+                                        <div class="text-muted mb-3">
+                                            <small>Published: <%= new Date(story.publishedAt).toLocaleDateString() %></small>
+                                        </div>
+                                        <div class="mb-2"> 
+                                            <strong>Author:</strong><br><%= story.contactInfo.name %><br>
+                                            <small class="text-muted"><%= story.contactInfo.email %></small>
                                         </div>
                                     </div>
-                                    <% } %>
-                </div>
-                <% } else{ %>
-                    <p>No stories available.</p>
-                    <% } %>
+                                    <div class="card-footer">
+                                        <button class="btn btn-outline-primary w-100 read-more-btn" data-title="<%= story.title %>" data-content="<%= story.content %>"data-image="<%= story.media.url %>">Read More</button>
+                                    </div>
+                                </div>
+                            </div>
+                        <% }); %>
+                    </div>
+                <% } else { %>
+                    <p class="card-title">No community stories found. Be the first to create one!</p>
+                <% } %>
             </div>
         </div>
 

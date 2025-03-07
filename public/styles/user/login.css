@@ -85,3 +85,18 @@ input::placeholder{
     font-family: 'Poppins';
 }
 
+@media (max-width: 768px) {
+    ::-webkit-scrollbar {
+        display: none;
+      }
+.login-container {
+    position: relative;
+    top: 16%;
+    margin: auto;
+    height: auto;
+    max-width: 600px !important;
+    padding: 2rem 6rem 3rem;
+    background: rgba(31, 100, 58, 0.71);
+    border-radius: 25px;
+}
+}

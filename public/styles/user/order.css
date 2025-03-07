@@ -149,3 +149,36 @@ h2 {
 .row::-webkit-scrollbar-thumb:hover {
     background: #7ab55d;
 }
+
+
+@media (max-width: 768px)
+{
+  ::-webkit-scrollbar {
+    display: none;
+  }
+.nav-tabs .nav-link {
+    border: none;
+    color: #000;
+    padding: 8px 0px;
+    border-radius: 15px;
+    font-weight: 500;
+    font-size: 1rem;
+    transition: all 0.3sease;
+    min-width: 100px;
+    text-align: center;
+}
+
+.nav-tabs {
+    margin-top: 3rem;
+    border: none;
+    background: white;
+    border-radius: 15px;
+    padding: 5px;
+    display: inline-flex;
+    margin-bottom: 2rem;
+    border: 2px solid #B0D247;
+    align-content: flex-end;
+    justify-content: space-around !important;
+}
+
+}

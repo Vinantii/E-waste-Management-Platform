@@ -150,3 +150,21 @@ h2 {
     font-weight: 500;
     margin-bottom: 0.5rem;
 }
+
+
+@media screen and (max-width: 768px) {
+    ::-webkit-scrollbar {
+        display: none;
+      }
+.nav-tabs {
+    margin-top: 3rem;
+    border: none;
+    background: white;
+    border-radius: 15px;
+    padding: 7px;
+    display: inline-flex;
+    margin-bottom: 2rem;
+    margin-left: 1rem;
+    border: 3px solid #B0D247;
+}
+}

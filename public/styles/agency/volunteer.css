@@ -264,3 +264,40 @@ textarea.form-control {
     margin-top: 5px;
     display: block;
 }
+
+
+@media (max-width: 768px) {
+    ::-webkit-scrollbar {
+        display: none;
+      }
+      .volunteer-grid {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .page-title {
+        position: absolute;
+        top: -30px;
+        left: -1px;
+        background: #1F643A;
+        color: white;
+        padding: 10px 30px;
+        border-radius: 15px;
+        font-family: 'Poppins', sans-serif;
+        font-size: 1.2rem;
+        z-index: 1;
+    }
+    .add-volunteer-btn {
+        background: #007AFF;
+        color: white;
+        border: none;
+        padding: 8px 20px;
+        border-radius: 8px;
+        font-size: 1rem;
+        cursor: pointer;
+        position: absolute;
+        top: 30px;
+        right: 40px;
+    }
+  
+    }

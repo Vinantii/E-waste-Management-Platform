@@ -667,11 +667,15 @@ body img {
     .footer-logo h1 {
         font-size: 6rem !important;
     }
+
+    .landing{
+        height: 65vh;
+    }
 }
 
 @media screen and (max-width: 576px) {
     .nav-left {
-        gap: 10px !important;
+        gap: 170px !important;
     }
 
     .navbar-brand img {

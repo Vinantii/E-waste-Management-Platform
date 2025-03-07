@@ -180,6 +180,7 @@ animation: pulse 1s infinite; /* Pulsing effect */
     z-index: 0; /* Ensure overlay is below the navbar */
 }     
 
+
 .image-container{
     position: absolute;
     width: 100%;
@@ -947,9 +948,17 @@ img {
     .footer-logo p span {
         font-size: 1.4rem !important;
     }
+
+    
+.landing {
+height: 60vh;
+}
 }
 
 @media screen and (max-width: 576px) {
+    .landing {
+        height: 60vh;
+        }
     .headline h2 {
         font-size: 25px !important;
     }
@@ -1022,7 +1031,7 @@ img {
     }
 
     .nav-left {
-        gap: 10px !important;
+        gap: 171px !important;
     }
 
     .navbar-brand img {
@@ -1037,6 +1046,12 @@ img {
 }
 
 @media screen and (max-width: 360px) {
+    .landing {
+        height: 60vh;
+        }
+        .nav-left {
+            gap: 10px !important;
+        }
     .headline h2 {
         font-size: 22px !important;
     }
@@ -1084,6 +1099,9 @@ img {
 
 /* Handle height responsiveness */
 @media screen and (max-height: 700px) {
+    .landing {
+        height: 60vh;
+        }
     .headline {
         margin-top: 15% !important;
     }
@@ -1103,6 +1121,19 @@ img {
     .word-animation {
         height: 60px !important;
     }
+
+    .landing {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: flex-start;
+        height: 65vh;
+        width: 100vw;
+        background-color: #1F643A;
+        position: relative;
+        z-index: 1; /* Ensure this is above the overlay */
+    }
+    
 
     .word-animation > div > div {
         height: 60px !important;
@@ -1241,11 +1272,11 @@ img {
 
 @media screen and (max-width: 576px) {
     .nav-left {
-        gap: 10px !important;
+        gap: 202px !important;
     }
 
     .navbar-brand img {
-        height: 35px !important;
+        height: 25px !important;
     }
 
     .hamburger span {

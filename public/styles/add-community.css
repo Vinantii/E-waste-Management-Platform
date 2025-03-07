@@ -56,3 +56,12 @@ input::placeholder,textarea::placeholder{
     font-family: 'Poppins';
     font-size: 12px;
 }
+
+
+  
+@media (max-width: 768px)
+{
+    .community-container{
+        width: 80%;
+    }
+}

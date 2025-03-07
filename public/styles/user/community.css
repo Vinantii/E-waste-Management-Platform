@@ -338,3 +338,10 @@ body {
     margin: 10px !important;
 }
 }
+
+@media (max-width:576px) {
+    #logo{
+        width: 170px;
+        height: auto;
+    }
+}

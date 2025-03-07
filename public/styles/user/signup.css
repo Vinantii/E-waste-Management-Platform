@@ -85,3 +85,10 @@ input::placeholder{
     color: #fff;
     font-family: 'Poppins';
 }
+
+@media (max-width:576px) {
+    #logo{
+        width: 170px;
+        height: auto;
+    }
+}

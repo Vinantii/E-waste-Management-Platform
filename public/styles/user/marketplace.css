@@ -284,3 +284,9 @@ h1 {
         font-size: 1.1rem !important;
     }
 }
+@media (max-width:576px) {
+    #logo{
+        width: 170px;
+        height: auto;
+    }
+}
